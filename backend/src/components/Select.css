@@ -1,0 +1,164 @@
+/* =========================================
+   Danzas.app - Select
+   ========================================= */
+
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.select-full-width {
+  width: 100%;
+}
+
+/* =========================================
+   Label
+   ========================================= */
+
+.select-label {
+  color: #332d3d;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.select-required {
+  margin-left: 3px;
+  color: #d04b58;
+}
+
+/* =========================================
+   Contenedor del Select
+   ========================================= */
+
+.select-container {
+  position: relative;
+  width: 100%;
+}
+
+/* =========================================
+   Select
+   ========================================= */
+
+.select {
+  width: 100%;
+  min-height: 44px;
+
+  padding: 0 42px 0 13px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: 1px solid #dcd6e5;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #332d3d;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.select:hover:not(:disabled) {
+  border-color: #b9a7cf;
+}
+
+.select:focus {
+  border-color: #6d35c5;
+  box-shadow: 0 0 0 3px rgba(109, 53, 197, 0.1);
+}
+
+/* =========================================
+   Placeholder
+   ========================================= */
+
+.select option[value=""] {
+  color: #9992a5;
+}
+
+.select option {
+  color: #332d3d;
+}
+
+/* =========================================
+   Flecha
+   ========================================= */
+
+.select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+
+  transform: translateY(-50%);
+
+  color: #6d35c5;
+  font-size: 18px;
+  font-weight: 700;
+
+  pointer-events: none;
+}
+
+/* =========================================
+   Error
+   ========================================= */
+
+.select-has-error .select {
+  border-color: #d04b58;
+}
+
+.select-has-error .select:focus {
+  border-color: #d04b58;
+  box-shadow: 0 0 0 3px rgba(208, 75, 88, 0.1);
+}
+
+.select-error {
+  color: #d04b58;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* =========================================
+   Texto de ayuda
+   ========================================= */
+
+.select-helper {
+  color: #8b8498;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* =========================================
+   Deshabilitado
+   ========================================= */
+
+.select-disabled {
+  opacity: 0.65;
+}
+
+.select:disabled {
+  background: #f5f3f7;
+  color: #8b8498;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 480px) {
+  .select {
+    min-height: 46px;
+    font-size: 13px;
+  }
+}

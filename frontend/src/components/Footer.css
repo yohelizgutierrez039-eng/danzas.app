@@ -1,0 +1,179 @@
+/* Danzas.app - Footer */
+
+.footer {
+  width: 100%;
+  margin-top: 80px;
+  background: #171327;
+  color: #fff;
+}
+
+.footer-container {
+  width: min(100% - 48px, 1440px);
+  margin: 0 auto;
+  padding: 60px 0 50px;
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 50px;
+}
+
+.footer-brand {
+  max-width: 390px;
+}
+
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.footer-logo-icon {
+  width: 29px;
+  height: 29px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #6d35c5;
+  color: #fff;
+  font-size: 17px;
+}
+
+.footer-logo-dot {
+  color: #b894ec;
+}
+
+.footer-description {
+  max-width: 360px;
+  margin: 18px 0 22px;
+  color: #bcb7c9;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 9px;
+}
+
+.footer-social {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #39334e;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: .2s ease;
+}
+
+.footer-social:hover {
+  background: #6d35c5;
+  border-color: #6d35c5;
+  transform: translateY(-2px);
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.footer-column h3 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.footer-column a {
+  color: #bcb7c9;
+  font-size: 14px;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.footer-column a:hover {
+  color: #fff;
+}
+
+.footer-bottom {
+  border-top: 1px solid #302b43;
+}
+
+.footer-bottom-container {
+  width: min(100% - 48px, 1440px);
+  min-height: 70px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: #918ba0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .footer-container {
+    grid-template-columns: 1.5fr repeat(2, 1fr);
+    gap: 40px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 650px) {
+  .footer {
+    margin-top: 55px;
+  }
+
+  .footer-container {
+    width: min(100% - 32px, 1440px);
+    padding: 45px 0 40px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 35px 25px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-bottom-container {
+    width: min(100% - 32px, 1440px);
+    padding: 18px 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 400px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-column {
+    grid-column: 1;
+  }
+
+  .footer-bottom-container {
+    align-items: center;
+    text-align: center;
+  }
+}

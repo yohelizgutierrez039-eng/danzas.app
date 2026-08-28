@@ -1,0 +1,197 @@
+/* =========================================
+   Danzas.app - ErrorMessage
+   ========================================= */
+
+.error-message {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 13px 15px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  border: 1px solid;
+  border-radius: 9px;
+
+  font-family: inherit;
+
+  animation: error-message-show 0.2s ease;
+}
+
+/* =========================================
+   Icono
+   ========================================= */
+
+.error-message-icon {
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* =========================================
+   Contenido
+   ========================================= */
+
+.error-message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-message-title {
+  margin: 0 0 3px;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.error-message-text {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   Error
+   ========================================= */
+
+.error-message-error {
+  border-color: #f0c4ca;
+  background: #fff3f4;
+  color: #b52f3d;
+}
+
+.error-message-error .error-message-icon {
+  background: #d04b58;
+  color: #ffffff;
+}
+
+/* =========================================
+   Warning
+   ========================================= */
+
+.error-message-warning {
+  border-color: #f0d9a8;
+  background: #fff9ed;
+  color: #9a6815;
+}
+
+.error-message-warning .error-message-icon {
+  background: #d99b2b;
+  color: #ffffff;
+}
+
+/* =========================================
+   Info
+   ========================================= */
+
+.error-message-info {
+  border-color: #c9c1e8;
+  background: #f6f3fc;
+  color: #5c43a0;
+}
+
+.error-message-info .error-message-icon {
+  background: #6d35c5;
+  color: #ffffff;
+}
+
+/* =========================================
+   Success
+   ========================================= */
+
+.error-message-success {
+  border-color: #bfe2d0;
+  background: #f0faf4;
+  color: #197044;
+}
+
+.error-message-success .error-message-icon {
+  background: #198754;
+  color: #ffffff;
+}
+
+/* =========================================
+   Botón cerrar
+   ========================================= */
+
+.error-message-close {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 5px;
+
+  background: transparent;
+  color: currentColor;
+
+  font-family: inherit;
+  font-size: 19px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.error-message-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.error-message-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* =========================================
+   Animación
+   ========================================= */
+
+@keyframes error-message-show {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 480px) {
+  .error-message {
+    padding: 12px;
+  }
+
+  .error-message-title {
+    font-size: 12px;
+  }
+
+  .error-message-text {
+    font-size: 11px;
+  }
+}
