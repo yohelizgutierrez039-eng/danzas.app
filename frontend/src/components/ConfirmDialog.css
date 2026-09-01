@@ -1,0 +1,276 @@
+/* =========================================
+   Danzas.app - ConfirmDialog
+   ========================================= */
+
+.confirm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 2500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(25, 19, 39, 0.55);
+
+  animation: confirm-overlay-show 0.2s ease;
+}
+
+/* =========================================
+   Dialog
+   ========================================= */
+
+.confirm-dialog {
+  width: 100%;
+  max-width: 440px;
+
+  padding: 28px 25px 22px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: #ffffff;
+  border: 1px solid #eeeaf2;
+  border-radius: 14px;
+
+  text-align: center;
+
+  box-shadow: 0 20px 60px rgba(35, 25, 50, 0.2);
+
+  animation: confirm-dialog-show 0.2s ease;
+}
+
+/* =========================================
+   Icono
+   ========================================= */
+
+.confirm-dialog-icon {
+  width: 54px;
+  height: 54px;
+
+  margin-bottom: 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* Danger */
+
+.confirm-dialog-danger .confirm-dialog-icon {
+  background: #fff0f2;
+  color: #d04b58;
+}
+
+/* Warning */
+
+.confirm-dialog-warning .confirm-dialog-icon {
+  background: #fff8e9;
+  color: #c1841d;
+}
+
+/* Info */
+
+.confirm-dialog-info .confirm-dialog-icon {
+  background: #f0ebfa;
+  color: #6d35c5;
+}
+
+/* =========================================
+   Contenido
+   ========================================= */
+
+.confirm-dialog-content {
+  width: 100%;
+}
+
+.confirm-dialog-title {
+  margin: 0 0 8px;
+
+  color: #302a3a;
+
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.confirm-dialog-message {
+  margin: 0;
+
+  color: #81798f;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   Botones
+   ========================================= */
+
+.confirm-dialog-actions {
+  width: 100%;
+
+  margin-top: 25px;
+
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirm-dialog-button {
+  min-height: 41px;
+
+  padding: 0 18px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.confirm-dialog-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Cancelar */
+
+.confirm-dialog-cancel {
+  background: #ffffff;
+  border: 1px solid #dcd6e5;
+  color: #615a6e;
+}
+
+.confirm-dialog-cancel:hover:not(:disabled) {
+  background: #f7f4fa;
+  border-color: #c8bfd4;
+}
+
+/* Confirmar */
+
+.confirm-dialog-confirm {
+  border: 1px solid transparent;
+  color: #ffffff;
+}
+
+.confirm-danger {
+  background: #d04b58;
+}
+
+.confirm-danger:hover:not(:disabled) {
+  background: #bb3b48;
+}
+
+.confirm-warning {
+  background: #c1841d;
+}
+
+.confirm-warning:hover:not(:disabled) {
+  background: #a66d13;
+}
+
+.confirm-info {
+  background: #6d35c5;
+}
+
+.confirm-info:hover:not(:disabled) {
+  background: #5826a9;
+}
+
+/* =========================================
+   Spinner
+   ========================================= */
+
+.confirm-dialog-spinner {
+  width: 14px;
+  height: 14px;
+
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation: confirm-spin 0.7s linear infinite;
+}
+
+/* =========================================
+   Animaciones
+   ========================================= */
+
+@keyframes confirm-overlay-show {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes confirm-dialog-show {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes confirm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 480px) {
+  .confirm-dialog-overlay {
+    padding: 15px;
+  }
+
+  .confirm-dialog {
+    padding: 25px 18px 19px;
+  }
+
+  .confirm-dialog-title {
+    font-size: 16px;
+  }
+
+  .confirm-dialog-message {
+    font-size: 12px;
+  }
+
+  .confirm-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm-dialog-button {
+    width: 100%;
+  }
+}
