@@ -1,15 +1,5 @@
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import Sidebar from '../components/sidebar'
-function Home 
-() {
-    return (
-        <>
-        <Navbar/>
-        <Sidebar/>
-        <Footer/>
-        </>
-    )
+function Home() {
+  return <></>;
 }
 
-export default Home
+export default Home;
