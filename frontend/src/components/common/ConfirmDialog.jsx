@@ -1,26 +1,31 @@
-import React, { useEffect } from "react";
-import { createPortal } from "react-dom";
+// src/components/common/ConfirmDialog.jsx
+
+import { useEffect } from "react";
+import { FiAlertTriangle, FiInfo, FiCheckCircle } from "react-icons/fi";
+
+import Button from "./Button";
+
 import "./ConfirmDialog.css";
 
 function ConfirmDialog({
   isOpen,
-  onClose,
-  onConfirm,
-  title = "¿Estás seguro?",
-  message = "Esta acción no se puede deshacer.",
+  title = "Confirmar acción",
+  message = "¿Estás seguro de realizar esta acción?",
   confirmText = "Confirmar",
   cancelText = "Cancelar",
-  type = "danger",
+  variant = "danger",
   loading = false,
+  onConfirm,
+  onCancel,
 }) {
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape" && !loading) {
-        onClose();
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        onCancel?.();
       }
-    };
+    }
 
     document.addEventListener("keydown", handleKeyDown);
 
@@ -28,77 +33,71 @@ function ConfirmDialog({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+
       document.body.style.overflow = "";
     };
-  }, [isOpen, onClose, loading]);
+  }, [isOpen, onCancel]);
 
   if (!isOpen) {
     return null;
   }
 
-  const handleOverlayClick = (event) => {
-    if (event.target === event.currentTarget && !loading) {
-      onClose();
-    }
+  const icons = {
+    danger: <FiAlertTriangle />,
+    warning: <FiAlertTriangle />,
+    info: <FiInfo />,
+    success: <FiCheckCircle />,
   };
 
-  return createPortal(
-    <div className="confirm-dialog-overlay" onMouseDown={handleOverlayClick}>
+  function handleOverlayClick(event) {
+    if (event.target === event.currentTarget) {
+      onCancel?.();
+    }
+  }
+
+  return (
+    <div
+      className="confirm-dialog-overlay"
+      onMouseDown={handleOverlayClick}
+      role="presentation"
+    >
       <div
-        className={`confirm-dialog confirm-dialog-${type}`}
-        role="alertdialog"
+        className="confirm-dialog"
+        role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
       >
-        {/* Icono */}
-        <div className="confirm-dialog-icon">
-          {type === "danger" && "!"}
-          {type === "warning" && "!"}
-          {type === "info" && "i"}
+        <div
+          className={`
+            confirm-dialog__icon
+            confirm-dialog__icon--${variant}
+          `}
+        >
+          {icons[variant] || icons.danger}
         </div>
 
-        {/* Contenido */}
-        <div className="confirm-dialog-content">
-          <h2 id="confirm-dialog-title" className="confirm-dialog-title">
+        <div className="confirm-dialog__content">
+          <h2 id="confirm-dialog-title" className="confirm-dialog__title">
             {title}
           </h2>
 
-          <p id="confirm-dialog-message" className="confirm-dialog-message">
+          <p id="confirm-dialog-message" className="confirm-dialog__message">
             {message}
           </p>
         </div>
 
-        {/* Botones */}
-        <div className="confirm-dialog-actions">
-          <button
-            type="button"
-            className="confirm-dialog-button confirm-dialog-cancel"
-            onClick={onClose}
-            disabled={loading}
-          >
+        <div className="confirm-dialog__actions">
+          <Button variant="secondary" onClick={onCancel} disabled={loading}>
             {cancelText}
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className={`confirm-dialog-button confirm-dialog-confirm confirm-${type}`}
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="confirm-dialog-spinner"></span>
-                Procesando...
-              </>
-            ) : (
-              confirmText
-            )}
-          </button>
+          <Button variant={variant} onClick={onConfirm} loading={loading}>
+            {confirmText}
+          </Button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 

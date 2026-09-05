@@ -1,0 +1,156 @@
+/* src/components/common/Badge.css */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  font-weight: 600;
+  line-height: 1;
+
+  border: 1px solid transparent;
+
+  white-space: nowrap;
+}
+
+/* =========================
+   TAMAÑOS
+   ========================= */
+
+.badge--small {
+  padding: 4px 8px;
+
+  font-size: 10px;
+}
+
+.badge--medium {
+  padding: 6px 10px;
+
+  font-size: 12px;
+}
+
+.badge--large {
+  padding: 8px 14px;
+
+  font-size: 14px;
+}
+
+/* =========================
+   BORDES
+   ========================= */
+
+.badge--rounded {
+  border-radius: 999px;
+}
+
+/* =========================
+   VARIANTE DEFAULT
+   ========================= */
+
+.badge--default {
+  color: #5f6472;
+
+  background-color: #f2f3f7;
+
+  border-color: #e3e5ec;
+}
+
+/* =========================
+   PRIMARY
+   Inspirado en el morado
+   de Danzas.app
+   ========================= */
+
+.badge--primary {
+  color: #6d28d9;
+
+  background-color: #f3e8ff;
+
+  border-color: #e9d5ff;
+}
+
+/* =========================
+   INFO
+   ========================= */
+
+.badge--info {
+  color: #0369a1;
+
+  background-color: #e0f2fe;
+
+  border-color: #bae6fd;
+}
+
+/* =========================
+   SUCCESS
+   ========================= */
+
+.badge--success {
+  color: #15803d;
+
+  background-color: #dcfce7;
+
+  border-color: #bbf7d0;
+}
+
+/* =========================
+   WARNING
+   ========================= */
+
+.badge--warning {
+  color: #b45309;
+
+  background-color: #fef3c7;
+
+  border-color: #fde68a;
+}
+
+/* =========================
+   DANGER
+   ========================= */
+
+.badge--danger {
+  color: #be123c;
+
+  background-color: #ffe4e6;
+
+  border-color: #fecdd3;
+}
+
+/* =========================
+   PINK
+   ========================= */
+
+.badge--pink {
+  color: #be185d;
+
+  background-color: #fce7f3;
+
+  border-color: #fbcfe8;
+}
+
+/* =========================
+   ORANGE
+   ========================= */
+
+.badge--orange {
+  color: #c2410c;
+
+  background-color: #ffedd5;
+
+  border-color: #fed7aa;
+}
+
+/* =========================
+   DARK
+   ========================= */
+
+.badge--dark {
+  color: #ffffff;
+
+  background-color: #171b34;
+
+  border-color: #171b34;
+}
