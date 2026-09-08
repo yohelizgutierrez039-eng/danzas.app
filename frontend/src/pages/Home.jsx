@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Sidebar from '../components/sidebar'
@@ -16,6 +17,10 @@ function Home
 <Loading></Loading>
         </>
     )
+=======
+function Home() {
+  return <></>;
+>>>>>>> 917794e40aaf6ee58c45e78eb33f4ec205264928
 }
 
-export default Home
+export default Home;
