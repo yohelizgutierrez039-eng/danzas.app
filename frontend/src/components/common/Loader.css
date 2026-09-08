@@ -1,0 +1,148 @@
+/* src/components/common/Loader.css */
+
+/* =========================
+   CONTENEDOR
+   ========================= */
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  width: 100%;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   LOADER
+   ========================= */
+
+.loader {
+  display: inline-block;
+
+  border-style: solid;
+  border-color: #e9d5ff;
+  border-top-color: #7c3aed;
+
+  border-radius: 50%;
+
+  animation: loader-spin 0.75s linear infinite;
+}
+
+/* =========================
+   TAMAÑOS
+   ========================= */
+
+.loader--small {
+  width: 20px;
+  height: 20px;
+
+  border-width: 2px;
+}
+
+.loader--medium {
+  width: 36px;
+  height: 36px;
+
+  border-width: 3px;
+}
+
+.loader--large {
+  width: 52px;
+  height: 52px;
+
+  border-width: 4px;
+}
+
+/* =========================
+   TEXTO
+   ========================= */
+
+.loader__text {
+  color: #6b7280;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: center;
+}
+
+/* =========================
+   INLINE
+   ========================= */
+
+.loader-container--inline {
+  display: inline-flex;
+  flex-direction: row;
+
+  width: auto;
+
+  padding: 0;
+}
+
+/* =========================
+   PANTALLA COMPLETA
+   ========================= */
+
+.loader-container--fullscreen {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100%;
+  min-height: 100vh;
+
+  background-color: rgba(255, 255, 255, 0.92);
+
+  backdrop-filter: blur(3px);
+
+  z-index: 3000;
+}
+
+/* =========================
+   ANIMACIÓN
+   ========================= */
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================
+   ACCESIBILIDAD
+   ========================= */
+
+.loader__sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+
+  clip: rect(0, 0, 0, 0);
+
+  white-space: nowrap;
+
+  border: 0;
+}
+
+/* =========================
+   REDUCIR MOVIMIENTO
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    animation-duration: 1.5s;
+  }
+}
