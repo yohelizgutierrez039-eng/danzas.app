@@ -1,90 +1,130 @@
-import React, { useEffect } from "react";
-import { createPortal } from "react-dom";
+// src/components/common/Modal.jsx
+
+import { useEffect } from "react";
+import { FiX } from "react-icons/fi";
+
 import "./Modal.css";
 
 function Modal({
   isOpen,
-  onClose,
-  title,
+  title = "",
   children,
-  footer,
+  footer = null,
   size = "medium",
-  showCloseButton = true,
   closeOnOverlay = true,
-  closeOnEsc = true,
+  closeOnEscape = true,
+  showCloseButton = true,
+  onClose,
+  className = "",
 }) {
   useEffect(() => {
-    if (!isOpen || !closeOnEsc) return;
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, closeOnEsc, onClose]);
-
-  useEffect(() => {
     if (!isOpen) return;
+
+    function handleKeyDown(event) {
+      if (
+        event.key === "Escape" &&
+        closeOnEscape
+      ) {
+        onClose?.();
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
 
     document.body.style.overflow = "hidden";
 
     return () => {
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
+  }, [
+    isOpen,
+    closeOnEscape,
+    onClose,
+  ]);
 
   if (!isOpen) {
     return null;
   }
 
-  const handleOverlayClick = (event) => {
-    if (closeOnOverlay && event.target === event.currentTarget) {
-      onClose();
+  function handleOverlayClick(event) {
+    if (
+      closeOnOverlay &&
+      event.target === event.currentTarget
+    ) {
+      onClose?.();
     }
-  };
+  }
 
-  return createPortal(
-    <div className="modal-overlay" onMouseDown={handleOverlayClick}>
+  const modalClasses = [
+    "modal",
+    `modal--${size}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div
+      className="modal-overlay"
+      onMouseDown={handleOverlayClick}
+      role="presentation"
+    >
       <div
-        className={`modal modal-${size}`}
+        className={modalClasses}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={
+          title
+            ? "modal-title"
+            : undefined
+        }
       >
-        {/* Header */}
-        <div className="modal-header">
-          {title && (
-            <h2 id="modal-title" className="modal-title">
-              {title}
-            </h2>
-          )}
+        {(title || showCloseButton) && (
+          <div className="modal__header">
 
-          {showCloseButton && (
-            <button
-              type="button"
-              className="modal-close"
-              onClick={onClose}
-              aria-label="Cerrar ventana"
-            >
-              ×
-            </button>
-          )}
+            {title && (
+              <h2
+                id="modal-title"
+                className="modal__title"
+              >
+                {title}
+              </h2>
+            )}
+
+            {showCloseButton && (
+              <button
+                type="button"
+                className="modal__close"
+                onClick={onClose}
+                aria-label="Cerrar modal"
+              >
+                <FiX />
+              </button>
+            )}
+
+          </div>
+        )}
+
+        <div className="modal__body">
+          {children}
         </div>
 
-        {/* Contenido */}
-        <div className="modal-body">{children}</div>
+        {footer && (
+          <div className="modal__footer">
+            {footer}
+          </div>
+        )}
 
-        {/* Footer */}
-        {footer && <div className="modal-footer">{footer}</div>}
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 

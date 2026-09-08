@@ -1,4 +1,5 @@
-import React from "react";
+// src/components/common/Select.jsx
+
 import "./Select.css";
 
 function Select({
@@ -6,32 +7,49 @@ function Select({
   name,
   value,
   onChange,
+  onBlur,
   options = [],
   placeholder = "Selecciona una opción",
   error = "",
   helperText = "",
-  disabled = false,
   required = false,
+  disabled = false,
+  size = "medium",
   fullWidth = true,
   className = "",
+  ...props
 }) {
   const selectClasses = [
-    "select-wrapper",
-    fullWidth ? "select-full-width" : "",
-    error ? "select-has-error" : "",
-    disabled ? "select-disabled" : "",
+    "select",
+    `select--${size}`,
+    error ? "select--error" : "",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div className={selectClasses}>
+    <div
+      className={`
+        select-group
+        ${fullWidth ? "select-group--full-width" : ""}
+      `}
+    >
       {label && (
-        <label htmlFor={name} className="select-label">
+        <label
+          className="select-label"
+          htmlFor={name}
+        >
           {label}
 
-          {required && <span className="select-required">*</span>}
+          {required && (
+            <span
+              className="select-label__required"
+              aria-hidden="true"
+            >
+              *
+            </span>
+          )}
         </label>
       )}
 
@@ -41,13 +59,25 @@ function Select({
           name={name}
           value={value}
           onChange={onChange}
-          disabled={disabled}
+          onBlur={onBlur}
           required={required}
-          className="select"
+          disabled={disabled}
+          className={selectClasses}
+          aria-invalid={Boolean(error)}
+          aria-describedby={
+            error
+              ? `${name}-error`
+              : helperText
+              ? `${name}-helper`
+              : undefined
+          }
+          {...props}
         >
-          <option value="" disabled>
-            {placeholder}
-          </option>
+          {placeholder && (
+            <option value="">
+              {placeholder}
+            </option>
+          )}
 
           {options.map((option) => (
             <option
@@ -60,13 +90,36 @@ function Select({
           ))}
         </select>
 
-        <span className="select-arrow">⌄</span>
+        <span
+          className="select-arrow"
+          aria-hidden="true"
+        >
+          ▼
+        </span>
       </div>
 
-      {error && <span className="select-error">{error}</span>}
+      {error && (
+        <span
+          id={`${name}-error`}
+          className="
+            select-message
+            select-message--error
+          "
+        >
+          {error}
+        </span>
+      )}
 
       {!error && helperText && (
-        <span className="select-helper">{helperText}</span>
+        <span
+          id={`${name}-helper`}
+          className="
+            select-message
+            select-message--helper
+          "
+        >
+          {helperText}
+        </span>
       )}
     </div>
   );
