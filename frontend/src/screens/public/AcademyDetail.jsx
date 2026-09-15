@@ -3,58 +3,132 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./AcademyDetail.css";
 
 function AcademyDetail() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  // Datos de ejemplo.
-  // Posteriormente serán obtenidos desde el backend utilizando el id.
+  /*
+    Datos de demostración.
+    Posteriormente se reemplazarán por la información
+    obtenida desde el backend utilizando el id de la URL.
+  */
   const academy = {
-    id,
+    id: id || 1,
     name: "Academia Ritmo Caribe",
     city: "Barranquilla",
+    address: "Carrera 45 # 72-18",
+    phone: "300 456 7890",
+    email: "ritmocaribe@danzas.app",
     description:
-      "Academia dedicada a la enseñanza de diferentes estilos de danza, creando espacios para aprender, practicar y disfrutar del baile.",
-    image:
-      "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?auto=format&fit=crop&w=1400&q=80",
+      "Academia dedicada a la enseñanza de diferentes estilos de danza para niños, jóvenes y adultos. Nuestro objetivo es brindar un espacio donde las personas puedan aprender, practicar y disfrutar de la danza.",
+    danceTypes: ["Salsa", "Bachata", "Danza urbana"],
+    instructor: "Carlos Martínez",
     classes: [
       {
-        id: 1,
+        id: 101,
         name: "Salsa Básica",
         type: "Salsa",
         modality: "Presencial",
-        schedule: "Lunes y miércoles · 5:00 PM",
+        schedule: "Lunes y miércoles · 6:00 PM",
+        duration: "1 hora",
         price: "$80.000",
         available: 8,
       },
       {
-        id: 2,
+        id: 102,
         name: "Bachata Inicial",
         type: "Bachata",
         modality: "Presencial",
-        schedule: "Martes y jueves · 6:00 PM",
+        schedule: "Martes y jueves · 5:00 PM",
+        duration: "1 hora",
         price: "$75.000",
         available: 5,
       },
       {
-        id: 3,
+        id: 103,
         name: "Danza Urbana",
         type: "Danza urbana",
         modality: "Virtual",
         schedule: "Sábados · 10:00 AM",
+        duration: "1 hora",
         price: "$60.000",
         available: 12,
       },
     ],
   };
 
-  const handleViewClass = (classId) => {
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/registro");
+  };
+
+  const handleClassDetail = (classId) => {
     navigate(`/clases/${classId}`);
   };
 
   return (
     <div className="academy-detail-page">
-      {/* Botón volver */}
-      <div className="academy-detail-top">
+      {/* HEADER */}
+
+      <header className="academy-detail-header">
+        <div className="academy-detail-header-container">
+          <button
+            type="button"
+            className="academy-detail-logo"
+            onClick={() => navigate("/")}
+          >
+            <span className="academy-detail-logo-icon">♫</span>
+
+            <span>
+              Danzas<span>.app</span>
+            </span>
+          </button>
+
+          <nav className="academy-detail-nav">
+            <button type="button" onClick={() => navigate("/")}>
+              Inicio
+            </button>
+
+            <button
+              type="button"
+              className="active"
+              onClick={() => navigate("/academias")}
+            >
+              Academias
+            </button>
+
+            <button type="button" onClick={() => navigate("/clases")}>
+              Clases
+            </button>
+          </nav>
+
+          <div className="academy-detail-actions">
+            <button
+              type="button"
+              className="academy-detail-login"
+              onClick={handleLogin}
+            >
+              Iniciar sesión
+            </button>
+
+            <button
+              type="button"
+              className="academy-detail-register"
+              onClick={handleRegister}
+            >
+              Registrarse
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* CONTENIDO */}
+
+      <main className="academy-detail-content">
+        {/* VOLVER */}
+
         <button
           type="button"
           className="academy-detail-back"
@@ -62,71 +136,112 @@ function AcademyDetail() {
         >
           ← Volver a academias
         </button>
-      </div>
 
-      {/* Información principal */}
-      <section className="academy-detail-hero">
-        <div className="academy-detail-hero-image">
-          <img src={academy.image} alt={academy.name} />
-        </div>
+        {/* PRESENTACIÓN */}
 
-        <div className="academy-detail-hero-content">
-          <span className="academy-detail-tag">ACADEMIA DE DANZA</span>
+        <section className="academy-detail-hero">
+          <div className="academy-detail-hero-icon">♫</div>
 
-          <h1>{academy.name}</h1>
+          <div className="academy-detail-hero-info">
+            <span className="academy-detail-eyebrow">ACADEMIA DE DANZA</span>
 
-          <div className="academy-detail-location">
-            <span>📍</span>
-            <span>{academy.city}, Colombia</span>
-          </div>
+            <h1>{academy.name}</h1>
 
-          <p>{academy.description}</p>
-
-          <div className="academy-detail-stats">
-            <div className="academy-detail-stat">
-              <strong>{academy.classes.length}</strong>
-              <span>Clases disponibles</span>
+            <div className="academy-detail-location">
+              <span>📍</span>
+              {academy.city}
             </div>
 
-            <div className="academy-detail-stat">
-              <strong>2</strong>
-              <span>Modalidades</span>
+            <p>{academy.description}</p>
+
+            <div className="academy-detail-tags">
+              {academy.danceTypes.map((dance) => (
+                <span key={dance}>{dance}</span>
+              ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contenido */}
-      <main className="academy-detail-container">
-        {/* Sobre la academia */}
-        <section className="academy-detail-about">
-          <div>
-            <span className="academy-detail-section-label">
-              CONOCE LA ACADEMIA
-            </span>
-
-            <h2>Sobre {academy.name}</h2>
-
-            <p>
-              Encuentra diferentes opciones de clases de danza disponibles en
-              esta academia. Puedes consultar la información de cada clase antes
-              de decidir cuál se adapta mejor a lo que estás buscando.
-            </p>
           </div>
         </section>
 
-        {/* Clases */}
-        <section className="academy-detail-classes">
-          <div className="academy-detail-section-header">
-            <div>
-              <span className="academy-detail-section-label">
-                CLASES DISPONIBLES
-              </span>
+        {/* INFORMACIÓN */}
 
-              <h2>Explora las clases</h2>
+        <section className="academy-detail-info-section">
+          <div className="academy-detail-info-card">
+            <div className="academy-detail-section-title">
+              <div className="academy-detail-section-icon">⌂</div>
+
+              <div>
+                <h2>Información de la academia</h2>
+                <p>Conoce los datos principales de la academia.</p>
+              </div>
+            </div>
+
+            <div className="academy-detail-info-grid">
+              <div className="academy-detail-info-item">
+                <span>Dirección</span>
+                <strong>{academy.address}</strong>
+              </div>
+
+              <div className="academy-detail-info-item">
+                <span>Ciudad</span>
+                <strong>{academy.city}</strong>
+              </div>
+
+              <div className="academy-detail-info-item">
+                <span>Teléfono</span>
+                <strong>{academy.phone}</strong>
+              </div>
+
+              <div className="academy-detail-info-item">
+                <span>Correo electrónico</span>
+                <strong>{academy.email}</strong>
+              </div>
+
+              <div className="academy-detail-info-item">
+                <span>Instructor</span>
+                <strong>{academy.instructor}</strong>
+              </div>
+
+              <div className="academy-detail-info-item">
+                <span>Clases disponibles</span>
+                <strong>{academy.classes.length}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* TIPOS DE BAILE */}
+
+          <div className="academy-detail-dance-card">
+            <div className="academy-detail-section-title">
+              <div className="academy-detail-section-icon">♫</div>
+
+              <div>
+                <h2>Tipos de baile</h2>
+                <p>Estilos disponibles en esta academia.</p>
+              </div>
+            </div>
+
+            <div className="academy-detail-dance-list">
+              {academy.danceTypes.map((dance) => (
+                <div className="academy-detail-dance-item" key={dance}>
+                  <span>✓</span>
+                  {dance}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CLASES */}
+
+        <section className="academy-detail-classes">
+          <div className="academy-detail-classes-header">
+            <div>
+              <span className="academy-detail-eyebrow">CLASES DISPONIBLES</span>
+
+              <h2>Encuentra una clase para ti</h2>
 
               <p>
-                Conoce los horarios, modalidades, precios y cupos disponibles.
+                Consulta los horarios, modalidad, precios y cupos disponibles.
               </p>
             </div>
 
@@ -136,87 +251,132 @@ function AcademyDetail() {
           </div>
 
           <div className="academy-detail-class-list">
-            {academy.classes.map((classItem) => (
-              <article className="academy-detail-class-card" key={classItem.id}>
+            {academy.classes.map((danceClass) => (
+              <article
+                className="academy-detail-class-card"
+                key={danceClass.id}
+              >
                 <div className="academy-detail-class-icon">♫</div>
 
                 <div className="academy-detail-class-main">
                   <div className="academy-detail-class-title">
-                    <h3>{classItem.name}</h3>
+                    <div>
+                      <h3>{danceClass.name}</h3>
 
-                    <span className="academy-detail-type">
-                      {classItem.type}
+                      <span>{danceClass.type}</span>
+                    </div>
+
+                    <span className="academy-detail-modality">
+                      {danceClass.modality}
                     </span>
                   </div>
 
                   <div className="academy-detail-class-data">
-                    <span>
-                      <strong>Modalidad</strong>
-                      {classItem.modality}
-                    </span>
+                    <div>
+                      <span>Horario</span>
+                      <strong>{danceClass.schedule}</strong>
+                    </div>
 
-                    <span>
-                      <strong>Horario</strong>
-                      {classItem.schedule}
-                    </span>
+                    <div>
+                      <span>Duración</span>
+                      <strong>{danceClass.duration}</strong>
+                    </div>
 
-                    <span>
-                      <strong>Cupos</strong>
-                      {classItem.available} disponibles
-                    </span>
+                    <div>
+                      <span>Cupos</span>
+                      <strong>{danceClass.available} disponibles</strong>
+                    </div>
+
+                    <div>
+                      <span>Precio</span>
+                      <strong className="academy-detail-price">
+                        {danceClass.price}
+                      </strong>
+                    </div>
                   </div>
                 </div>
 
-                <div className="academy-detail-class-action">
-                  <strong>{classItem.price}</strong>
-
-                  <span>por clase</span>
-
-                  <button
-                    type="button"
-                    onClick={() => handleViewClass(classItem.id)}
-                  >
-                    Ver clase →
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="academy-detail-class-button"
+                  onClick={() => handleClassDetail(danceClass.id)}
+                >
+                  Ver clase
+                </button>
               </article>
             ))}
           </div>
         </section>
 
-        {/* Información para invitado */}
-        <section className="academy-detail-notice">
-          <div className="academy-detail-notice-icon">ℹ</div>
+        {/* AVISO PARA INVITADOS */}
 
-          <div>
-            <h3>¿Quieres inscribirte?</h3>
+        <section className="academy-detail-login-notice">
+          <div className="academy-detail-notice-icon">♫</div>
+
+          <div className="academy-detail-notice-text">
+            <h2>¿Quieres inscribirte en una clase?</h2>
 
             <p>
-              Puedes consultar las clases como invitado. Para realizar una
-              inscripción y efectuar el pago debes iniciar sesión o crear una
-              cuenta.
+              Inicia sesión o crea una cuenta para continuar con tu inscripción
+              y pago.
             </p>
+          </div>
 
-            <div className="academy-detail-notice-actions">
-              <button
-                type="button"
-                className="academy-detail-login-button"
-                onClick={() => navigate("/login")}
-              >
-                Iniciar sesión
-              </button>
+          <div className="academy-detail-notice-actions">
+            <button
+              type="button"
+              className="academy-detail-notice-login"
+              onClick={handleLogin}
+            >
+              Iniciar sesión
+            </button>
 
-              <button
-                type="button"
-                className="academy-detail-register-button"
-                onClick={() => navigate("/registro")}
-              >
-                Crear cuenta
-              </button>
-            </div>
+            <button
+              type="button"
+              className="academy-detail-notice-register"
+              onClick={handleRegister}
+            >
+              Crear cuenta
+            </button>
           </div>
         </section>
       </main>
+
+      {/* FOOTER */}
+
+      <footer className="academy-detail-footer">
+        <div className="academy-detail-footer-container">
+          <div className="academy-detail-footer-brand">
+            <strong>
+              Danzas<span>.app</span>
+            </strong>
+
+            <p>Conectando personas con la danza.</p>
+          </div>
+
+          <div className="academy-detail-footer-links">
+            <button type="button" onClick={() => navigate("/")}>
+              Inicio
+            </button>
+
+            <button type="button" onClick={() => navigate("/academias")}>
+              Academias
+            </button>
+
+            <button type="button" onClick={() => navigate("/clases")}>
+              Clases
+            </button>
+
+            <button type="button" onClick={handleLogin}>
+              Iniciar sesión
+            </button>
+          </div>
+        </div>
+
+        <div className="academy-detail-footer-bottom">
+          © 2026 Danzas.app. Todos los derechos reservados.
+        </div>
+      </footer>
     </div>
   );
 }

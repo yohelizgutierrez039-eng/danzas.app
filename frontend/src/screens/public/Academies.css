@@ -1,3 +1,7 @@
+/* =========================================================
+   PÁGINA DE ACADEMIAS - DANZAS.APP
+   ========================================================= */
+
 .academies-page {
   width: 100%;
   min-height: 100vh;
@@ -5,218 +9,429 @@
   color: #302a3a;
 }
 
-/* =========================
+/* =========================================================
    HEADER
-========================= */
+   ========================================================= */
 
 .academies-header {
   width: 100%;
-  padding: 65px 30px;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #6d35c5, #8b55d9);
+  background: #ffffff;
+  border-bottom: 1px solid #eeeaf2;
 }
 
-.academies-header-content {
+.academies-header-container {
   width: 100%;
   max-width: 1180px;
+  min-height: 68px;
   margin: 0 auto;
-  text-align: center;
-}
+  padding: 0 30px;
 
-.academies-tag {
-  display: inline-block;
-  margin-bottom: 12px;
-  padding: 7px 14px;
-
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.academies-header h1 {
-  margin: 0 0 14px;
-
-  color: #ffffff;
-
-  font-size: 38px;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.academies-header p {
-  max-width: 650px;
-  margin: 0 auto;
-
-  color: rgba(255, 255, 255, 0.9);
-
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-/* =========================
-   CONTENEDOR
-========================= */
-
-.academies-container {
-  width: 100%;
-  max-width: 1180px;
-
-  margin: 0 auto;
-  padding: 35px 30px 60px;
-
-  box-sizing: border-box;
-}
-
-/* =========================
-   BUSCADOR
-========================= */
-
-.academies-search {
   display: flex;
-  align-items: flex-end;
-  gap: 18px;
-
-  margin-bottom: 35px;
-  padding: 22px;
-
-  background: #ffffff;
-  border: 1px solid #eeeaf2;
-  border-radius: 14px;
-
-  box-shadow: 0 4px 18px rgba(48, 42, 58, 0.05);
-}
-
-.academies-search-box {
-  position: relative;
-  flex: 1;
-}
-
-.academies-search-icon {
-  position: absolute;
-  top: 50%;
-  left: 15px;
-
-  transform: translateY(-50%);
-
-  color: #8a8194;
-  font-size: 23px;
-}
-
-.academies-search-box input {
-  width: 100%;
-  height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
 
   box-sizing: border-box;
+}
 
-  padding: 0 15px 0 45px;
+/* LOGO */
 
-  border: 1px solid #ddd7e5;
-  border-radius: 9px;
+.academies-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  outline: none;
+  padding: 0;
+  border: none;
+  background: transparent;
 
   color: #302a3a;
-  background: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
 
-  font-size: 14px;
-}
-
-.academies-search-box input:focus {
-  border-color: #6d35c5;
-  box-shadow: 0 0 0 3px rgba(109, 53, 197, 0.1);
-}
-
-.academies-filter {
-  width: 230px;
-}
-
-.academies-filter label {
-  display: block;
-  margin-bottom: 7px;
-
-  color: #51495b;
-
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.academies-filter select {
-  width: 100%;
-  height: 48px;
-
-  padding: 0 14px;
-
-  border: 1px solid #ddd7e5;
-  border-radius: 9px;
-
-  background: #ffffff;
-  color: #302a3a;
-
-  outline: none;
-
-  font-size: 14px;
   cursor: pointer;
 }
 
-.academies-filter select:focus {
-  border-color: #6d35c5;
+.academies-logo span:last-child {
+  letter-spacing: -0.4px;
 }
 
-/* =========================
-   RESULTADOS
-========================= */
-
-.academies-results-header {
-  margin-bottom: 22px;
+.academies-logo span:last-child span {
+  color: #6d35c5;
 }
 
-.academies-results-header h2 {
-  margin: 0 0 5px;
+.academies-logo-icon {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+  background: #6d35c5;
+  color: #ffffff;
+
+  font-size: 16px;
+}
+
+/* NAVEGACIÓN */
+
+.academies-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.academies-header-nav button {
+  padding: 7px 0;
+
+  border: none;
+  background: transparent;
+
+  color: #756d80;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.academies-header-nav button:hover {
+  color: #6d35c5;
+}
+
+.academies-header-nav button.active {
+  color: #6d35c5;
+  font-weight: 800;
+}
+
+/* ACCIONES */
+
+.academies-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.academies-login,
+.academies-register {
+  padding: 9px 14px;
+
+  border-radius: 6px;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.academies-login {
+  border: 1px solid #ddd5e6;
+  background: #ffffff;
+  color: #6d35c5;
+}
+
+.academies-login:hover {
+  background: #f5f0fa;
+}
+
+.academies-register {
+  border: none;
+  background: #6d35c5;
+  color: #ffffff;
+}
+
+.academies-register:hover {
+  background: #5928a9;
+}
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.academies-content {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: 35px 30px 55px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.academies-hero {
+  min-height: 205px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 35px 42px;
+  margin-bottom: 25px;
+
+  box-sizing: border-box;
+
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, #f0eaf8 0%, #f7f3fb 55%, #ffffff 100%);
+
+  border: 1px solid #e9e2f0;
+  overflow: hidden;
+}
+
+.academies-hero-text {
+  max-width: 650px;
+}
+
+.academies-eyebrow {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #6d35c5;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.academies-hero h1 {
+  margin: 0 0 10px;
 
   color: #302a3a;
-
-  font-size: 24px;
-  font-weight: 750;
+  font-size: 31px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.6px;
 }
 
-.academies-results-header p {
+.academies-hero h1 strong {
+  color: #6d35c5;
+}
+
+.academies-hero p {
+  max-width: 570px;
+
   margin: 0;
 
   color: #81798f;
-
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
-/* =========================
-   GRID
-========================= */
+.academies-hero-icon {
+  width: 105px;
+  height: 105px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 20px;
+
+  border-radius: 50%;
+
+  background: #6d35c5;
+  color: #ffffff;
+
+  font-size: 47px;
+
+  box-shadow: 0 12px 30px rgba(109, 53, 197, 0.18);
+}
+
+/* =========================================================
+   FILTROS
+   ========================================================= */
+
+.academies-filters {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+
+  padding: 17px;
+
+  margin-bottom: 32px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+  border: 1px solid #eeeaf2;
+  border-radius: 11px;
+
+  box-shadow: 0 4px 16px rgba(48, 42, 58, 0.035);
+}
+
+.academies-search {
+  min-width: 245px;
+  flex: 1;
+
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e3dfe7;
+  border-radius: 7px;
+
+  background: #ffffff;
+}
+
+.academies-search:focus-within {
+  border-color: #6d35c5;
+  box-shadow: 0 0 0 2px #f0eaf8;
+}
+
+.academies-search span {
+  color: #99919f;
+  font-size: 17px;
+}
+
+.academies-search input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #302a3a;
+  font-family: inherit;
+  font-size: 10px;
+}
+
+.academies-search input::placeholder {
+  color: #aaa3b0;
+}
+
+/* SELECT */
+
+.academies-filter-select {
+  width: 175px;
+}
+
+.academies-filter-select .select-group {
+  margin: 0;
+}
+
+.academies-filter-select label {
+  font-size: 9px;
+}
+
+.academies-filter-select select {
+  height: 42px;
+  font-size: 10px;
+}
+
+/* BOTÓN LIMPIAR */
+
+.academies-clear {
+  height: 42px;
+
+  padding: 0 13px;
+
+  border: 1px solid #ddd5e6;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #6d35c5;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.academies-clear:hover {
+  background: #f5f0fa;
+}
+
+/* =========================================================
+   RESULTADOS
+   ========================================================= */
+
+.academies-results {
+  width: 100%;
+}
+
+.academies-results-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.academies-results-eyebrow {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #6d35c5;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+}
+
+.academies-results-header h2 {
+  margin: 0;
+
+  color: #302a3a;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.academies-results-count {
+  padding: 6px 10px;
+
+  border-radius: 20px;
+
+  background: #f0eaf8;
+  color: #6d35c5;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   GRID DE ACADEMIAS
+   ========================================================= */
 
 .academies-grid {
   display: grid;
 
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, 1fr);
 
-  gap: 24px;
+  gap: 17px;
 }
 
-/* =========================
-   CARD
-========================= */
+/* =========================================================
+   TARJETA DE ACADEMIA
+   ========================================================= */
 
 .academy-card {
-  overflow: hidden;
+  min-width: 0;
 
   background: #ffffff;
 
   border: 1px solid #eeeaf2;
-  border-radius: 15px;
+  border-radius: 11px;
 
-  box-shadow: 0 5px 20px rgba(48, 42, 58, 0.06);
+  overflow: hidden;
+
+  box-shadow: 0 4px 18px rgba(48, 42, 58, 0.035);
 
   transition:
     transform 0.2s ease,
@@ -224,254 +439,500 @@
 }
 
 .academy-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 
-  box-shadow: 0 10px 28px rgba(48, 42, 58, 0.11);
+  box-shadow: 0 10px 25px rgba(48, 42, 58, 0.08);
 }
 
-.academy-card-image {
+/* PORTADA */
+
+.academy-card-cover {
+  height: 125px;
+
   position: relative;
-
-  width: 100%;
-  height: 190px;
-
-  overflow: hidden;
-}
-
-.academy-card-image img {
-  width: 100%;
-  height: 100%;
-
-  display: block;
-
-  object-fit: cover;
-
-  transition: transform 0.3s ease;
-}
-
-.academy-card:hover .academy-card-image img {
-  transform: scale(1.04);
-}
-
-.academy-card-city {
-  position: absolute;
-
-  left: 13px;
-  bottom: 13px;
-
-  padding: 7px 10px;
-
-  border-radius: 7px;
-
-  background: rgba(48, 42, 58, 0.82);
-
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.academy-card-content {
-  padding: 21px;
-}
-
-.academy-card-content h3 {
-  margin: 0 0 9px;
-
-  color: #302a3a;
-
-  font-size: 19px;
-  font-weight: 750;
-}
-
-.academy-card-content p {
-  min-height: 66px;
-
-  margin: 0 0 16px;
-
-  color: #81798f;
-
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.academy-card-info {
-  padding: 11px 0;
-
-  border-top: 1px solid #eeeaf2;
-  border-bottom: 1px solid #eeeaf2;
-
-  color: #6f6878;
-
-  font-size: 12px;
-}
-
-.academy-card-info strong {
-  color: #6d35c5;
-  font-size: 15px;
-}
-
-.academy-card-button {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-top: 17px;
-  padding: 12px 15px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: #6d35c5;
-  color: #ffffff;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition: background 0.2s ease;
-}
-
-.academy-card-button:hover {
-  background: #5928a9;
-}
-
-.academy-card-button span {
-  font-size: 17px;
-}
-
-/* =========================
-   ESTADO VACÍO
-========================= */
-
-.academies-empty {
-  padding: 70px 25px;
-
-  text-align: center;
-
-  background: #ffffff;
-
-  border: 1px solid #eeeaf2;
-  border-radius: 14px;
-}
-
-.academies-empty-icon {
-  width: 55px;
-  height: 55px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #6d35c5, #8554d3);
+}
+
+.academy-card-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   border-radius: 50%;
 
-  background: #f0eaf8;
+  background: rgba(255, 255, 255, 0.18);
 
-  color: #6d35c5;
+  color: #ffffff;
 
   font-size: 27px;
+
+  border: 1px solid rgba(255, 255, 255, 0.28);
 }
 
-.academies-empty h3 {
-  margin: 0 0 8px;
+.academy-card-location {
+  position: absolute;
+
+  left: 11px;
+  bottom: 10px;
+
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  background: rgba(255, 255, 255, 0.94);
+
+  color: #51495b;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* CUERPO */
+
+.academy-card-body {
+  padding: 17px;
+}
+
+.academy-card-body h3 {
+  margin: 0 0 5px;
 
   color: #302a3a;
 
-  font-size: 19px;
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.academies-empty p {
-  margin: 0 auto 20px;
+.academy-card-address {
+  margin: 0 0 9px;
 
-  max-width: 400px;
+  color: #99919f;
+
+  font-size: 9px;
+}
+
+.academy-card-description {
+  min-height: 39px;
+
+  margin: 0 0 13px;
 
   color: #81798f;
 
-  font-size: 13px;
+  font-size: 9px;
   line-height: 1.5;
 }
 
-.academies-empty button {
-  padding: 10px 18px;
+/* ETIQUETAS */
+
+.academy-card-tags {
+  min-height: 25px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  margin-bottom: 15px;
+}
+
+.academy-card-tags span {
+  padding: 5px 7px;
+
+  border-radius: 5px;
+
+  background: #f0eaf8;
+  color: #6d35c5;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* FOOTER DE TARJETA */
+
+.academy-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-top: 12px;
+
+  border-top: 1px solid #f0edf2;
+}
+
+.academy-card-footer > span {
+  color: #99919f;
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.academy-card-footer button {
+  padding: 0;
 
   border: none;
-  border-radius: 8px;
+  background: transparent;
 
-  background: #6d35c5;
-  color: #ffffff;
+  color: #6d35c5;
 
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 9px;
+  font-weight: 800;
 
   cursor: pointer;
 }
 
-.academies-empty button:hover {
-  background: #5928a9;
+.academy-card-footer button:hover {
+  color: #5928a9;
+  text-decoration: underline;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* =========================================================
+   FOOTER
+   ========================================================= */
 
-@media (max-width: 950px) {
+.academies-footer {
+  width: 100%;
+
+  background: #302a3a;
+  color: #ffffff;
+}
+
+.academies-footer-container {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+
+  box-sizing: border-box;
+}
+
+.academies-footer-brand strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.academies-footer-brand strong span {
+  color: #b995ec;
+}
+
+.academies-footer-brand p {
+  margin: 0;
+
+  color: #aaa3b0;
+
+  font-size: 9px;
+}
+
+.academies-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.academies-footer-links button {
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #c9c3cf;
+
+  font-size: 9px;
+
+  cursor: pointer;
+}
+
+.academies-footer-links button:hover {
+  color: #ffffff;
+}
+
+.academies-footer-bottom {
+  width: 100%;
+
+  padding: 13px 30px;
+
+  box-sizing: border-box;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  text-align: center;
+
+  color: #8e8795;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .academies-header-container {
+    padding: 0 22px;
+  }
+
+  .academies-content {
+    padding: 28px 22px 45px;
+  }
+
   .academies-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .academies-header h1 {
-    font-size: 32px;
-  }
-}
-
-@media (max-width: 700px) {
-  .academies-header {
-    padding: 50px 20px;
-  }
-
-  .academies-header h1 {
-    font-size: 28px;
-  }
-
-  .academies-header p {
-    font-size: 14px;
-  }
-
-  .academies-container {
-    padding: 25px 20px 45px;
+  .academies-filters {
+    flex-wrap: wrap;
   }
 
   .academies-search {
-    flex-direction: column;
-    align-items: stretch;
-
-    padding: 17px;
+    flex-basis: 100%;
   }
 
-  .academies-filter {
-    width: 100%;
-  }
-
-  .academies-grid {
-    grid-template-columns: 1fr;
+  .academies-filter-select {
+    flex: 1;
+    width: auto;
   }
 }
 
-@media (max-width: 450px) {
-  .academies-header h1 {
-    font-size: 24px;
+/* =========================================================
+   RESPONSIVE - TABLET PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 750px) {
+  .academies-header-container {
+    min-height: auto;
+
+    padding-top: 15px;
+    padding-bottom: 15px;
+
+    flex-wrap: wrap;
+  }
+
+  .academies-header-nav {
+    order: 3;
+
+    width: 100%;
+
+    justify-content: center;
+
+    padding-top: 8px;
+
+    border-top: 1px solid #f0edf2;
+  }
+
+  .academies-hero {
+    min-height: 190px;
+
+    padding: 30px;
+  }
+
+  .academies-hero-icon {
+    width: 80px;
+    height: 80px;
+
+    margin-right: 0;
+
+    font-size: 35px;
+  }
+
+  .academies-hero h1 {
+    font-size: 26px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - MÓVIL
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .academies-header-container {
+    padding: 14px 16px;
+  }
+
+  .academies-logo {
+    font-size: 17px;
+  }
+
+  .academies-logo-icon {
+    width: 28px;
+    height: 28px;
+
+    font-size: 14px;
+  }
+
+  .academies-header-actions {
+    gap: 5px;
+  }
+
+  .academies-login,
+  .academies-register {
+    padding: 8px 9px;
+
+    font-size: 8px;
+  }
+
+  .academies-header-nav {
+    gap: 20px;
+  }
+
+  .academies-header-nav button {
+    font-size: 9px;
+  }
+
+  /* CONTENIDO */
+
+  .academies-content {
+    padding: 20px 15px 35px;
+  }
+
+  /* HERO */
+
+  .academies-hero {
+    min-height: auto;
+
+    align-items: flex-start;
+
+    padding: 25px 20px;
+
+    margin-bottom: 18px;
+  }
+
+  .academies-hero-text {
+    max-width: 100%;
+  }
+
+  .academies-eyebrow {
+    font-size: 8px;
+  }
+
+  .academies-hero h1 {
+    font-size: 23px;
+  }
+
+  .academies-hero p {
+    font-size: 10px;
+  }
+
+  .academies-hero-icon {
+    display: none;
+  }
+
+  /* FILTROS */
+
+  .academies-filters {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 10px;
+
+    padding: 13px;
+
+    margin-bottom: 25px;
+  }
+
+  .academies-search {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+
+  .academies-filter-select {
+    width: 100%;
+    flex: none;
+  }
+
+  .academies-clear {
+    width: 100%;
+  }
+
+  /* RESULTADOS */
+
+  .academies-results-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
   }
 
   .academies-results-header h2 {
+    font-size: 17px;
+  }
+
+  /* TARJETAS */
+
+  .academies-grid {
+    grid-template-columns: 1fr;
+
+    gap: 13px;
+  }
+
+  .academy-card-cover {
+    height: 115px;
+  }
+
+  .academy-card-body {
+    padding: 15px;
+  }
+
+  /* FOOTER */
+
+  .academies-footer-container {
+    align-items: flex-start;
+    flex-direction: column;
+
+    padding: 25px 20px;
+
+    gap: 20px;
+  }
+
+  .academies-footer-links {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .academies-footer-bottom {
+    padding: 12px 15px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - MÓVIL PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 400px) {
+  .academies-header-actions {
+    width: 100%;
+  }
+
+  .academies-login,
+  .academies-register {
+    flex: 1;
+  }
+
+  .academies-header-nav {
+    gap: 15px;
+  }
+
+  .academies-hero h1 {
     font-size: 21px;
   }
 
-  .academy-card-image {
-    height: 180px;
+  .academy-card-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
 }
