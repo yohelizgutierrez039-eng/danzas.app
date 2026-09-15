@@ -1,0 +1,22 @@
+.public-routes {
+  width: 100%;
+  min-height: 100vh;
+
+  box-sizing: border-box;
+
+  background: #f8f7fa;
+}
+
+/* Contenedor general de las rutas públicas */
+
+.public-routes > * {
+  width: 100%;
+}
+
+/* Evita problemas de tamaño en pantallas pequeñas */
+
+@media (max-width: 768px) {
+  .public-routes {
+    min-height: 100vh;
+  }
+}

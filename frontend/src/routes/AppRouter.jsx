@@ -10,15 +10,15 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-       <Route path="/" element={<Home />} />
- {/* 
+        <Route path="/" element={<Home />} />
+
         <Route path="/clases" element={<Clases />} />
 
         <Route path="/academias" element={<Academias />} />
 
         <Route path="/login" element={<Login />} />
 
-        <Route path="/registro" element={<Registro />} /> */}
+        <Route path="/registro" element={<Registro />} />
       </Routes>
     </BrowserRouter>
   );

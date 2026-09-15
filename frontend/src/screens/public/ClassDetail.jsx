@@ -1,294 +1,512 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import Modal from "../../../components/Modal/Modal";
-import Loading from "../../../components/Loading/Loading";
-import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
+import { useNavigate, useParams } from "react-router-dom";
+import Modal from "../../components/Modal/Modal";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import "./ClassDetail.css";
 
 function ClassDetail() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [loading] = useState(false);
-  const [error, setError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  // Datos temporales. Posteriormente vendrán del backend.
+  /*
+    Datos de demostración.
+    Posteriormente serán reemplazados por la información
+    obtenida desde el backend utilizando el id de la URL.
+  */
   const danceClass = {
-    id,
+    id: id || 1,
+
     name: "Salsa Básica",
+
     type: "Salsa",
-    modality: "Presencial",
+
     city: "Barranquilla",
+
+    modality: "Presencial",
+
+    schedule: "Lunes y miércoles · 6:00 PM",
+
+    duration: "1 hora",
+
+    price: "$80.000",
+
+    available: 8,
+
+    capacity: 15,
+
     academy: "Academia Ritmo Caribe",
-    academyId: 1,
-    instructor: "Carlos Rodríguez",
+
+    academyAddress: "Carrera 45 # 72-18",
+
+    instructor: "Carlos Martínez",
+
+    instructorEmail: "carlos.martinez@danzas.app",
+
+    instructorPhone: "300 456 7890",
+
     description:
-      "Aprende los pasos básicos de salsa y desarrolla tu ritmo, coordinación y confianza mientras disfrutas de la danza.",
-    schedule: "Lunes y miércoles",
-    time: "6:00 PM - 7:30 PM",
-    duration: "1 hora y 30 minutos",
-    startDate: "20 de septiembre de 2026",
-    capacity: 20,
-    availableSpots: 8,
-    price: 80000,
-    requirements: "No se requiere experiencia previa. Llevar ropa cómoda.",
+      "Clase diseñada para aprender los fundamentos de la salsa desde cero. Durante las sesiones se trabajan pasos básicos, ritmo, coordinación y movimientos fundamentales para desenvolverse con mayor seguridad en este estilo de baile.",
+
+    requirements: [
+      "No se requiere experiencia previa.",
+      "Ropa cómoda para realizar los movimientos.",
+      "Disponibilidad para asistir a los horarios establecidos.",
+    ],
+  };
+
+  /*
+    Para la versión conectada al backend:
+
+    POST /enrollments
+
+    Request:
+    {
+      classId: danceClass.id,
+      dependentId: null
+    }
+
+    Response:
+    {
+      enrollmentId: "...",
+      status: "pendiente_pago",
+      paymentUrl: "..."
+    }
+
+    Después se redirige a la pasarela de pago.
+  */
+
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    setShowLoginModal(false);
+    navigate("/registro");
   };
 
   const handleEnroll = () => {
-    const token = localStorage.getItem("token");
+    /*
+      Actualmente se muestra una confirmación
+      de demostración.
 
-    if (!token) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    setShowConfirmModal(true);
+      Posteriormente aquí se realizará:
+      POST /enrollments
+    */
+    setShowConfirm(true);
   };
 
-  const handleConfirmEnrollment = async () => {
-    try {
-      setError("");
+  const handleConfirmEnrollment = () => {
+    setShowConfirm(false);
 
-      /*
-       * Próxima conexión con el backend:
-       *
-       * const response = await api("/enrollments", {
-       *   method: "POST",
-       *   body: JSON.stringify({
-       *     class_id: danceClass.id,
-       *   }),
-       * });
-       *
-       * Después se utilizaría el paymentUrl
-       * proporcionado por el backend.
-       */
+    /*
+      Cuando el backend esté conectado:
 
-      setShowConfirmModal(false);
+      1. Crear inscripción.
+      2. Reservar temporalmente el cupo.
+      3. Recibir paymentUrl.
+      4. Redirigir al checkout.
 
-      navigate("/estudiante/inscripciones");
-    } catch (err) {
-      setError(err.message || "No fue posible realizar la inscripción.");
-    }
+      Ejemplo:
+
+      navigate(paymentUrl);
+    */
+
+    setShowLoginModal(true);
   };
-
-  if (loading) {
-    return <Loading text="Cargando clase..." />;
-  }
 
   return (
     <div className="class-detail-page">
-      <div className="class-detail-container">
-        <Link to="/clases" className="class-detail-back">
+      {/* =========================
+          HEADER
+      ========================= */}
+
+      <header className="class-detail-header">
+        <div className="class-detail-header-container">
+          <button
+            type="button"
+            className="class-detail-logo"
+            onClick={() => navigate("/")}
+          >
+            <span className="class-detail-logo-icon">♫</span>
+
+            <span>
+              Danzas<span>.app</span>
+            </span>
+          </button>
+
+          <nav className="class-detail-nav">
+            <button type="button" onClick={() => navigate("/")}>
+              Inicio
+            </button>
+
+            <button type="button" onClick={() => navigate("/academias")}>
+              Academias
+            </button>
+
+            <button
+              type="button"
+              className="active"
+              onClick={() => navigate("/clases")}
+            >
+              Clases
+            </button>
+          </nav>
+
+          <div className="class-detail-actions">
+            <button
+              type="button"
+              className="class-detail-login"
+              onClick={() => navigate("/login")}
+            >
+              Iniciar sesión
+            </button>
+
+            <button
+              type="button"
+              className="class-detail-register"
+              onClick={() => navigate("/registro")}
+            >
+              Registrarse
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* =========================
+          CONTENIDO
+      ========================= */}
+
+      <main className="class-detail-content">
+        {/* VOLVER */}
+
+        <button
+          type="button"
+          className="class-detail-back"
+          onClick={() => navigate("/clases")}
+        >
           ← Volver a clases
-        </Link>
+        </button>
 
-        {error && (
-          <ErrorMessage
-            message={error}
-            type="error"
-            onClose={() => setError("")}
-          />
-        )}
+        {/* =========================
+            PRESENTACIÓN
+        ========================= */}
 
-        <div className="class-detail-hero">
-          <div className="class-detail-hero-content">
-            <span className="class-detail-category">{danceClass.type}</span>
+        <section className="class-detail-hero">
+          <div className="class-detail-hero-icon">♫</div>
+
+          <div className="class-detail-hero-info">
+            <span className="class-detail-eyebrow">DETALLE DE LA CLASE</span>
 
             <h1>{danceClass.name}</h1>
 
-            <p className="class-detail-description">{danceClass.description}</p>
+            <div className="class-detail-hero-meta">
+              <span>♫ {danceClass.type}</span>
 
-            <div className="class-detail-academy">
-              <span>Academia</span>
+              <span>📍 {danceClass.city}</span>
 
-              <Link to={`/academias/${danceClass.academyId}`}>
-                {danceClass.academy}
-              </Link>
+              <span>{danceClass.modality}</span>
+            </div>
+
+            <p>{danceClass.description}</p>
+          </div>
+        </section>
+
+        {/* =========================
+            INFORMACIÓN PRINCIPAL
+        ========================= */}
+
+        <section className="class-detail-main-grid">
+          {/* INFORMACIÓN DE LA CLASE */}
+
+          <div className="class-detail-card">
+            <div className="class-detail-section-title">
+              <div className="class-detail-section-icon">◷</div>
+
+              <div>
+                <h2>Información de la clase</h2>
+
+                <p>Consulta los datos y horarios disponibles.</p>
+              </div>
+            </div>
+
+            <div className="class-detail-info-grid">
+              <div className="class-detail-info-item">
+                <span>Tipo de baile</span>
+
+                <strong>{danceClass.type}</strong>
+              </div>
+
+              <div className="class-detail-info-item">
+                <span>Modalidad</span>
+
+                <strong>{danceClass.modality}</strong>
+              </div>
+
+              <div className="class-detail-info-item">
+                <span>Ciudad</span>
+
+                <strong>{danceClass.city}</strong>
+              </div>
+
+              <div className="class-detail-info-item">
+                <span>Duración</span>
+
+                <strong>{danceClass.duration}</strong>
+              </div>
+
+              <div className="class-detail-info-item class-detail-info-wide">
+                <span>Horario</span>
+
+                <strong>{danceClass.schedule}</strong>
+              </div>
             </div>
           </div>
 
+          {/* PRECIO Y CUPO */}
+
           <div className="class-detail-price-card">
-            <span>Precio</span>
+            <span className="class-detail-price-label">PRECIO DE LA CLASE</span>
 
-            <strong>${danceClass.price.toLocaleString("es-CO")}</strong>
+            <strong className="class-detail-price">{danceClass.price}</strong>
 
-            <small>por inscripción</small>
+            <div className="class-detail-price-divider"></div>
+
+            <div className="class-detail-availability">
+              <span className="class-detail-availability-icon">✓</span>
+
+              <div>
+                <small>CUPOS DISPONIBLES</small>
+
+                <strong>{danceClass.available} cupos</strong>
+              </div>
+            </div>
 
             <button
               type="button"
               className="class-detail-enroll-button"
               onClick={handleEnroll}
-              disabled={danceClass.availableSpots <= 0}
+              disabled={danceClass.available <= 0}
             >
-              {danceClass.availableSpots > 0 ? "Inscribirme" : "Cupos agotados"}
+              {danceClass.available > 0
+                ? "Inscribirme"
+                : "Sin cupos disponibles"}
             </button>
 
-            <p className="class-detail-spots">
-              {danceClass.availableSpots} cupos disponibles
-            </p>
+            <small className="class-detail-payment-note">
+              El pago se realizará de forma segura después de crear la
+              inscripción.
+            </small>
           </div>
-        </div>
+        </section>
 
-        <div className="class-detail-grid">
-          <section className="class-detail-card">
-            <h2>Información de la clase</h2>
+        {/* =========================
+            INSTRUCTOR Y ACADEMIA
+        ========================= */}
 
-            <div className="class-detail-info-grid">
-              <div className="class-detail-info-item">
-                <span>📅 Horario</span>
-                <strong>{danceClass.schedule}</strong>
-                <p>{danceClass.time}</p>
-              </div>
+        <section className="class-detail-secondary-grid">
+          {/* INSTRUCTOR */}
 
-              <div className="class-detail-info-item">
-                <span>⏱ Duración</span>
-                <strong>{danceClass.duration}</strong>
-              </div>
+          <div className="class-detail-card">
+            <div className="class-detail-section-title">
+              <div className="class-detail-section-icon">♙</div>
 
-              <div className="class-detail-info-item">
-                <span>📍 Ciudad</span>
-                <strong>{danceClass.city}</strong>
-              </div>
+              <div>
+                <h2>Instructor</h2>
 
-              <div className="class-detail-info-item">
-                <span>🎭 Modalidad</span>
-                <strong>{danceClass.modality}</strong>
-              </div>
-
-              <div className="class-detail-info-item">
-                <span>📆 Inicio</span>
-                <strong>{danceClass.startDate}</strong>
-              </div>
-
-              <div className="class-detail-info-item">
-                <span>👥 Capacidad</span>
-                <strong>{danceClass.capacity} estudiantes</strong>
+                <p>Información del instructor de la clase.</p>
               </div>
             </div>
-          </section>
 
-          <section className="class-detail-card">
-            <h2>Instructor</h2>
-
-            <div className="class-detail-instructor">
-              <div className="class-detail-avatar">
+            <div className="class-detail-profile">
+              <div className="class-detail-profile-avatar">
                 {danceClass.instructor.charAt(0)}
               </div>
 
-              <div>
+              <div className="class-detail-profile-info">
                 <strong>{danceClass.instructor}</strong>
+
                 <span>Instructor de danza</span>
+
+                <small>{danceClass.instructorEmail}</small>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="class-detail-card">
-            <h2>Requisitos</h2>
+          {/* ACADEMIA */}
 
-            <p className="class-detail-requirements">
-              {danceClass.requirements}
+          <div className="class-detail-card">
+            <div className="class-detail-section-title">
+              <div className="class-detail-section-icon">⌂</div>
+
+              <div>
+                <h2>Academia</h2>
+
+                <p>Lugar donde se realiza la clase.</p>
+              </div>
+            </div>
+
+            <div className="class-detail-academy">
+              <strong>{danceClass.academy}</strong>
+
+              <span>📍 {danceClass.academyAddress}</span>
+
+              <span>{danceClass.city}</span>
+
+              <button type="button" onClick={() => navigate("/academias/1")}>
+                Ver academia →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================
+            REQUISITOS
+        ========================= */}
+
+        <section className="class-detail-requirements class-detail-card">
+          <div className="class-detail-section-title">
+            <div className="class-detail-section-icon">✓</div>
+
+            <div>
+              <h2>Antes de inscribirte</h2>
+
+              <p>Ten en cuenta estas recomendaciones.</p>
+            </div>
+          </div>
+
+          <div className="class-detail-requirements-list">
+            {danceClass.requirements.map((requirement, index) => (
+              <div className="class-detail-requirement" key={index}>
+                <span>✓</span>
+
+                <p>{requirement}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* =========================
+            AVISO DE INSCRIPCIÓN
+        ========================= */}
+
+        <section className="class-detail-notice">
+          <div className="class-detail-notice-icon">♫</div>
+
+          <div className="class-detail-notice-text">
+            <h2>¿Listo para comenzar?</h2>
+
+            <p>
+              Inscríbete en esta clase para reservar tu cupo y continuar con el
+              proceso de pago.
             </p>
-          </section>
-        </div>
-
-        <div className="class-detail-bottom-cta">
-          <div>
-            <span>¿Listo para comenzar?</span>
-            <h2>Reserva tu cupo en esta clase</h2>
           </div>
 
           <button
             type="button"
+            className="class-detail-notice-button"
             onClick={handleEnroll}
-            disabled={danceClass.availableSpots <= 0}
+            disabled={danceClass.available <= 0}
           >
             Inscribirme
           </button>
-        </div>
-      </div>
+        </section>
+      </main>
 
-      {/* Modal para visitantes no autenticados */}
-      <Modal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        title="Inicia sesión para inscribirte"
-        size="small"
-        footer={
-          <div className="class-detail-modal-actions">
-            <button
-              type="button"
-              className="class-detail-modal-secondary"
-              onClick={() => setShowLoginModal(false)}
-            >
-              Cancelar
+      {/* =========================
+          FOOTER
+      ========================= */}
+
+      <footer className="class-detail-footer">
+        <div className="class-detail-footer-container">
+          <div className="class-detail-footer-brand">
+            <strong>
+              Danzas<span>.app</span>
+            </strong>
+
+            <p>Conectando personas con la danza.</p>
+          </div>
+
+          <div className="class-detail-footer-links">
+            <button type="button" onClick={() => navigate("/")}>
+              Inicio
             </button>
 
-            <button
-              type="button"
-              className="class-detail-modal-primary"
-              onClick={() => navigate("/login")}
-            >
+            <button type="button" onClick={() => navigate("/academias")}>
+              Academias
+            </button>
+
+            <button type="button" onClick={() => navigate("/clases")}>
+              Clases
+            </button>
+
+            <button type="button" onClick={() => navigate("/login")}>
               Iniciar sesión
             </button>
           </div>
-        }
-      >
-        <p>
-          Para inscribirte en una clase necesitas tener una cuenta en
-          Danzas.app.
-        </p>
-
-        <p>
-          Si todavía no tienes una cuenta, puedes registrarte gratuitamente.
-        </p>
-
-        <Link
-          to="/registro"
-          className="class-detail-register-link"
-          onClick={() => setShowLoginModal(false)}
-        >
-          Crear una cuenta
-        </Link>
-      </Modal>
-
-      {/* Confirmación de inscripción */}
-      <Modal
-        isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        title="Confirmar inscripción"
-        size="small"
-        footer={
-          <div className="class-detail-modal-actions">
-            <button
-              type="button"
-              className="class-detail-modal-secondary"
-              onClick={() => setShowConfirmModal(false)}
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="button"
-              className="class-detail-modal-primary"
-              onClick={handleConfirmEnrollment}
-            >
-              Confirmar inscripción
-            </button>
-          </div>
-        }
-      >
-        <p>
-          Vas a inscribirte en <strong>{danceClass.name}</strong>.
-        </p>
-
-        <div className="class-detail-confirm-info">
-          <span>Precio</span>
-          <strong>${danceClass.price.toLocaleString("es-CO")}</strong>
         </div>
 
-        <p>Después de confirmar, continuarás con el proceso de pago.</p>
+        <div className="class-detail-footer-bottom">
+          © 2026 Danzas.app. Todos los derechos reservados.
+        </div>
+      </footer>
+
+      {/* =========================
+          CONFIRMACIÓN
+      ========================= */}
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmEnrollment}
+        title="¿Deseas inscribirte?"
+        message={`Vas a iniciar el proceso de inscripción para "${danceClass.name}". El cupo será reservado temporalmente mientras realizas el pago.`}
+        confirmText="Continuar"
+        cancelText="Cancelar"
+        type="info"
+      />
+
+      {/* =========================
+          LOGIN MODAL
+      ========================= */}
+
+      <Modal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        title="Inicia sesión para continuar"
+        size="small"
+      >
+        <div className="class-detail-login-modal">
+          <div className="class-detail-login-modal-icon">♫</div>
+
+          <h3>Necesitas una cuenta</h3>
+
+          <p>
+            Para inscribirte en una clase y realizar el pago debes iniciar
+            sesión o crear una cuenta en Danzas.app.
+          </p>
+
+          <div className="class-detail-login-modal-actions">
+            <button
+              type="button"
+              className="class-detail-modal-login"
+              onClick={handleLogin}
+            >
+              Iniciar sesión
+            </button>
+
+            <button
+              type="button"
+              className="class-detail-modal-register"
+              onClick={handleRegister}
+            >
+              Crear cuenta
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
