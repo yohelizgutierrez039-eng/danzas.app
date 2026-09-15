@@ -1,76 +1,127 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { login as loginService } from "../services/auth.service";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem("token");
+  });
 
-  /**
-   * Recuperar sesión existente al cargar la aplicación.
-   */
-  useEffect(() => {
-    const savedToken = localStorage.getItem("token");
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
 
-    if (savedToken) {
-      setToken(savedToken);
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
     }
+  });
 
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem("user");
-      }
-    }
-
-    setLoading(false);
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   /**
-   * Login.
-   *
-   * Se implementará en la próxima tarea.
+   * Iniciar sesión
    */
-  const login = async (datos) => {
-    // Próxima tarea:
-    // const respuesta = await loginService(datos);
-    // guardar token y usuario.
+  const login = async (credenciales) => {
+    setLoading(true);
+
+    try {
+      const data = await loginService(credenciales);
+
+      /*
+        Se espera que el backend responda algo parecido a:
+
+        {
+          token: "...",
+          user: {
+            id: 1,
+            nombre: "Usuario",
+            email: "correo@correo.com",
+            role: "student"
+          }
+        }
+      */
+
+      const newToken = data.token;
+      const newUser = data.user;
+
+      if (!newToken) {
+        throw new Error(
+          "El servidor no devolvió un token de autenticación."
+        );
+      }
+
+      // Guardar token
+      localStorage.setItem("token", newToken);
+
+      // Guardar usuario
+      if (newUser) {
+        localStorage.setItem("user", JSON.stringify(newUser));
+      }
+
+      // Actualizar estado
+      setToken(newToken);
+      setUser(newUser || null);
+
+      return data;
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
-   * Cerrar sesión.
+   * Cerrar sesión
    */
   const logout = () => {
-    setUser(null);
-    setToken(null);
-
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
+    setToken(null);
+    setUser(null);
   };
 
+  /**
+   * Mantener sincronizado el usuario con localStorage
+   */
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
+
+  const isAuthenticated = Boolean(token);
+
   const value = {
-    user,
     token,
+    user,
     loading,
-    isAuthenticated: !!token,
+    isAuthenticated,
     login,
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 /**
- * Hook para acceder al contexto de autenticación.
+ * Hook para utilizar el contexto de autenticación
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth debe utilizarse dentro de un AuthProvider");
+    throw new Error(
+      "useAuth debe utilizarse dentro de un AuthProvider."
+    );
   }
 
   return context;
