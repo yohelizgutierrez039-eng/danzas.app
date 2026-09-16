@@ -1,0 +1,48 @@
+/*
+  Breakpoints de referencia (RNF-006 del ERS: responsive de 360px a 1920px)
+  mobile:  hasta 639px
+  tablet:  640px – 1023px
+  desktop: 1024px en adelante
+*/
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .container {
+    padding: 0 var(--space-6);
+  }
+}
+
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hide-mobile {
+    display: initial;
+  }
+}
+
+.hide-desktop {
+  display: initial;
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none;
+  }
+}
