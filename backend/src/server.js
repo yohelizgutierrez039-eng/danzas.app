@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const usuariosRoutes = require("./routes/usuarios.routes");
 require("dotenv").config();
 
 const pool = require("./config/database");
+const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -33,11 +33,10 @@ app.get("/api/prueba-db", async (req, res) => {
     }
 });
 
-app.use("/api/usuarios", usuariosRoutes);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
-
