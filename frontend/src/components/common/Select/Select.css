@@ -27,14 +27,14 @@
 
   gap: 4px;
 
-  color: #25283d;
+  color: var(--color-text-body);
 
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .select-label__required {
-  color: #e11d48;
+  color: var(--color-danger);
 }
 
 
@@ -60,12 +60,12 @@
 
   padding-right: 42px;
 
-  color: #25283d;
+  color: var(--color-text-body);
 
-  background-color: #ffffff;
+  background-color: var(--color-bg);
 
-  border: 1px solid #dfe1e8;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
 
   font-family: inherit;
 
@@ -78,9 +78,9 @@
   -moz-appearance: none;
 
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
 }
 
 
@@ -124,7 +124,7 @@
    ========================= */
 
 .select:hover:not(:disabled) {
-  border-color: #c4b5fd;
+  border-color: var(--color-primary-light);
 }
 
 
@@ -133,11 +133,9 @@
    ========================= */
 
 .select:focus {
-  border-color: #7c3aed;
+  border-color: var(--color-primary);
 
-  box-shadow:
-    0 0 0 3px
-    rgba(124, 58, 237, 0.12);
+  box-shadow: var(--focus-ring-primary);
 }
 
 
@@ -153,20 +151,20 @@
 
   transform: translateY(-50%);
 
-  color: #8b8fa3;
+  color: var(--color-text-icon-muted);
 
   font-size: 10px;
 
   pointer-events: none;
 
   transition:
-    color 0.2s ease,
-    transform 0.2s ease;
+    color var(--transition-base),
+    transform var(--transition-base);
 }
 
 .select-container:focus-within
 .select-arrow {
-  color: #7c3aed;
+  color: var(--color-primary);
 }
 
 
@@ -175,15 +173,13 @@
    ========================= */
 
 .select--error {
-  border-color: #e11d48;
+  border-color: var(--color-danger);
 }
 
 .select--error:focus {
-  border-color: #e11d48;
+  border-color: var(--color-danger);
 
-  box-shadow:
-    0 0 0 3px
-    rgba(225, 29, 72, 0.1);
+  box-shadow: var(--focus-ring-danger);
 }
 
 
@@ -197,13 +193,13 @@
 }
 
 .select-message--helper {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .select-message--error {
-  color: #e11d48;
+  color: var(--color-danger);
 
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 
@@ -212,11 +208,11 @@
    ========================= */
 
 .select:disabled {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 
   background-color: #f3f4f6;
 
-  border-color: #e5e7eb;
+  border-color: var(--color-border);
 
   cursor: not-allowed;
 }

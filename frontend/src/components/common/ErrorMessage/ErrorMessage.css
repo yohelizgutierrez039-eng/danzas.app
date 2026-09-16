@@ -13,11 +13,11 @@
   gap: 11px;
 
   border: 1px solid;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
 
   font-family: inherit;
 
-  animation: error-message-show 0.2s ease;
+  animation: error-message-show var(--transition-base);
 }
 
 /* =========================================
@@ -36,7 +36,7 @@
   border-radius: 50%;
 
   font-size: 14px;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
 }
 
 /* =========================================
@@ -52,7 +52,7 @@
   margin: 0 0 3px;
 
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   line-height: 1.4;
 }
 
@@ -68,14 +68,14 @@
    ========================================= */
 
 .error-message-error {
-  border-color: #f0c4ca;
-  background: #fff3f4;
-  color: #b52f3d;
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
 }
 
 .error-message-error .error-message-icon {
-  background: #d04b58;
-  color: #ffffff;
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
 }
 
 /* =========================================
@@ -83,14 +83,14 @@
    ========================================= */
 
 .error-message-warning {
-  border-color: #f0d9a8;
-  background: #fff9ed;
-  color: #9a6815;
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .error-message-warning .error-message-icon {
-  background: #d99b2b;
-  color: #ffffff;
+  background: var(--color-warning);
+  color: var(--color-text-inverse);
 }
 
 /* =========================================
@@ -98,14 +98,14 @@
    ========================================= */
 
 .error-message-info {
-  border-color: #c9c1e8;
-  background: #f6f3fc;
-  color: #5c43a0;
+  border-color: var(--color-info-border);
+  background: var(--color-info-bg);
+  color: var(--color-info);
 }
 
 .error-message-info .error-message-icon {
-  background: #6d35c5;
-  color: #ffffff;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
 }
 
 /* =========================================
@@ -113,14 +113,14 @@
    ========================================= */
 
 .error-message-success {
-  border-color: #bfe2d0;
-  background: #f0faf4;
-  color: #197044;
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
 }
 
 .error-message-success .error-message-icon {
-  background: #198754;
-  color: #ffffff;
+  background: var(--color-success);
+  color: var(--color-text-inverse);
 }
 
 /* =========================================
@@ -149,8 +149,8 @@
   cursor: pointer;
 
   transition:
-    background-color 0.2s ease,
-    opacity 0.2s ease;
+    background-color var(--transition-base),
+    opacity var(--transition-base);
 }
 
 .error-message-close:hover {

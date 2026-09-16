@@ -8,20 +8,20 @@
   gap: 8px;
 
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 
   font-family: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   line-height: 1;
 
   cursor: pointer;
 
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-fast);
 }
 
 /* =========================
@@ -57,7 +57,7 @@
    ========================= */
 
 .button--primary {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
   background: linear-gradient(90deg, #6d28d9 0%, #9333ea 55%, #d946ef 100%);
 
@@ -75,19 +75,19 @@
    ========================= */
 
 .button--secondary {
-  color: #6d28d9;
+  color: var(--color-primary-dark);
 
-  background-color: #f3e8ff;
+  background-color: var(--color-primary-bg-strong);
 
-  border-color: #e9d5ff;
+  border-color: var(--color-primary-border);
 }
 
 .button--secondary:hover:not(:disabled) {
-  color: #5b21b6;
+  color: var(--color-primary-darker);
 
-  background-color: #ede9fe;
+  background-color: var(--color-primary-bg-strong);
 
-  border-color: #d8b4fe;
+  border-color: var(--color-primary-light);
 }
 
 /* =========================
@@ -95,17 +95,17 @@
    ========================= */
 
 .button--outline {
-  color: #6d28d9;
+  color: var(--color-primary-dark);
 
   background-color: transparent;
 
-  border-color: #6d28d9;
+  border-color: var(--color-primary-dark);
 }
 
 .button--outline:hover:not(:disabled) {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
-  background-color: #6d28d9;
+  background-color: var(--color-primary-dark);
 }
 
 /* =========================
@@ -113,17 +113,17 @@
    ========================= */
 
 .button--danger {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
-  background-color: #e11d48;
+  background-color: var(--color-danger);
 
-  border-color: #e11d48;
+  border-color: var(--color-danger);
 }
 
 .button--danger:hover:not(:disabled) {
-  background-color: #be123c;
+  background-color: var(--color-danger-dark);
 
-  border-color: #be123c;
+  border-color: var(--color-danger-dark);
 
   box-shadow: 0 5px 15px rgba(225, 29, 72, 0.2);
 }
@@ -133,17 +133,17 @@
    ========================= */
 
 .button--success {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
-  background-color: #16a34a;
+  background-color: var(--color-success);
 
-  border-color: #16a34a;
+  border-color: var(--color-success);
 }
 
 .button--success:hover:not(:disabled) {
-  background-color: #15803d;
+  background-color: var(--color-success-dark);
 
-  border-color: #15803d;
+  border-color: var(--color-success-dark);
 }
 
 /* =========================
@@ -151,17 +151,17 @@
    ========================= */
 
 .button--warning {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
-  background-color: #f97316;
+  background-color: var(--color-warning);
 
-  border-color: #f97316;
+  border-color: var(--color-warning);
 }
 
 .button--warning:hover:not(:disabled) {
-  background-color: #ea580c;
+  background-color: var(--color-warning-dark);
 
-  border-color: #ea580c;
+  border-color: var(--color-warning-dark);
 }
 
 /* =========================
@@ -169,7 +169,7 @@
    ========================= */
 
 .button--ghost {
-  color: #6d28d9;
+  color: var(--color-primary-dark);
 
   background-color: transparent;
 
@@ -177,7 +177,7 @@
 }
 
 .button--ghost:hover:not(:disabled) {
-  background-color: #f5f3ff;
+  background-color: var(--color-primary-bg);
 }
 
 /* =========================

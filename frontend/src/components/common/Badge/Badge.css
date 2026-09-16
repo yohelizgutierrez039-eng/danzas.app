@@ -7,7 +7,7 @@
 
   width: fit-content;
 
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   line-height: 1;
 
   border: 1px solid transparent;
@@ -42,7 +42,7 @@
    ========================= */
 
 .badge--rounded {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* =========================
@@ -50,7 +50,7 @@
    ========================= */
 
 .badge--default {
-  color: #5f6472;
+  color: var(--color-text-secondary);
 
   background-color: #f2f3f7;
 
@@ -64,11 +64,11 @@
    ========================= */
 
 .badge--primary {
-  color: #6d28d9;
+  color: var(--color-primary-dark);
 
-  background-color: #f3e8ff;
+  background-color: var(--color-primary-bg-strong);
 
-  border-color: #e9d5ff;
+  border-color: var(--color-primary-border);
 }
 
 /* =========================
@@ -76,11 +76,11 @@
    ========================= */
 
 .badge--info {
-  color: #0369a1;
+  color: var(--color-info);
 
-  background-color: #e0f2fe;
+  background-color: var(--color-info-bg);
 
-  border-color: #bae6fd;
+  border-color: var(--color-info-border);
 }
 
 /* =========================
@@ -88,11 +88,11 @@
    ========================= */
 
 .badge--success {
-  color: #15803d;
+  color: var(--color-success-dark);
 
-  background-color: #dcfce7;
+  background-color: var(--color-success-bg);
 
-  border-color: #bbf7d0;
+  border-color: var(--color-success-border);
 }
 
 /* =========================
@@ -112,11 +112,11 @@
    ========================= */
 
 .badge--danger {
-  color: #be123c;
+  color: var(--color-danger);
 
-  background-color: #ffe4e6;
+  background-color: var(--color-danger-bg);
 
-  border-color: #fecdd3;
+  border-color: var(--color-danger-border);
 }
 
 /* =========================
@@ -136,11 +136,11 @@
    ========================= */
 
 .badge--orange {
-  color: #c2410c;
+  color: var(--color-warning-text);
 
-  background-color: #ffedd5;
+  background-color: var(--color-warning-bg);
 
-  border-color: #fed7aa;
+  border-color: var(--color-warning-border);
 }
 
 /* =========================
@@ -148,7 +148,7 @@
    ========================= */
 
 .badge--dark {
-  color: #ffffff;
+  color: var(--color-text-inverse);
 
   background-color: #171b34;
 
