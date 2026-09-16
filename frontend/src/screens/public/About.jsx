@@ -7,52 +7,6 @@ function About() {
 
   return (
     <div className="about-page">
-      {/* HEADER */}
-      <header className="about-header">
-        <div className="about-header-container">
-          <button
-            type="button"
-            className="about-logo"
-            onClick={() => navigate("/")}
-          >
-            <span className="about-logo-icon">♫</span>
-            <span>
-              Danzas<span className="about-logo-dot">.app</span>
-            </span>
-          </button>
-
-          <nav className="about-nav">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Explorar clases
-            </button>
-
-            <button type="button" className="about-nav-active">
-              Sobre nosotros
-            </button>
-
-            <button
-              type="button"
-              className="about-login"
-              onClick={() => navigate("/login")}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="about-register"
-              onClick={() => navigate("/registro")}
-            >
-              Registrarse
-            </button>
-          </nav>
-        </div>
-      </header>
-
       {/* HERO */}
       <section className="about-hero">
         <div className="about-hero-container">
@@ -261,45 +215,6 @@ function About() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="about-footer">
-        <div className="about-footer-container">
-          <div className="about-footer-brand">
-            <button
-              type="button"
-              className="about-footer-logo"
-              onClick={() => navigate("/")}
-            >
-              <span>♫</span>
-              Danzas<span>.app</span>
-            </button>
-
-            <p>Una plataforma para descubrir y gestionar clases de danza.</p>
-          </div>
-
-          <div className="about-footer-links">
-            <h4>Enlaces</h4>
-
-            <button onClick={() => navigate("/")}>Inicio</button>
-
-            <button onClick={() => navigate("/clases")}>Explorar clases</button>
-
-            <button onClick={() => navigate("/academias")}>Academias</button>
-          </div>
-
-          <div className="about-footer-links">
-            <h4>Cuenta</h4>
-
-            <button onClick={() => navigate("/login")}>Iniciar sesión</button>
-
-            <button onClick={() => navigate("/registro")}>Registrarse</button>
-          </div>
-        </div>
-
-        <div className="about-footer-bottom">
-          <p>© 2026 Danzas.app. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </div>
   );
 }

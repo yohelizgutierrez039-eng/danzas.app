@@ -154,58 +154,6 @@ function Academies() {
 
   return (
     <div className="academies-page">
-      {/* HEADER PÚBLICO */}
-
-      <header className="academies-header">
-        <div className="academies-header-container">
-          <button
-            type="button"
-            className="academies-logo"
-            onClick={() => navigate("/")}
-          >
-            <span className="academies-logo-icon">♫</span>
-
-            <span>
-              Danzas<span>.app</span>
-            </span>
-          </button>
-
-          <nav className="academies-header-nav">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" className="active">
-              Academias
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Clases
-            </button>
-          </nav>
-
-          <div className="academies-header-actions">
-            <button
-              type="button"
-              className="academies-login"
-              onClick={() => navigate("/login")}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="academies-register"
-              onClick={() => navigate("/registro")}
-            >
-              Registrarse
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTENIDO */}
-
       <main className="academies-content">
         <section className="academies-hero">
           <div className="academies-hero-text">
@@ -356,42 +304,6 @@ function Academies() {
           )}
         </section>
       </main>
-
-      {/* FOOTER */}
-
-      <footer className="academies-footer">
-        <div className="academies-footer-container">
-          <div className="academies-footer-brand">
-            <strong>
-              Danzas<span>.app</span>
-            </strong>
-
-            <p>Conectando personas con la danza.</p>
-          </div>
-
-          <div className="academies-footer-links">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Clases
-            </button>
-
-            <button type="button" onClick={() => navigate("/login")}>
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-
-        <div className="academies-footer-bottom">
-          © 2026 Danzas.app. Todos los derechos reservados.
-        </div>
-      </footer>
     </div>
   );
 }

@@ -121,62 +121,6 @@ function ClassDetail() {
   return (
     <div className="class-detail-page">
       {/* =========================
-          HEADER
-      ========================= */}
-
-      <header className="class-detail-header">
-        <div className="class-detail-header-container">
-          <button
-            type="button"
-            className="class-detail-logo"
-            onClick={() => navigate("/")}
-          >
-            <span className="class-detail-logo-icon">♫</span>
-
-            <span>
-              Danzas<span>.app</span>
-            </span>
-          </button>
-
-          <nav className="class-detail-nav">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button
-              type="button"
-              className="active"
-              onClick={() => navigate("/clases")}
-            >
-              Clases
-            </button>
-          </nav>
-
-          <div className="class-detail-actions">
-            <button
-              type="button"
-              className="class-detail-login"
-              onClick={() => navigate("/login")}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="class-detail-register"
-              onClick={() => navigate("/registro")}
-            >
-              Registrarse
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* =========================
           CONTENIDO
       ========================= */}
 
@@ -415,44 +359,6 @@ function ClassDetail() {
           </button>
         </section>
       </main>
-
-      {/* =========================
-          FOOTER
-      ========================= */}
-
-      <footer className="class-detail-footer">
-        <div className="class-detail-footer-container">
-          <div className="class-detail-footer-brand">
-            <strong>
-              Danzas<span>.app</span>
-            </strong>
-
-            <p>Conectando personas con la danza.</p>
-          </div>
-
-          <div className="class-detail-footer-links">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Clases
-            </button>
-
-            <button type="button" onClick={() => navigate("/login")}>
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-
-        <div className="class-detail-footer-bottom">
-          © 2026 Danzas.app. Todos los derechos reservados.
-        </div>
-      </footer>
 
       {/* =========================
           CONFIRMACIÓN

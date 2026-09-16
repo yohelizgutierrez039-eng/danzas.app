@@ -206,58 +206,6 @@ function ExploreClasses() {
 
   return (
     <div className="explore-classes-page">
-      {/* HEADER */}
-
-      <header className="explore-classes-header">
-        <div className="explore-classes-header-container">
-          <button
-            type="button"
-            className="explore-classes-logo"
-            onClick={() => navigate("/")}
-          >
-            <span className="explore-classes-logo-icon">♫</span>
-
-            <span>
-              Danzas<span>.app</span>
-            </span>
-          </button>
-
-          <nav className="explore-classes-nav">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button type="button" className="active">
-              Clases
-            </button>
-          </nav>
-
-          <div className="explore-classes-actions">
-            <button
-              type="button"
-              className="explore-classes-login"
-              onClick={handleLogin}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="explore-classes-register"
-              onClick={handleRegister}
-            >
-              Registrarse
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTENIDO */}
-
       <main className="explore-classes-content">
         {/* HERO */}
 
@@ -483,42 +431,6 @@ function ExploreClasses() {
           </div>
         </section>
       </main>
-
-      {/* FOOTER */}
-
-      <footer className="explore-classes-footer">
-        <div className="explore-classes-footer-container">
-          <div className="explore-classes-footer-brand">
-            <strong>
-              Danzas<span>.app</span>
-            </strong>
-
-            <p>Conectando personas con la danza.</p>
-          </div>
-
-          <div className="explore-classes-footer-links">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Clases
-            </button>
-
-            <button type="button" onClick={handleLogin}>
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-
-        <div className="explore-classes-footer-bottom">
-          © 2026 Danzas.app. Todos los derechos reservados.
-        </div>
-      </footer>
     </div>
   );
 }
