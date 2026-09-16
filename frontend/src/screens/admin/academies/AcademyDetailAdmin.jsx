@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../../components/Loading/Loading";
 import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
-import api from "../../../services/api";
+import api from "../../../api/api";
 import "./AcademyDetailAdmin.css";
 
 function AcademyDetailAdmin() {
