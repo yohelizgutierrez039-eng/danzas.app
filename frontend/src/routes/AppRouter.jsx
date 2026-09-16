@@ -1,12 +1,142 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
+import ProtectedRoute from "./ProtectedRoute";
+
+import PublicLayout from "../layouts/PublicLayout";
+import AdminLayout from "../layouts/AdminLayout";
+import StudentLayout from "../layouts/StudentLayout";
+import ParentLayout from "../layouts/ParentLayout";
+
+// Público
 import Home from "../screens/public/Home";
+import ExploreClasses from "../screens/public/ExploreClasses";
+import ClassDetail from "../screens/public/ClassDetail";
+import Academies from "../screens/public/Academies";
+import AcademyDetail from "../screens/public/AcademyDetail";
+import HowItWorks from "../screens/public/HowItWorks";
+import About from "../screens/public/About";
+
+// Autenticación
+import Login from "../screens/auth/Login";
+import Register from "../screens/auth/Register";
+import ForgotPassword from "../screens/auth/ForgotPassword";
+import ResetPassword from "../screens/auth/ResetPassword";
+
+// Admin
+import AcademiesAdmin from "../screens/admin/academies/AcademiesAdmin";
+import AcademyReview from "../screens/admin/academies/AcademyReview";
+import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
+import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
+import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
+
+// Estudiante
+import ClassDetailStudent from "../screens/student/ClassDetailStudent";
+import EnrollmentProcess from "../screens/student/EnrollmentProcess";
+
+// Padre / acudiente
+import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
 
 function AppRouter() {
+  const { isAuthenticated, user } = useAuth();
+  const userRole = user?.rol;
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* ===== Público (RF-005: navegación como invitado) ===== */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/clases" element={<ExploreClasses />} />
+          <Route path="/clases/:id" element={<ClassDetail />} />
+          <Route path="/academias" element={<Academies />} />
+          <Route path="/academias/:id" element={<AcademyDetail />} />
+          <Route path="/como-funciona" element={<HowItWorks />} />
+          <Route path="/about" element={<About />} />
+        </Route>
+
+        {/* ===== Autenticación (pantallas de página completa) ===== */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
+        <Route path="/recuperar-password" element={<ForgotPassword />} />
+        <Route path="/restablecer-password" element={<ResetPassword />} />
+
+        {/* ===== Administrador ===== */}
+        <Route
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRole={userRole}
+              allowedRoles={["admin"]}
+            />
+          }
+        >
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/academias" element={<AcademiesAdmin />} />
+            <Route
+              path="/admin/academias/:id/revisar"
+              element={<AcademyReview />}
+            />
+            <Route
+              path="/admin/academias/:id"
+              element={<AcademyDetailAdmin />}
+            />
+            <Route path="/admin/classes" element={<ClassesAdmin />} />
+            <Route
+              path="/admin/classes/:id"
+              element={<ClassDetailAdmin />}
+            />
+          </Route>
+        </Route>
+
+        {/* ===== Estudiante ===== */}
+        <Route
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRole={userRole}
+              allowedRoles={["estudiante"]}
+            />
+          }
+        >
+          <Route element={<StudentLayout />}>
+            <Route
+              path="/estudiante/clases/:id"
+              element={<ClassDetailStudent />}
+            />
+            <Route
+              path="/estudiante/clases/:id/inscribir"
+              element={<EnrollmentProcess />}
+            />
+          </Route>
+        </Route>
+
+        {/* ===== Padre / acudiente ===== */}
+        <Route
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRole={userRole}
+              allowedRoles={["padre"]}
+            />
+          }
+        >
+          <Route element={<ParentLayout />}>
+            <Route path="/padre/clases" element={<ExploreClassesParent />} />
+          </Route>
+        </Route>
+
+        {/* ===== Fallbacks ===== */}
+        <Route
+          path="/no-autorizado"
+          element={
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+              <h1>No autorizado</h1>
+              <p>No tenés permiso para ver esta sección.</p>
+            </div>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
