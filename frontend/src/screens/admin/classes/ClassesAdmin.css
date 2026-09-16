@@ -1,0 +1,349 @@
+/* src/screens/admin/classes/ClassesAdmin.css */
+
+.classes-admin {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-5);
+}
+
+/* Header */
+
+.classes-admin__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: var(--space-4);
+}
+
+.classes-admin__breadcrumb {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.classes-admin__breadcrumb a {
+  color: var(--color-text-muted);
+}
+
+.classes-admin__breadcrumb a:hover {
+  color: var(--color-primary);
+}
+
+.classes-admin__title {
+  margin: 0;
+
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-primary);
+}
+
+.classes-admin__subtitle {
+  margin: var(--space-1) 0 0;
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Summary cards */
+
+.classes-admin__stats {
+  margin: 0;
+}
+
+/* Main panel */
+
+.classes-admin__panel {
+  overflow: hidden;
+
+  background-color: var(--color-bg);
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.classes-admin__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.classes-admin__search {
+  flex: 1 1 260px;
+  max-width: 360px;
+}
+
+.classes-admin__filter-select {
+  flex: 0 0 auto;
+  min-width: 160px;
+}
+
+/* Desktop table */
+
+.classes-admin__table-wrapper {
+  overflow-x: auto;
+}
+
+.classes-admin__table {
+  width: 100%;
+  min-width: 900px;
+
+  border-collapse: collapse;
+}
+
+.classes-admin__table thead tr {
+  background-color: var(--color-bg-muted);
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.classes-admin__table th {
+  padding: var(--space-3) var(--space-5);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--color-text-secondary);
+}
+
+.classes-admin__actions-header {
+  text-align: right;
+}
+
+.classes-admin__table td {
+  padding: var(--space-4) var(--space-5);
+  vertical-align: middle;
+
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.classes-admin__table tbody tr:hover {
+  background-color: var(--color-primary-bg);
+}
+
+.classes-admin__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.classes-admin__class-link {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.classes-admin__class-link:hover {
+  color: var(--color-primary);
+}
+
+.classes-admin__class-academy {
+  margin: var(--space-1) 0 0;
+
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.classes-admin__instructor-cell {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-3);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-body);
+}
+
+.classes-admin__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-dark);
+
+  background-color: var(--color-primary-bg-strong);
+  border-radius: var(--radius-pill);
+}
+
+.classes-admin__schedule-days {
+  margin: 0;
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-body);
+}
+
+.classes-admin__schedule-time {
+  margin: var(--space-1) 0 0;
+
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.classes-admin__modality {
+  display: inline-flex;
+  align-items: center;
+
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary-dark);
+
+  background-color: var(--color-primary-bg);
+  border-radius: var(--radius-pill);
+}
+
+.classes-admin__capacity-cell {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-2);
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.classes-admin__capacity-cell svg {
+  color: var(--color-primary);
+}
+
+.classes-admin__capacity-cell span {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.classes-admin__actions-cell {
+  position: relative;
+
+  text-align: right;
+}
+
+.classes-admin__menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  color: var(--color-text-muted);
+
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.classes-admin__menu-trigger:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+}
+
+.classes-admin__menu {
+  position: absolute;
+  top: 42px;
+  right: var(--space-5);
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 180px;
+  padding: var(--space-1);
+
+  text-align: left;
+
+  background-color: var(--color-bg);
+
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.classes-admin__menu-item {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+  text-align: left;
+
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+
+  cursor: pointer;
+}
+
+.classes-admin__menu-item:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+}
+
+.classes-admin__menu-item--danger {
+  color: var(--color-danger);
+}
+
+.classes-admin__menu-item--danger:hover {
+  color: var(--color-danger-dark);
+  background-color: var(--color-danger-bg);
+}
+
+/* Mobile cards */
+
+.classes-admin__cards {
+  display: none;
+  padding: var(--space-5);
+}
+
+/* Footer */
+
+.classes-admin__footer {
+  padding: var(--space-4) var(--space-5);
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+
+  border-top: 1px solid var(--color-border-lighter);
+}
+
+.classes-admin__footer strong {
+  color: var(--color-text-primary);
+}
+
+/* Responsive: swap table for cards below desktop, mirrors the
+   component-scoped breakpoint pattern used by Sidebar/Navbar. */
+
+@media (max-width: 900px) {
+  .classes-admin__table-wrapper {
+    display: none;
+  }
+
+  .classes-admin__cards {
+    display: grid;
+  }
+}

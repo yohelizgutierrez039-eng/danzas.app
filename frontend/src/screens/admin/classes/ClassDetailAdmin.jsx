@@ -1,314 +1,390 @@
-import React from "react";
-import {
-  ArrowLeft,
-  Pencil,
-  CalendarDays,
-  Clock,
-  MapPin,
-  Monitor,
-  Users,
-  UserRound,
-  Building2,
-  DollarSign,
-  CheckCircle2,
-  PauseCircle,
-  XCircle,
-  MoreVertical,
-  Mail,
-  Phone,
-} from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+// src/screens/admin/classes/ClassDetailAdmin.jsx
 
-const classDetail = {
-  id: 1,
-  name: "Salsa intermedio",
-  description:
-    "Clase enfocada en técnica, musicalidad y combinación de pasos. Mejora tu estilo y disfruta de la salsa.",
-  academy: "Ritmo & Sabor",
-  instructor: {
-    name: "Carlos Gómez",
-    role: "Instructor profesional",
-    email: "carlos@danzas.app",
-    phone: "+57 300 123 4567",
-    rating: "4.9",
-    reviews: 120,
-  },
-  schedule: {
-    days: "Lunes, Miércoles y Viernes",
-    time: "7:00 PM - 8:30 PM",
-    duration: "1 hora 30 minutos",
-    startDate: "12 de agosto de 2026",
-  },
-  location: "Medellín, Antioquia",
-  modality: "Presencial",
-  level: "Intermedio",
-  price: "$60.000",
-  currency: "COP",
-  students: 12,
-  capacity: 20,
-  status: "Activo",
-  requirements: "Conocimientos básicos de salsa.",
-  createdAt: "05 de agosto de 2026",
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  FiArrowLeft,
+  FiEdit2,
+  FiCalendar,
+  FiClock,
+  FiMapPin,
+  FiMonitor,
+  FiUsers,
+  FiHome,
+  FiDollarSign,
+  FiCheckCircle,
+  FiXCircle,
+  FiMail,
+  FiPhone,
+  FiEye,
+} from "react-icons/fi";
+
+import Button from "../../../components/common/Button/Button";
+import Badge from "../../../components/common/Badge/Badge";
+import StatCard from "../../../components/dashboard/StatCard";
+import ClassStatusBadge from "../../../components/classes/ClassStatusBadge";
+
+import "./ClassDetailAdmin.css";
+
+const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+const STUDENT_STATUS_CONFIG = {
+  confirmada: { variant: "success", label: "Confirmada" },
+  en_espera: { variant: "warning", label: "En espera" },
+  cancelada: { variant: "danger", label: "Cancelada" },
 };
 
-const students = [
-  {
-    id: 1,
-    name: "Ana Torres",
-    email: "ana@correo.com",
-    status: "Confirmada",
+/*
+ * Datos temporales mientras se conecta el backend.
+ *
+ * Próxima conexión:
+ * const data = await api(`/admin/classes/${id}`);
+ *
+ * Forma alineada al modelo Prisma `Clase`, con campos adicionales de
+ * despliegue (descripcion, requisitos, academia como string plano).
+ */
+const MOCK_CLASS_DETAIL = {
+  id: 1,
+  tipoBaile: "Salsa intermedio",
+  descripcion:
+    "Clase enfocada en técnica, musicalidad y combinación de pasos. Mejora tu estilo y disfruta de la salsa.",
+  requisitos: "Conocimientos básicos de salsa.",
+  academia: "Ritmo & Sabor",
+  ciudad: "Medellín, Antioquia",
+  modalidad: "Presencial",
+  nivel: "Intermedio",
+  precio: 60000,
+  cupoMaximo: 20,
+  cupoDisponible: 8,
+  estado: "activa",
+  fechaInicio: "2026-08-12T00:00:00",
+  instructor: {
+    nombre: "Carlos Gómez",
+    rol: "Instructor profesional",
+    email: "carlos@danzas.app",
+    telefono: "+57 300 123 4567",
+    calificacion: 4.9,
+    resenas: 120,
   },
-  {
-    id: 2,
-    name: "Juan Pérez",
-    email: "juan@correo.com",
-    status: "Confirmada",
-  },
+  horarios: [
+    {
+      diaSemana: 1,
+      horaInicio: "2026-01-05T19:00:00",
+      horaFin: "2026-01-05T20:30:00",
+    },
+    {
+      diaSemana: 3,
+      horaInicio: "2026-01-05T19:00:00",
+      horaFin: "2026-01-05T20:30:00",
+    },
+    {
+      diaSemana: 5,
+      horaInicio: "2026-01-05T19:00:00",
+      horaFin: "2026-01-05T20:30:00",
+    },
+  ],
+};
+
+const MOCK_STUDENTS = [
+  { id: 1, nombre: "Ana Torres", correo: "ana@correo.com", estado: "confirmada" },
+  { id: 2, nombre: "Juan Pérez", correo: "juan@correo.com", estado: "confirmada" },
   {
     id: 3,
-    name: "Sofía Ramírez",
-    email: "sofia@correo.com",
-    status: "En espera",
+    nombre: "Sofía Ramírez",
+    correo: "sofia@correo.com",
+    estado: "en_espera",
   },
   {
     id: 4,
-    name: "Miguel Rojas",
-    email: "miguel@correo.com",
-    status: "Cancelada",
+    nombre: "Miguel Rojas",
+    correo: "miguel@correo.com",
+    estado: "cancelada",
   },
 ];
+
+function formatearHora(iso) {
+  return new Date(iso).toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatearFechaCorta(iso) {
+  return new Date(iso).toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function formatearFechaLarga(iso) {
+  return new Date(iso).toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatearPrecio(precio) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(precio);
+}
+
+function formatearDuracion(horaInicio, horaFin) {
+  const minutos =
+    (new Date(horaFin).getTime() - new Date(horaInicio).getTime()) / 60000;
+
+  const horas = Math.floor(minutos / 60);
+  const restoMinutos = minutos % 60;
+
+  if (horas === 0) return `${restoMinutos}m`;
+  if (restoMinutos === 0) return `${horas}h`;
+
+  return `${horas}h ${restoMinutos}m`;
+}
+
+function iniciales(nombre) {
+  return nombre
+    .split(" ")
+    .map((parte) => parte[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function StudentStatusBadge({ estado }) {
+  const config = STUDENT_STATUS_CONFIG[estado] ?? STUDENT_STATUS_CONFIG.cancelada;
+
+  return (
+    <Badge variant={config.variant} size="small">
+      {config.label}
+    </Badge>
+  );
+}
 
 export default function ClassDetailAdmin() {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // En la app real, buscar la clase por `id` vía fetch. Por ahora se usa
+  // siempre el mock, manteniendo el `id` de la ruta disponible para el enlace
+  // de edición.
+  const clase = { ...MOCK_CLASS_DETAIL, id: id ?? MOCK_CLASS_DETAIL.id };
+  const primerHorario = clase.horarios[0];
+  const inscritos = clase.cupoMaximo - clase.cupoDisponible;
+  const porcentajeOcupacion = Math.round((inscritos / clase.cupoMaximo) * 100);
+
   return (
-    <div className="min-h-screen bg-[#faf9fd] text-slate-800">
+    <div className="class-detail-admin">
       {/* Breadcrumb / header */}
-      <div className="mb-6">
+      <div className="class-detail-admin__top">
         <button
           type="button"
           onClick={() => navigate("/admin/classes")}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-purple-600"
+          className="class-detail-admin__back"
         >
-          <ArrowLeft size={17} />
+          <FiArrowLeft size={17} />
           Volver a clases
         </button>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="class-detail-admin__header">
           <div>
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-400">
-              <Link to="/admin" className="hover:text-purple-600">
-                Dashboard
-              </Link>
+            <div className="class-detail-admin__breadcrumb">
+              <Link to="/admin">Dashboard</Link>
               <span>/</span>
-              <Link to="/admin/classes" className="hover:text-purple-600">
-                Clases
-              </Link>
+              <Link to="/admin/classes">Clases</Link>
               <span>/</span>
               <span>Detalle</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold text-[#351274] md:text-3xl">
-                {classDetail.name}
-              </h1>
-
-              <StatusBadge status={classDetail.status} />
+            <div className="class-detail-admin__title-row">
+              <h1 className="class-detail-admin__title">{clase.tipoBaile}</h1>
+              <ClassStatusBadge estado={clase.estado} />
             </div>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="class-detail-admin__subtitle">
               Información general y administración de la clase.
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => navigate(`/admin/classes/${id}/edit`)}
-              className="inline-flex items-center gap-2 rounded-xl border border-purple-200 bg-white px-4 py-2.5 text-sm font-semibold text-purple-600 shadow-sm transition hover:bg-purple-50"
+          <div className="class-detail-admin__actions">
+            <Button
+              variant="outline"
+              icon={<FiEdit2 size={16} />}
+              onClick={() => navigate(`/admin/classes/${clase.id}/edit`)}
             >
-              <Pencil size={17} />
               Editar
-            </button>
-
-            <button
-              type="button"
-              className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 hover:bg-slate-50"
-            >
-              <MoreVertical size={18} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Top summary */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid-cards class-detail-admin__stats">
         <StatCard
-          icon={<Users size={21} />}
+          icon={<FiUsers size={20} />}
           label="Estudiantes inscritos"
-          value={`${classDetail.students}/${classDetail.capacity}`}
-          description={`${classDetail.capacity - classDetail.students} cupos disponibles`}
-          color="purple"
+          value={`${inscritos}/${clase.cupoMaximo}`}
         />
 
         <StatCard
-          icon={<DollarSign size={21} />}
+          icon={<FiDollarSign size={20} />}
           label="Precio por clase"
-          value={classDetail.price}
-          description={classDetail.currency}
-          color="green"
+          value={formatearPrecio(clase.precio)}
         />
 
         <StatCard
-          icon={<CalendarDays size={21} />}
+          icon={<FiCalendar size={20} />}
           label="Inicio"
-          value="12 Ago"
-          description="2026"
-          color="blue"
+          value={formatearFechaCorta(clase.fechaInicio)}
         />
 
         <StatCard
-          icon={<Clock size={21} />}
+          icon={<FiClock size={20} />}
           label="Duración"
-          value="1h 30m"
-          description="Por sesión"
-          color="pink"
+          value={formatearDuracion(
+            primerHorario.horaInicio,
+            primerHorario.horaFin,
+          )}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="class-detail-admin__layout">
         {/* Main information */}
-        <div className="space-y-6 xl:col-span-2">
+        <div className="class-detail-admin__main">
           {/* Class information */}
-          <section className="rounded-2xl border border-purple-100 bg-white shadow-sm">
-            <SectionHeader
-              title="Información de la clase"
-              subtitle="Datos generales de la clase"
-            />
+          <section className="class-detail-admin__card">
+            <div className="class-detail-admin__card-header">
+              <h2>Información de la clase</h2>
+              <span>Datos generales de la clase</span>
+            </div>
 
-            <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2">
-              <InfoCard
-                icon={<CalendarDays size={19} />}
-                label="Horario"
-                value={classDetail.schedule.days}
-                secondary={classDetail.schedule.time}
-              />
+            <div className="class-detail-admin__info-grid">
+              <div className="class-detail-admin__info-item">
+                <div className="class-detail-admin__info-label">
+                  <FiCalendar size={17} />
+                  Horario
+                </div>
+                <p className="class-detail-admin__info-value">
+                  {clase.horarios.map((h) => DIAS_SEMANA[h.diaSemana]).join(", ")}
+                </p>
+                <p className="class-detail-admin__info-secondary">
+                  {formatearHora(primerHorario.horaInicio)} -{" "}
+                  {formatearHora(primerHorario.horaFin)}
+                </p>
+              </div>
 
-              <InfoCard
-                icon={
-                  classDetail.modality === "Virtual" ? (
-                    <Monitor size={19} />
+              <div className="class-detail-admin__info-item">
+                <div className="class-detail-admin__info-label">
+                  {clase.modalidad === "Virtual" ? (
+                    <FiMonitor size={17} />
                   ) : (
-                    <MapPin size={19} />
-                  )
-                }
-                label="Modalidad"
-                value={classDetail.modality}
-                secondary={classDetail.location}
-              />
+                    <FiMapPin size={17} />
+                  )}
+                  Modalidad
+                </div>
+                <p className="class-detail-admin__info-value">
+                  {clase.modalidad}
+                </p>
+                <p className="class-detail-admin__info-secondary">
+                  {clase.ciudad}
+                </p>
+              </div>
 
-              <InfoCard
-                icon={<Building2 size={19} />}
-                label="Academia"
-                value={classDetail.academy}
-                secondary="Academia asociada"
-              />
+              <div className="class-detail-admin__info-item">
+                <div className="class-detail-admin__info-label">
+                  <FiHome size={17} />
+                  Academia
+                </div>
+                <p className="class-detail-admin__info-value">
+                  {clase.academia}
+                </p>
+                <p className="class-detail-admin__info-secondary">
+                  Academia asociada
+                </p>
+              </div>
 
-              <InfoCard
-                icon={<UserRound size={19} />}
-                label="Nivel"
-                value={classDetail.level}
-                secondary="Nivel de experiencia"
-              />
+              <div className="class-detail-admin__info-item">
+                <div className="class-detail-admin__info-label">
+                  <FiUsers size={17} />
+                  Nivel
+                </div>
+                <p className="class-detail-admin__info-value">{clase.nivel}</p>
+                <p className="class-detail-admin__info-secondary">
+                  Nivel de experiencia
+                </p>
+              </div>
             </div>
 
-            <div className="border-t border-slate-100 p-5">
-              <h3 className="mb-2 text-sm font-bold text-slate-700">
-                Descripción
-              </h3>
-
-              <p className="text-sm leading-6 text-slate-500">
-                {classDetail.description}
-              </p>
+            <div className="class-detail-admin__section">
+              <h3>Descripción</h3>
+              <p>{clase.descripcion}</p>
             </div>
 
-            <div className="border-t border-slate-100 p-5">
-              <h3 className="mb-2 text-sm font-bold text-slate-700">
-                Requisitos
-              </h3>
-
-              <div className="rounded-xl bg-purple-50 px-4 py-3 text-sm text-purple-700">
-                {classDetail.requirements}
+            <div className="class-detail-admin__section">
+              <h3>Requisitos</h3>
+              <div className="class-detail-admin__requirements-box">
+                {clase.requisitos}
               </div>
             </div>
           </section>
 
           {/* Students */}
-          <section className="overflow-hidden rounded-2xl border border-purple-100 bg-white shadow-sm">
-            <SectionHeader
-              title="Estudiantes inscritos"
-              subtitle={`${classDetail.students} estudiantes registrados`}
-              action={
-                <Link
-                  to={`/admin/classes/${id}/students`}
-                  className="text-sm font-semibold text-purple-600 hover:text-purple-700"
-                >
-                  Ver todos
-                </Link>
-              }
-            />
+          <section className="class-detail-admin__card class-detail-admin__card--flush">
+            <div className="class-detail-admin__card-header">
+              <div>
+                <h2>Estudiantes inscritos</h2>
+                <span>{MOCK_STUDENTS.length} estudiantes registrados</span>
+              </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <Link
+                to={`/admin/classes/${clase.id}/students`}
+                className="class-detail-admin__see-all"
+              >
+                Ver todos
+              </Link>
+            </div>
+
+            <div className="class-detail-admin__table-wrapper">
+              <table className="class-detail-admin__table">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/70 text-left">
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Estudiante
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Correo
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Estado
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Acción
-                    </th>
+                  <tr>
+                    <th>Estudiante</th>
+                    <th>Correo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {students.map((student) => (
-                    <tr
-                      key={student.id}
-                      className="border-b border-slate-100 last:border-0"
-                    >
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar name={student.name} />
-
-                          <span className="text-sm font-semibold text-slate-700">
-                            {student.name}
+                  {MOCK_STUDENTS.map((student) => (
+                    <tr key={student.id}>
+                      <td>
+                        <div className="class-detail-admin__student-cell">
+                          <span className="class-detail-admin__avatar">
+                            {iniciales(student.nombre)}
                           </span>
+                          <span>{student.nombre}</span>
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-sm text-slate-500">
-                        {student.email}
+                      <td className="class-detail-admin__muted">
+                        {student.correo}
                       </td>
 
-                      <td className="px-5 py-4">
-                        <StudentStatus status={student.status} />
+                      <td>
+                        <StudentStatusBadge estado={student.estado} />
                       </td>
 
-                      <td className="px-5 py-4">
-                        <button
-                          type="button"
-                          className="text-sm font-semibold text-purple-600 hover:text-purple-800"
+                      <td>
+                        <Button
+                          variant="ghost"
+                          size="small"
+                          icon={<FiEye size={14} />}
                         >
                           Ver
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -319,266 +395,122 @@ export default function ClassDetailAdmin() {
         </div>
 
         {/* Right sidebar */}
-        <aside className="space-y-6">
+        <aside className="class-detail-admin__sidebar">
           {/* Instructor */}
-          <section className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-5 text-base font-bold text-slate-800">
-              Instructor
-            </h2>
+          <section className="class-detail-admin__card">
+            <h2 className="class-detail-admin__card-title">Instructor</h2>
 
-            <div className="mb-5 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-200 to-pink-200 text-lg font-bold text-purple-700">
-                CG
-              </div>
+            <div className="class-detail-admin__instructor">
+              <span className="class-detail-admin__instructor-avatar">
+                {iniciales(clase.instructor.nombre)}
+              </span>
 
               <div>
-                <h3 className="font-bold text-slate-800">
-                  {classDetail.instructor.name}
+                <h3 className="class-detail-admin__instructor-name">
+                  {clase.instructor.nombre}
                 </h3>
-                <p className="mt-1 text-xs text-slate-400">
-                  {classDetail.instructor.role}
+                <p className="class-detail-admin__instructor-role">
+                  {clase.instructor.rol}
                 </p>
 
-                <div className="mt-1 flex items-center gap-1 text-xs">
-                  <span className="font-semibold text-amber-500">
-                    ★ {classDetail.instructor.rating}
-                  </span>
-                  <span className="text-slate-400">
-                    ({classDetail.instructor.reviews} reseñas)
+                <div className="class-detail-admin__instructor-rating">
+                  <span>★ {clase.instructor.calificacion}</span>
+                  <span className="class-detail-admin__muted">
+                    ({clase.instructor.resenas} reseñas)
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 border-t border-slate-100 pt-4">
-              <ContactItem
-                icon={<Mail size={15} />}
-                value={classDetail.instructor.email}
-              />
+            <div className="class-detail-admin__contact">
+              <div className="class-detail-admin__contact-item">
+                <FiMail size={15} />
+                <span>{clase.instructor.email}</span>
+              </div>
 
-              <ContactItem
-                icon={<Phone size={15} />}
-                value={classDetail.instructor.phone}
-              />
+              <div className="class-detail-admin__contact-item">
+                <FiPhone size={15} />
+                <span>{clase.instructor.telefono}</span>
+              </div>
             </div>
 
             <Link
-              to={`/admin/instructors/${classDetail.instructor.name}`}
-              className="mt-5 block w-full rounded-xl border border-purple-200 py-2.5 text-center text-sm font-semibold text-purple-600 transition hover:bg-purple-50"
+              to={`/admin/instructors/${encodeURIComponent(clase.instructor.nombre)}`}
+              className="class-detail-admin__profile-link"
             >
               Ver perfil del instructor
             </Link>
           </section>
 
           {/* Schedule */}
-          <section className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-5 text-base font-bold text-slate-800">
-              Horario
-            </h2>
+          <section className="class-detail-admin__card">
+            <h2 className="class-detail-admin__card-title">Horario</h2>
 
-            <div className="rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 p-4">
-              <div className="mb-3 flex items-center gap-2 text-purple-600">
-                <CalendarDays size={18} />
-                <span className="text-sm font-semibold">
-                  {classDetail.schedule.days}
+            <div className="class-detail-admin__schedule-box">
+              <div className="class-detail-admin__schedule-days">
+                <FiCalendar size={17} />
+                <span>
+                  {clase.horarios
+                    .map((h) => DIAS_SEMANA[h.diaSemana])
+                    .join(", ")}
                 </span>
               </div>
 
-              <div className="mb-2 flex items-center gap-2 text-slate-700">
-                <Clock size={17} />
-                <span className="font-bold">
-                  {classDetail.schedule.time}
-                </span>
+              <div className="class-detail-admin__schedule-time">
+                <FiClock size={16} />
+                <strong>
+                  {formatearHora(primerHorario.horaInicio)} -{" "}
+                  {formatearHora(primerHorario.horaFin)}
+                </strong>
               </div>
 
-              <p className="text-xs text-slate-500">
-                Inicio: {classDetail.schedule.startDate}
+              <p className="class-detail-admin__schedule-start">
+                Inicio: {formatearFechaLarga(clase.fechaInicio)}
               </p>
             </div>
           </section>
 
           {/* Capacity */}
-          <section className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-800">
-                Capacidad
-              </h2>
-
-              <span className="text-sm font-bold text-purple-600">
-                {classDetail.students}/{classDetail.capacity}
+          <section className="class-detail-admin__card">
+            <div className="class-detail-admin__capacity-header">
+              <h2 className="class-detail-admin__card-title">Capacidad</h2>
+              <span>
+                {inscritos}/{clase.cupoMaximo}
               </span>
             </div>
 
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+            <div className="class-detail-admin__capacity-track">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#6524e8] to-[#e52ca9]"
-                style={{
-                  width: `${
-                    (classDetail.students / classDetail.capacity) * 100
-                  }%`,
-                }}
+                className="class-detail-admin__capacity-bar"
+                style={{ width: `${porcentajeOcupacion}%` }}
               />
             </div>
 
-            <p className="mt-3 text-xs text-slate-400">
-              {classDetail.capacity - classDetail.students} cupos disponibles
+            <p className="class-detail-admin__capacity-note">
+              {clase.cupoDisponible} cupos disponibles
             </p>
           </section>
 
           {/* Admin actions */}
-          <section className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-base font-bold text-slate-800">
-              Acciones
-            </h2>
+          <section className="class-detail-admin__card">
+            <h2 className="class-detail-admin__card-title">Acciones</h2>
 
-            <div className="space-y-2">
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-100"
+            <div className="class-detail-admin__action-buttons">
+              <Button
+                variant="success"
+                fullWidth
+                icon={<FiCheckCircle size={18} />}
               >
-                <CheckCircle2 size={18} />
                 Mantener activa
-              </button>
+              </Button>
 
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-600 hover:bg-amber-100"
-              >
-                <PauseCircle size={18} />
-                Pausar clase
-              </button>
-
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-100"
-              >
-                <XCircle size={18} />
+              <Button variant="danger" fullWidth icon={<FiXCircle size={18} />}>
                 Cancelar clase
-              </button>
+              </Button>
             </div>
           </section>
         </aside>
       </div>
-    </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const styles = {
-    Activo: "bg-emerald-50 text-emerald-600 border-emerald-200",
-    Pausada: "bg-amber-50 text-amber-600 border-amber-200",
-    Cancelada: "bg-red-50 text-red-500 border-red-200",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
-        styles[status] || "bg-slate-50 text-slate-500 border-slate-200"
-      }`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {status}
-    </span>
-  );
-}
-
-function StudentStatus({ status }) {
-  const styles = {
-    Confirmada: "bg-emerald-50 text-emerald-600",
-    "En espera": "bg-amber-50 text-amber-600",
-    Cancelada: "bg-red-50 text-red-500",
-  };
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-        styles[status] || "bg-slate-50 text-slate-500"
-      }`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function StatCard({ icon, label, value, description, color }) {
-  const colors = {
-    purple: "bg-purple-50 text-purple-600",
-    green: "bg-emerald-50 text-emerald-600",
-    blue: "bg-blue-50 text-blue-600",
-    pink: "bg-pink-50 text-pink-600",
-  };
-
-  return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-      <div
-        className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}
-      >
-        {icon}
-      </div>
-
-      <p className="text-sm text-slate-500">{label}</p>
-
-      <p className="mt-1 text-2xl font-bold text-slate-800">{value}</p>
-
-      <p className="mt-1 text-xs text-slate-400">{description}</p>
-    </div>
-  );
-}
-
-function SectionHeader({ title, subtitle, action }) {
-  return (
-    <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-      <div>
-        <h2 className="font-bold text-slate-800">{title}</h2>
-
-        {subtitle && (
-          <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
-        )}
-      </div>
-
-      {action}
-    </div>
-  );
-}
-
-function InfoCard({ icon, label, value, secondary }) {
-  return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-      <div className="mb-3 flex items-center gap-2 text-purple-600">
-        {icon}
-        <span className="text-xs font-semibold uppercase tracking-wide">
-          {label}
-        </span>
-      </div>
-
-      <p className="text-sm font-bold text-slate-700">{value}</p>
-
-      {secondary && (
-        <p className="mt-1 text-xs text-slate-400">{secondary}</p>
-      )}
-    </div>
-  );
-}
-
-function Avatar({ name }) {
-  const initials = name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
-
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100 text-xs font-bold text-purple-700">
-      {initials}
-    </div>
-  );
-}
-
-function ContactItem({ icon, value }) {
-  return (
-    <div className="flex items-center gap-3 text-sm text-slate-500">
-      <span className="text-purple-500">{icon}</span>
-      <span>{value}</span>
     </div>
   );
 }
