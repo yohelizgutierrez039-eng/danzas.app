@@ -1,6 +1,31 @@
 const API_URL = "http://localhost:3000/api";
 
 /**
+ * Registrar un nuevo usuario
+ * @param {Object} datos - { rol, nombre, correo, contraseña, ciudad }
+ * @returns {Promise<Object>}
+ */
+export const register = async (datos) => {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(datos),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "No fue posible completar el registro."
+    );
+  }
+
+  return data;
+};
+
+/**
  * Iniciar sesión
  * @param {Object} credenciales - Correo y contraseña del usuario
  * @returns {Promise<Object>}
