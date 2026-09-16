@@ -1,0 +1,215 @@
+.academies-admin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  padding: var(--space-6);
+}
+
+.academies-admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.academies-admin-subtitle {
+  display: block;
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.06em;
+}
+
+.academies-admin-header h1 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-2xl);
+}
+
+.academies-admin-header p {
+  margin: 0;
+  max-width: 480px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.academies-admin-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: var(--space-4) var(--space-5);
+
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  text-align: center;
+}
+
+.academies-admin-count strong {
+  color: var(--color-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.academies-admin-count span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.academies-admin-table-container {
+  overflow-x: auto;
+
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.academies-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.academies-admin-table thead th {
+  padding: var(--space-3) var(--space-4);
+
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-muted);
+
+  border-bottom: 1px solid var(--color-border-light);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  white-space: nowrap;
+}
+
+.academies-admin-table tbody td {
+  padding: var(--space-4);
+
+  border-bottom: 1px solid var(--color-border-lighter);
+
+  color: var(--color-text-body);
+  font-size: var(--font-size-sm);
+
+  vertical-align: middle;
+}
+
+.academies-admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.academy-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.academy-name strong {
+  display: block;
+  color: var(--color-text-body);
+  font-size: var(--font-size-sm);
+}
+
+.academy-name span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.academy-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+
+  color: var(--color-text-inverse);
+  background: var(--gradient-primary-diagonal);
+  border-radius: var(--radius-md);
+
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.dance-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.dance-tags span {
+  padding: var(--space-1) var(--space-2);
+
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-bg-strong);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-pill);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.status-pending {
+  display: inline-flex;
+  align-items: center;
+
+  padding: var(--space-1) var(--space-3);
+
+  color: var(--color-warning-text);
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-pill);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.review-button {
+  padding: var(--space-2) var(--space-4);
+
+  color: var(--color-text-inverse);
+  background: var(--gradient-primary);
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+
+  transition: box-shadow var(--transition-base), transform var(--transition-fast);
+}
+
+.review-button:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .academies-admin {
+    padding: var(--space-4);
+  }
+
+  .academies-admin-header {
+    flex-direction: column;
+  }
+
+  .academies-admin-count {
+    align-self: stretch;
+  }
+}
