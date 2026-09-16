@@ -20,6 +20,9 @@
   --color-accent-hover-bg: #f6f2fa;
   --color-accent-active-bg: #eee7f9;
   --color-accent-active-text: #5c2eaa;
+  --color-accent-light: #b995ec;
+  --color-accent-bg: #f0eaf8;
+  --color-accent-border: #ddd5e6;
 
   --gradient-brand: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #f97316);
 
@@ -56,8 +59,10 @@
   /* Texto */
   --color-text-primary: #1e1b4b;
   --color-text-body: #25283d;
+  --color-text-heading: #302a3a;
   --color-text-secondary: #6b7280;
   --color-text-muted: #9ca3af;
+  --color-text-muted-accent: #81798f;
   --color-text-icon-muted: #8b8fa3;
   --color-text-inverse: #ffffff;
 
