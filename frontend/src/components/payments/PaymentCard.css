@@ -1,0 +1,90 @@
+/* src/components/payments/PaymentCard.css */
+
+.payment-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  padding: var(--space-5);
+
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  transition: box-shadow var(--transition-base), transform var(--transition-fast);
+}
+
+.payment-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.payment-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.payment-card__title {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.payment-card__subtext {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.payment-card__amount {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.payment-card__notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.payment-card__note {
+  padding: var(--space-1) var(--space-3);
+
+  border-radius: var(--radius-pill);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.payment-card__note--info {
+  color: var(--color-info);
+  background-color: var(--color-info-bg);
+}
+
+.payment-card__note--warning {
+  color: var(--color-warning-text);
+  background-color: var(--color-warning-bg);
+}
+
+.payment-card__date {
+  margin: 0;
+
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.payment-card__actions {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: var(--space-2);
+}

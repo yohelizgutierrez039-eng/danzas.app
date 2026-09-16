@@ -1,0 +1,63 @@
+/* src/components/layout/MobileNavigation/MobileNavigation.css */
+
+.mobile-navigation {
+  display: none;
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  align-items: center;
+  justify-content: space-around;
+
+  padding: var(--space-2) var(--space-2);
+
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-md);
+
+  z-index: 1000;
+}
+
+.mobile-navigation__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  padding: var(--space-1) var(--space-2);
+
+  color: var(--color-text-secondary);
+  text-decoration: none;
+
+  transition: color var(--transition-fast);
+}
+
+.mobile-navigation__item:hover {
+  color: var(--color-primary);
+}
+
+.mobile-navigation__item--active {
+  color: var(--color-primary);
+}
+
+.mobile-navigation__icon {
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+
+.mobile-navigation__label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 700px) {
+  .mobile-navigation {
+    display: flex;
+  }
+}

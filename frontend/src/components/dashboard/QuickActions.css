@@ -1,0 +1,53 @@
+/* src/components/dashboard/QuickActions.css */
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-2);
+}
+
+.quick-actions__item {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-3);
+
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  text-align: left;
+
+  background-color: transparent;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.quick-actions__item:hover {
+  background-color: var(--color-primary-bg);
+  border-color: var(--color-primary-border);
+}
+
+.quick-actions__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+}
+
+.quick-actions__label {
+  flex: 1;
+}

@@ -1,0 +1,68 @@
+/* src/components/classes/ClassSchedule.css */
+
+.class-schedule {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+
+  overflow: hidden;
+}
+
+.class-schedule__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: var(--space-3);
+
+  padding: var(--space-3) var(--space-4);
+
+  background-color: var(--color-bg);
+
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.class-schedule__row:last-child {
+  border-bottom: none;
+}
+
+.class-schedule__day {
+  flex: 0 0 100px;
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.class-schedule__empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.class-schedule__slots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  gap: var(--space-1);
+}
+
+.class-schedule__slot {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+@media (max-width: 576px) {
+  .class-schedule__row {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: var(--space-1);
+  }
+
+  .class-schedule__slots {
+    align-items: flex-start;
+  }
+}

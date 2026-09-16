@@ -1,0 +1,21 @@
+/* src/components/notifications/NotificationBadge.css */
+
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 5px;
+
+  color: var(--color-text-inverse);
+  background-color: var(--color-danger);
+
+  border-radius: var(--radius-pill);
+
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
