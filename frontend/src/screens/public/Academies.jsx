@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Select from "../../components/Select/Select";
-import Loading from "../../components/Loading/Loading";
-import EmptyState from "../../components/EmptyState/EmptyState";
+import Select from "../../components/common/Select/Select";
+import Loading from "../../components/common/Loading/Loading";
+import EmptyState from "../../components/common/EmptyState/EmptyState";
 import "./Academies.css";
 
 function Academies() {

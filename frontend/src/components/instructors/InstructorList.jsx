@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import InstructorCard from "./instructorCard";
-import "./instructorList.css";
+import InstructorCard from "./InstructorCard";
+import "./InstructorList.css";
 
 const InstructorList = ({ instructors = [], onView, onEdit }) => {
   const [search, setSearch] = useState("");

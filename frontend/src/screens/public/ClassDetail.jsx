@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Modal from "../../components/Modal/Modal";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import Modal from "../../components/common/Modal/Modal";
+import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
 import "./ClassDetail.css";
 
 function ClassDetail() {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
-import Loading from "../../../components/Loading/Loading";
-import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
+import ConfirmDialog from "../../../components/common/ConfirmDialog/ConfirmDialog";
+import Loading from "../../../components/common/Loading/Loading";
+import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
 import api from "../../../services/api";
 import "./AcademyReview.css";
 

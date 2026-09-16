@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../../services/auth.service";
-import Select from "../../components/Select/Select";
-import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+import Select from "../../components/common/Select/Select";
+import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import "./Register.css";
 
 function Register() {

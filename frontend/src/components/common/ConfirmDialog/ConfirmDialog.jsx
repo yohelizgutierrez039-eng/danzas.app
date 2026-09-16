@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { FiAlertTriangle, FiInfo, FiCheckCircle } from "react-icons/fi";
 
-import Button from "./Button";
+import Button from "../Button/Button";
 
 import "./ConfirmDialog.css";
 

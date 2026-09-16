@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Select from "../../components/Select/Select";
-import EmptyState from "../../components/EmptyState/EmptyState";
-import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+import Select from "../../components/common/Select/Select";
+import EmptyState from "../../components/common/EmptyState/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import "./ExploreClassesParent.css";
 
 const demoChildren = [

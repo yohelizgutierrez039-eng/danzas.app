@@ -1,5 +1,5 @@
 import React from "react";
-import "./instructorCard.css";
+import "./InstructorCard.css";
 
 const InstructorCard = ({ instructor, onEdit, onView }) => {
   const { nombre, apellido, academia, estado, imagen } = instructor;

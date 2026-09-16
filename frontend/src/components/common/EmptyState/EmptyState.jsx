@@ -1,6 +1,6 @@
 // src/components/common/EmptyState.jsx
 
-import Button from "./Button";
+import Button from "../Button/Button";
 
 import "./EmptyState.css";
 
