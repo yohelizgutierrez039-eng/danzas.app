@@ -1,177 +1,157 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Select from "../../components/common/Select/Select";
-import Loading from "../../components/common/Loading/Loading";
-import EmptyState from "../../components/common/EmptyState/EmptyState";
+
+import Select from "../../components/Select/Select";
+import Loading from "../../components/Loading/Loading";
+import EmptyState from "../../components/EmptyState/EmptyState";
+import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+
+import api from "../../services/api";
+
 import "./ExploreClasses.css";
+
+const demoClasses = [
+  {
+    id: 1,
+    name: "Salsa Básica",
+    danceType: "Salsa",
+    academy: "Academia Ritmo Caribe",
+    instructor: "Carlos Martínez",
+    city: "Guamal",
+    modality: "Presencial",
+    schedule: "Lunes y miércoles - 5:00 PM",
+    duration: "1 hora",
+    price: 50000,
+    available: 8,
+    description: "Clase para aprender los pasos básicos de salsa desde cero.",
+  },
+  {
+    id: 2,
+    name: "Bachata Inicial",
+    danceType: "Bachata",
+    academy: "Danza Viva",
+    instructor: "Laura Gómez",
+    city: "Santa Marta",
+    modality: "Presencial",
+    schedule: "Martes y jueves - 6:00 PM",
+    duration: "1 hora",
+    price: 60000,
+    available: 5,
+    description: "Aprende los movimientos principales de la bachata.",
+  },
+  {
+    id: 3,
+    name: "Danza Urbana",
+    danceType: "Urbana",
+    academy: "Urban Dance",
+    instructor: "Andrés Pérez",
+    city: "Barranquilla",
+    modality: "Virtual",
+    schedule: "Sábados - 10:00 AM",
+    duration: "1 hora y 30 minutos",
+    price: 45000,
+    available: 12,
+    description: "Clase de danza urbana para desarrollar ritmo y coordinación.",
+  },
+  {
+    id: 4,
+    name: "Cumbia Tradicional",
+    danceType: "Cumbia",
+    academy: "Academia Folclórica del Caribe",
+    instructor: "María Rodríguez",
+    city: "Guamal",
+    modality: "Presencial",
+    schedule: "Viernes - 4:00 PM",
+    duration: "1 hora",
+    price: 40000,
+    available: 10,
+    description: "Conoce y practica los pasos tradicionales de la cumbia.",
+  },
+];
 
 function ExploreClasses() {
   const navigate = useNavigate();
+
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
   const [danceType, setDanceType] = useState("");
   const [city, setCity] = useState("");
   const [modality, setModality] = useState("");
 
-  const [loading] = useState(false);
+  useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  /*
-    Datos de demostración.
-    Posteriormente serán reemplazados por la respuesta
-    del backend.
+        /*
+         * Cuando el backend esté conectado:
+         *
+         * const data = await api("/classes/search");
+         * setClasses(data);
+         */
 
-    Endpoint:
-    GET /classes/search?tipo=&ciudad=&modalidad=
-  */
-  const classes = [
-    {
-      id: 1,
-      name: "Salsa Básica",
-      instructor: "Carlos Martínez",
-      academy: "Academia Ritmo Caribe",
-      type: "Salsa",
-      city: "Barranquilla",
-      modality: "Presencial",
-      schedule: "Lunes y miércoles · 6:00 PM",
-      price: "$80.000",
-      available: 8,
-      duration: "1 hora",
-    },
-    {
-      id: 2,
-      name: "Bachata Inicial",
-      instructor: "Laura Rodríguez",
-      academy: "Baila Conmigo",
-      type: "Bachata",
-      city: "Cartagena",
-      modality: "Presencial",
-      schedule: "Martes y jueves · 5:00 PM",
-      price: "$75.000",
-      available: 5,
-      duration: "1 hora",
-    },
-    {
-      id: 3,
-      name: "Danza Urbana",
-      instructor: "Andrés Gómez",
-      academy: "Movimiento Urbano",
-      type: "Danza urbana",
-      city: "Bogotá",
-      modality: "Virtual",
-      schedule: "Sábados · 10:00 AM",
-      price: "$60.000",
-      available: 12,
-      duration: "1 hora",
-    },
-    {
-      id: 4,
-      name: "Salsa Intermedia",
-      instructor: "Sofía Torres",
-      academy: "Danza Viva",
-      type: "Salsa",
-      city: "Medellín",
-      modality: "Presencial",
-      schedule: "Viernes · 7:00 PM",
-      price: "$90.000",
-      available: 6,
-      duration: "1 hora",
-    },
-    {
-      id: 5,
-      name: "Folclor Colombiano",
-      instructor: "María González",
-      academy: "Pasos de Colombia",
-      type: "Folclor",
-      city: "Santa Marta",
-      modality: "Presencial",
-      schedule: "Sábados · 3:00 PM",
-      price: "$65.000",
-      available: 10,
-      duration: "1 hora",
-    },
-    {
-      id: 6,
-      name: "Salsa Online",
-      instructor: "Daniel Pérez",
-      academy: "Dance Studio",
-      type: "Salsa",
-      city: "Cali",
-      modality: "Virtual",
-      schedule: "Miércoles · 8:00 PM",
-      price: "$55.000",
-      available: 15,
-      duration: "1 hora",
-    },
-    {
-      id: 7,
-      name: "Bachata Avanzada",
-      instructor: "Natalia Herrera",
-      academy: "Baila Conmigo",
-      type: "Bachata",
-      city: "Cartagena",
-      modality: "Virtual",
-      schedule: "Domingos · 4:00 PM",
-      price: "$70.000",
-      available: 9,
-      duration: "1 hora",
-    },
-    {
-      id: 8,
-      name: "Danza Contemporánea",
-      instructor: "Camila Vargas",
-      academy: "Danza Viva",
-      type: "Contemporánea",
-      city: "Medellín",
-      modality: "Presencial",
-      schedule: "Martes · 6:30 PM",
-      price: "$85.000",
-      available: 4,
-      duration: "1 hora",
-    },
-  ];
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const danceTypeOptions = [
-    { value: "", label: "Todos los tipos" },
-    { value: "Salsa", label: "Salsa" },
-    { value: "Bachata", label: "Bachata" },
-    { value: "Danza urbana", label: "Danza urbana" },
-    { value: "Contemporánea", label: "Contemporánea" },
-    { value: "Folclor", label: "Folclor" },
-  ];
+        setClasses(demoClasses);
+      } catch (err) {
+        setError(err.message || "No fue posible cargar las clases.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const cityOptions = [
-    { value: "", label: "Todas las ciudades" },
-    { value: "Barranquilla", label: "Barranquilla" },
-    { value: "Bogotá", label: "Bogotá" },
-    { value: "Cali", label: "Cali" },
-    { value: "Cartagena", label: "Cartagena" },
-    { value: "Medellín", label: "Medellín" },
-    { value: "Santa Marta", label: "Santa Marta" },
-  ];
+    loadClasses();
+  }, []);
+
+  const danceTypeOptions = useMemo(() => {
+    const values = [...new Set(classes.map((item) => item.danceType))];
+
+    return values.map((value) => ({
+      value,
+      label: value,
+    }));
+  }, [classes]);
+
+  const cityOptions = useMemo(() => {
+    const values = [...new Set(classes.map((item) => item.city))];
+
+    return values.map((value) => ({
+      value,
+      label: value,
+    }));
+  }, [classes]);
 
   const modalityOptions = [
-    { value: "", label: "Todas las modalidades" },
-    { value: "Presencial", label: "Presencial" },
-    { value: "Virtual", label: "Virtual" },
+    {
+      value: "Presencial",
+      label: "Presencial",
+    },
+    {
+      value: "Virtual",
+      label: "Virtual",
+    },
   ];
 
   const filteredClasses = useMemo(() => {
     const searchValue = search.toLowerCase().trim();
 
-    return classes.filter((danceClass) => {
+    return classes.filter((item) => {
       const matchesSearch =
         !searchValue ||
-        danceClass.name.toLowerCase().includes(searchValue) ||
-        danceClass.instructor.toLowerCase().includes(searchValue) ||
-        danceClass.academy.toLowerCase().includes(searchValue) ||
-        danceClass.city.toLowerCase().includes(searchValue) ||
-        danceClass.type.toLowerCase().includes(searchValue);
+        item.name?.toLowerCase().includes(searchValue) ||
+        item.academy?.toLowerCase().includes(searchValue) ||
+        item.instructor?.toLowerCase().includes(searchValue) ||
+        item.danceType?.toLowerCase().includes(searchValue);
 
-      const matchesDanceType = !danceType || danceClass.type === danceType;
+      const matchesDanceType = !danceType || item.danceType === danceType;
 
-      const matchesCity = !city || danceClass.city === city;
+      const matchesCity = !city || item.city === city;
 
-      const matchesModality = !modality || danceClass.modality === modality;
+      const matchesModality = !modality || item.modality === modality;
 
       return (
         matchesSearch && matchesDanceType && matchesCity && matchesModality
@@ -179,25 +159,19 @@ function ExploreClasses() {
     });
   }, [classes, search, danceType, city, modality]);
 
-  const hasFilters = search || danceType || city || modality;
-
-  const handleClearFilters = () => {
+  const clearFilters = () => {
     setSearch("");
     setDanceType("");
     setCity("");
     setModality("");
   };
 
-  const handleClassDetail = (classId) => {
-    navigate(`/clases/${classId}`);
-  };
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/registro");
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
   if (loading) {
@@ -205,230 +179,193 @@ function ExploreClasses() {
   }
 
   return (
-    <div className="explore-classes-page">
-      <main className="explore-classes-content">
-        {/* HERO */}
+    <div className="explore-classes">
+      <section className="explore-hero">
+        <div className="explore-hero-content">
+          <span className="explore-badge">Encuentra tu ritmo</span>
 
-        <section className="explore-classes-hero">
-          <div className="explore-classes-hero-text">
-            <span className="explore-classes-eyebrow">
-              ENCUENTRA TU PRÓXIMA CLASE
-            </span>
+          <h1>Explora clases de danza</h1>
 
-            <h1>
-              Explora clases
-              <br />
-              <strong>de danza</strong>
-            </h1>
+          <p>
+            Encuentra la clase que más te guste, conoce diferentes academias y
+            comienza a disfrutar de la danza.
+          </p>
 
-            <p>
-              Encuentra clases de diferentes estilos, ciudades y modalidades que
-              se adapten a lo que estás buscando.
-            </p>
-          </div>
-
-          <div className="explore-classes-hero-icon">♫</div>
-        </section>
-
-        {/* FILTROS */}
-
-        <section className="explore-classes-filters">
-          <div className="explore-classes-search">
-            <span>⌕</span>
+          <div className="explore-search">
+            <span className="search-icon">⌕</span>
 
             <input
               type="text"
+              placeholder="Busca una clase, academia, instructor o danza..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar clase, instructor o academia..."
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+        </div>
+      </section>
 
-          <div className="explore-classes-filter">
+      <main className="explore-container">
+        <section className="filters-section">
+          <div className="filters-header">
+            <div>
+              <h2>Encuentra tu clase</h2>
+              <p>
+                Utiliza los filtros para encontrar una clase según tus
+                preferencias.
+              </p>
+            </div>
+
+            {(search || danceType || city || modality) && (
+              <button
+                type="button"
+                className="clear-filters"
+                onClick={clearFilters}
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+
+          <div className="filters-grid">
             <Select
-              label="Tipo de baile"
+              label="Tipo de danza"
               name="danceType"
               value={danceType}
-              onChange={(event) => setDanceType(event.target.value)}
+              onChange={(e) => setDanceType(e.target.value)}
               options={danceTypeOptions}
+              placeholder="Todas las danzas"
             />
-          </div>
 
-          <div className="explore-classes-filter">
             <Select
               label="Ciudad"
               name="city"
               value={city}
-              onChange={(event) => setCity(event.target.value)}
+              onChange={(e) => setCity(e.target.value)}
               options={cityOptions}
+              placeholder="Todas las ciudades"
             />
-          </div>
 
-          <div className="explore-classes-filter">
             <Select
               label="Modalidad"
               name="modality"
               value={modality}
-              onChange={(event) => setModality(event.target.value)}
+              onChange={(e) => setModality(e.target.value)}
               options={modalityOptions}
+              placeholder="Todas las modalidades"
             />
           </div>
-
-          {hasFilters && (
-            <button
-              type="button"
-              className="explore-classes-clear"
-              onClick={handleClearFilters}
-            >
-              Limpiar
-            </button>
-          )}
         </section>
 
-        {/* RESULTADOS */}
+        {error && <ErrorMessage message={error} onClose={() => setError("")} />}
 
-        <section className="explore-classes-results">
-          <div className="explore-classes-results-header">
+        <section className="results-section">
+          <div className="results-header">
             <div>
-              <span className="explore-classes-results-eyebrow">
-                CLASES DISPONIBLES
+              <h2>Clases disponibles</h2>
+              <span>
+                {filteredClasses.length}{" "}
+                {filteredClasses.length === 1
+                  ? "clase encontrada"
+                  : "clases encontradas"}
               </span>
-
-              <h2>Encuentra una clase para ti</h2>
-
-              <p>
-                Explora las opciones disponibles y elige la clase que más te
-                interese.
-              </p>
             </div>
-
-            <span className="explore-classes-count">
-              {filteredClasses.length} clases
-            </span>
           </div>
 
-          {filteredClasses.length > 0 ? (
-            <div className="explore-classes-grid">
+          {filteredClasses.length === 0 ? (
+            <EmptyState
+              title="No encontramos clases"
+              message="Intenta cambiar los filtros o realizar otra búsqueda."
+              icon="💃"
+              action={
+                <button
+                  type="button"
+                  className="empty-action"
+                  onClick={clearFilters}
+                >
+                  Ver todas las clases
+                </button>
+              }
+            />
+          ) : (
+            <div className="classes-grid">
               {filteredClasses.map((danceClass) => (
-                <article className="explore-class-card" key={danceClass.id}>
-                  <div className="explore-class-card-top">
-                    <div className="explore-class-icon">♫</div>
+                <article className="class-card" key={danceClass.id}>
+                  <div className="class-card-top">
+                    <span className="dance-type">{danceClass.danceType}</span>
 
-                    <span className="explore-class-modality">
+                    <span
+                      className={`modality ${
+                        danceClass.modality === "Virtual" ? "virtual" : ""
+                      }`}
+                    >
                       {danceClass.modality}
                     </span>
                   </div>
 
-                  <div className="explore-class-body">
-                    <span className="explore-class-type">
-                      {danceClass.type}
-                    </span>
-
+                  <div className="class-card-content">
                     <h3>{danceClass.name}</h3>
 
-                    <p className="explore-class-academy">
-                      {danceClass.academy}
+                    <p className="academy-name">{danceClass.academy}</p>
+
+                    <p className="class-description">
+                      {danceClass.description}
                     </p>
 
-                    <div className="explore-class-instructor">
-                      <span>♙</span>
+                    <div className="class-info">
                       <div>
-                        <small>Instructor</small>
+                        <span>Instructor</span>
                         <strong>{danceClass.instructor}</strong>
                       </div>
-                    </div>
 
-                    <div className="explore-class-data">
                       <div>
-                        <span>📍</span>
-                        <div>
-                          <small>Ciudad</small>
-                          <strong>{danceClass.city}</strong>
-                        </div>
+                        <span>Ciudad</span>
+                        <strong>{danceClass.city}</strong>
                       </div>
 
                       <div>
-                        <span>◷</span>
-                        <div>
-                          <small>Horario</small>
-                          <strong>{danceClass.schedule}</strong>
-                        </div>
+                        <span>Horario</span>
+                        <strong>{danceClass.schedule}</strong>
+                      </div>
+
+                      <div>
+                        <span>Duración</span>
+                        <strong>{danceClass.duration}</strong>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="explore-class-footer">
-                      <div className="explore-class-price">
-                        <small>Precio</small>
-
-                        <strong>{danceClass.price}</strong>
-                      </div>
-
-                      <div className="explore-class-slots">
-                        <small>Cupos</small>
-
-                        <strong>{danceClass.available} disponibles</strong>
-                      </div>
+                  <div className="class-card-bottom">
+                    <div>
+                      <span>Desde</span>
+                      <strong>{formatPrice(danceClass.price)}</strong>
                     </div>
+
+                    <span className="available">
+                      {danceClass.available} cupos disponibles
+                    </span>
+                  </div>
+
+                  <div className="class-card-actions">
+                    <button
+                      type="button"
+                      className="details-button"
+                      onClick={() => navigate(`/clases/${danceClass.id}`)}
+                    >
+                      Ver detalles
+                    </button>
 
                     <button
                       type="button"
-                      className="explore-class-button"
-                      onClick={() => handleClassDetail(danceClass.id)}
+                      className="enroll-button"
+                      onClick={() => navigate(`/clases/${danceClass.id}`)}
                     >
-                      Ver clase →
+                      Inscribirme
                     </button>
                   </div>
                 </article>
               ))}
             </div>
-          ) : (
-            <EmptyState
-              icon="⌕"
-              title="No encontramos clases"
-              message="Intenta cambiar los filtros o realizar otra búsqueda."
-              action={
-                hasFilters
-                  ? {
-                      label: "Limpiar filtros",
-                      onClick: handleClearFilters,
-                    }
-                  : undefined
-              }
-            />
           )}
-        </section>
-
-        {/* AVISO */}
-
-        <section className="explore-classes-notice">
-          <div className="explore-classes-notice-icon">♫</div>
-
-          <div className="explore-classes-notice-text">
-            <h2>¿Encontraste la clase que buscas?</h2>
-
-            <p>
-              Inicia sesión o crea una cuenta para poder inscribirte y continuar
-              con el pago.
-            </p>
-          </div>
-
-          <div className="explore-classes-notice-actions">
-            <button
-              type="button"
-              className="explore-classes-notice-login"
-              onClick={handleLogin}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="explore-classes-notice-register"
-              onClick={handleRegister}
-            >
-              Crear cuenta
-            </button>
-          </div>
         </section>
       </main>
     </div>
