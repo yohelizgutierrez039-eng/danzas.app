@@ -1,21 +1,25 @@
-import api from "../api/api";
+import api from "./api";
 
 export const createEnrollment = async ({ claseId, menorId }) => {
-	const body = {
-		class_id: claseId,
-	};
+  const body = {
+    class_id: claseId,
+  };
 
-	// Se envía solo cuando el padre está inscribiendo a un menor.
-	if (menorId) {
-		body.dependent_id = menorId;
-	}
+  if (menorId) {
+    body.dependent_id = menorId;
+  }
 
-	return await api("/enrollments", {
-		method: "POST",
-		body: JSON.stringify(body),
-	});
+  return await api("/enrollments", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+};
+
+export const getEnrollmentHistory = async (userId) => {
+  return await api(`/users/${userId}/enrollments`);
 };
 
 export default {
-	createEnrollment,
+  createEnrollment,
+  getEnrollmentHistory,
 };
