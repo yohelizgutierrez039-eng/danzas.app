@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Loading from "../../../components/Loading/Loading";
-import EmptyState from "../../../components/EmptyState/EmptyState";
-import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
+import Loading from "../../../components/common/Loading/Loading";
+import EmptyState from "../../../components/common/EmptyState/EmptyState";
+import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
 import "./AcademiesAdmin.css";
 
 function AcademiesAdmin() {

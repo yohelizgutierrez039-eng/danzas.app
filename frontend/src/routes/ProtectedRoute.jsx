@@ -1,8 +1,8 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import "./Protected.css";
+import "./ProtectedRoute.css";
 
-function Protected({ isAuthenticated, userRole, allowedRoles = [] }) {
+function ProtectedRoute({ isAuthenticated, userRole, allowedRoles = [] }) {
   const location = useLocation();
 
   // =====================================
@@ -52,4 +52,4 @@ function Protected({ isAuthenticated, userRole, allowedRoles = [] }) {
   return <Outlet />;
 }
 
-export default Protected;
+export default ProtectedRoute;

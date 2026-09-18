@@ -79,57 +79,6 @@ function HowItWorks() {
 
   return (
     <div className="how-it-works-page">
-      {/* HEADER */}
-      <header className="how-header">
-        <div className="how-header-container">
-          <button
-            type="button"
-            className="how-logo"
-            onClick={() => navigate("/")}
-          >
-            <span className="how-logo-icon">♫</span>
-
-            <span>
-              Danzas<span className="how-logo-dot">.app</span>
-            </span>
-          </button>
-
-          <nav className="how-nav">
-            <button type="button" onClick={() => navigate("/")}>
-              Inicio
-            </button>
-
-            <button type="button" onClick={() => navigate("/clases")}>
-              Explorar clases
-            </button>
-
-            <button type="button" onClick={() => navigate("/academias")}>
-              Academias
-            </button>
-
-            <button type="button" className="how-nav-active">
-              ¿Cómo funciona?
-            </button>
-
-            <button
-              type="button"
-              className="how-login"
-              onClick={() => navigate("/login")}
-            >
-              Iniciar sesión
-            </button>
-
-            <button
-              type="button"
-              className="how-register"
-              onClick={() => navigate("/registro")}
-            >
-              Registrarse
-            </button>
-          </nav>
-        </div>
-      </header>
-
       {/* HERO */}
       <section className="how-hero">
         <div className="how-hero-container">
@@ -411,47 +360,6 @@ function HowItWorks() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="how-footer">
-        <div className="how-footer-container">
-          <div className="how-footer-brand">
-            <button
-              type="button"
-              className="how-footer-logo"
-              onClick={() => navigate("/")}
-            >
-              <span>♫</span>
-              Danzas<span>.app</span>
-            </button>
-
-            <p>Una plataforma para descubrir y gestionar clases de danza.</p>
-          </div>
-
-          <div className="how-footer-links">
-            <h4>Explorar</h4>
-
-            <button onClick={() => navigate("/")}>Inicio</button>
-
-            <button onClick={() => navigate("/clases")}>Clases</button>
-
-            <button onClick={() => navigate("/academias")}>Academias</button>
-
-            <button onClick={() => navigate("/about")}>Sobre nosotros</button>
-          </div>
-
-          <div className="how-footer-links">
-            <h4>Cuenta</h4>
-
-            <button onClick={() => navigate("/login")}>Iniciar sesión</button>
-
-            <button onClick={() => navigate("/registro")}>Registrarse</button>
-          </div>
-        </div>
-
-        <div className="how-footer-bottom">
-          <p>© 2026 Danzas.app. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </div>
   );
 }

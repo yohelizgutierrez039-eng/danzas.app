@@ -1,5 +1,5 @@
 import React from "react";
-import "./instructorinfo.css";
+import "./InstructorInfo.css";
 
 const InstructorInfo = ({ instructor, onEdit, onChangeStatus, onBack }) => {
   if (!instructor) {

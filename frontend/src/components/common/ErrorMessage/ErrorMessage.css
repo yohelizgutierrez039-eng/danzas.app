@@ -1,0 +1,197 @@
+/* =========================================
+   Danzas.app - ErrorMessage
+   ========================================= */
+
+.error-message {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 13px 15px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  border: 1px solid;
+  border-radius: var(--radius-md);
+
+  font-family: inherit;
+
+  animation: error-message-show var(--transition-base);
+}
+
+/* =========================================
+   Icono
+   ========================================= */
+
+.error-message-icon {
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: var(--font-weight-extrabold);
+}
+
+/* =========================================
+   Contenido
+   ========================================= */
+
+.error-message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-message-title {
+  margin: 0 0 3px;
+
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.4;
+}
+
+.error-message-text {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   Error
+   ========================================= */
+
+.error-message-error {
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+}
+
+.error-message-error .error-message-icon {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+/* =========================================
+   Warning
+   ========================================= */
+
+.error-message-warning {
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.error-message-warning .error-message-icon {
+  background: var(--color-warning);
+  color: var(--color-text-inverse);
+}
+
+/* =========================================
+   Info
+   ========================================= */
+
+.error-message-info {
+  border-color: var(--color-info-border);
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.error-message-info .error-message-icon {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* =========================================
+   Success
+   ========================================= */
+
+.error-message-success {
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
+}
+
+.error-message-success .error-message-icon {
+  background: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+/* =========================================
+   Botón cerrar
+   ========================================= */
+
+.error-message-close {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 5px;
+
+  background: transparent;
+  color: currentColor;
+
+  font-family: inherit;
+  font-size: 19px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-base),
+    opacity var(--transition-base);
+}
+
+.error-message-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.error-message-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* =========================================
+   Animación
+   ========================================= */
+
+@keyframes error-message-show {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 480px) {
+  .error-message {
+    padding: 12px;
+  }
+
+  .error-message-title {
+    font-size: 12px;
+  }
+
+  .error-message-text {
+    font-size: 11px;
+  }
+}

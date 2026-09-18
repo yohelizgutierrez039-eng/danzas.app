@@ -1,0 +1,156 @@
+/* src/components/common/Badge.css */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+
+  border: 1px solid transparent;
+
+  white-space: nowrap;
+}
+
+/* =========================
+   TAMAÑOS
+   ========================= */
+
+.badge--small {
+  padding: 4px 8px;
+
+  font-size: 10px;
+}
+
+.badge--medium {
+  padding: 6px 10px;
+
+  font-size: 12px;
+}
+
+.badge--large {
+  padding: 8px 14px;
+
+  font-size: 14px;
+}
+
+/* =========================
+   BORDES
+   ========================= */
+
+.badge--rounded {
+  border-radius: var(--radius-pill);
+}
+
+/* =========================
+   VARIANTE DEFAULT
+   ========================= */
+
+.badge--default {
+  color: var(--color-text-secondary);
+
+  background-color: #f2f3f7;
+
+  border-color: #e3e5ec;
+}
+
+/* =========================
+   PRIMARY
+   Inspirado en el morado
+   de Danzas.app
+   ========================= */
+
+.badge--primary {
+  color: var(--color-primary-dark);
+
+  background-color: var(--color-primary-bg-strong);
+
+  border-color: var(--color-primary-border);
+}
+
+/* =========================
+   INFO
+   ========================= */
+
+.badge--info {
+  color: var(--color-info);
+
+  background-color: var(--color-info-bg);
+
+  border-color: var(--color-info-border);
+}
+
+/* =========================
+   SUCCESS
+   ========================= */
+
+.badge--success {
+  color: var(--color-success-dark);
+
+  background-color: var(--color-success-bg);
+
+  border-color: var(--color-success-border);
+}
+
+/* =========================
+   WARNING
+   ========================= */
+
+.badge--warning {
+  color: #b45309;
+
+  background-color: #fef3c7;
+
+  border-color: #fde68a;
+}
+
+/* =========================
+   DANGER
+   ========================= */
+
+.badge--danger {
+  color: var(--color-danger);
+
+  background-color: var(--color-danger-bg);
+
+  border-color: var(--color-danger-border);
+}
+
+/* =========================
+   PINK
+   ========================= */
+
+.badge--pink {
+  color: #be185d;
+
+  background-color: #fce7f3;
+
+  border-color: #fbcfe8;
+}
+
+/* =========================
+   ORANGE
+   ========================= */
+
+.badge--orange {
+  color: var(--color-warning-text);
+
+  background-color: var(--color-warning-bg);
+
+  border-color: var(--color-warning-border);
+}
+
+/* =========================
+   DARK
+   ========================= */
+
+.badge--dark {
+  color: var(--color-text-inverse);
+
+  background-color: #171b34;
+
+  border-color: #171b34;
+}

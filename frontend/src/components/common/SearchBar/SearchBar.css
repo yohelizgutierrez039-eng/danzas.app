@@ -1,0 +1,222 @@
+/* src/components/common/SearchBar.css */
+
+
+/* =========================
+   CONTENEDOR
+   ========================= */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  width: fit-content;
+
+  padding: 0 12px;
+
+  background-color: var(--color-bg);
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+
+  box-sizing: border-box;
+
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.search-bar--full-width {
+  width: 100%;
+}
+
+
+/* =========================
+   FOCUS
+   ========================= */
+
+.search-bar:focus-within {
+  border-color: var(--color-primary);
+
+  box-shadow: var(--focus-ring-primary);
+}
+
+
+/* =========================
+   INPUT
+   ========================= */
+
+.search-bar__input {
+  flex: 1;
+
+  width: 100%;
+
+  padding: 0;
+
+  color: var(--color-text-body);
+
+  background-color: transparent;
+
+  border: none;
+  outline: none;
+
+  font-family: inherit;
+}
+
+.search-bar__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+
+/* Ocultar la X nativa de type="search" */
+
+.search-bar__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+
+/* =========================
+   TAMAÑOS
+   ========================= */
+
+.search-bar--small {
+  min-height: 34px;
+}
+
+.search-bar--small
+.search-bar__input {
+  font-size: 12px;
+}
+
+.search-bar--medium {
+  min-height: 42px;
+}
+
+.search-bar--medium
+.search-bar__input {
+  font-size: 14px;
+}
+
+.search-bar--large {
+  min-height: 50px;
+
+  padding: 0 14px;
+}
+
+.search-bar--large
+.search-bar__input {
+  font-size: 16px;
+}
+
+
+/* =========================
+   ICONO DE BÚSQUEDA
+   ========================= */
+
+.search-bar__search-icon {
+  flex-shrink: 0;
+
+  color: var(--color-text-icon-muted);
+
+  font-size: 18px;
+
+  transition:
+    color var(--transition-base);
+}
+
+.search-bar:focus-within
+.search-bar__search-icon {
+  color: var(--color-primary);
+}
+
+
+/* =========================
+   BOTÓN LIMPIAR
+   ========================= */
+
+.search-bar__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  color: var(--color-text-icon-muted);
+
+  background-color: transparent;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition:
+    color var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.search-bar__clear:hover {
+  color: var(--color-primary);
+
+  background-color: var(--color-primary-bg);
+}
+
+.search-bar__clear:focus-visible {
+  outline: 3px solid
+    rgba(124, 58, 237, 0.2);
+
+  outline-offset: 1px;
+}
+
+
+/* =========================
+   DISABLED
+   ========================= */
+
+.search-bar--disabled {
+  background-color: #f3f4f6;
+
+  border-color: var(--color-border);
+
+  cursor: not-allowed;
+}
+
+.search-bar--disabled
+.search-bar__input {
+  color: var(--color-text-muted);
+
+  cursor: not-allowed;
+}
+
+.search-bar--disabled
+.search-bar__search-icon {
+  color: #c4c7cf;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 576px) {
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .search-bar--large {
+    min-height: 46px;
+
+    font-size: 14px;
+  }
+
+}

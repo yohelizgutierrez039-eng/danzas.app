@@ -1,0 +1,57 @@
+/* src/components/academies/AcademyCard.css */
+
+.academy-card {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-2);
+
+  padding: var(--space-5);
+
+  background-color: var(--color-bg);
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  transition: box-shadow var(--transition-base);
+}
+
+.academy-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.academy-card__header {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-1);
+}
+
+.academy-card__title {
+  margin: 0;
+
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.academy-card__note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.academy-card__subtext {
+  margin: 0;
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.academy-card__status {
+  margin-top: var(--space-1);
+}
+
+.academy-card__action {
+  margin-top: var(--space-3);
+}

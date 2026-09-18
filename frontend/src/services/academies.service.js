@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../api/api";
 
 /**
  * Obtener las solicitudes de academias.
@@ -6,7 +6,7 @@ import api from "./api";
  * @returns {Promise<any>}
  */
 export const getAcademyRequests = async () => {
-  return await api("/admin/academy-requests");
+	return await api("/admin/academy-requests");
 };
 
 /**
@@ -16,7 +16,7 @@ export const getAcademyRequests = async () => {
  * @returns {Promise<any>}
  */
 export const getAcademyRequestById = async (id) => {
-  return await api(`/admin/academy-requests/${id}`);
+	return await api(`/admin/academy-requests/${id}`);
 };
 
 /**
@@ -26,9 +26,9 @@ export const getAcademyRequestById = async (id) => {
  * @returns {Promise<any>}
  */
 export const approveAcademyRequest = async (id) => {
-  return await api(`/admin/academy-requests/${id}/approve`, {
-    method: "POST",
-  });
+	return await api(`/admin/academy-requests/${id}/approve`, {
+		method: "POST",
+	});
 };
 
 /**
@@ -38,9 +38,9 @@ export const approveAcademyRequest = async (id) => {
  * @returns {Promise<any>}
  */
 export const rejectAcademyRequest = async (id) => {
-  return await api(`/admin/academy-requests/${id}/reject`, {
-    method: "POST",
-  });
+	return await api(`/admin/academy-requests/${id}/reject`, {
+		method: "POST",
+	});
 };
 
 /**
@@ -50,13 +50,13 @@ export const rejectAcademyRequest = async (id) => {
  * @returns {Promise<any>}
  */
 export const getAcademyById = async (id) => {
-  return await api(`/admin/academies/${id}`);
+	return await api(`/admin/academies/${id}`);
 };
 
 export default {
-  getAcademyRequests,
-  getAcademyRequestById,
-  approveAcademyRequest,
-  rejectAcademyRequest,
-  getAcademyById,
+	getAcademyRequests,
+	getAcademyRequestById,
+	approveAcademyRequest,
+	rejectAcademyRequest,
+	getAcademyById,
 };

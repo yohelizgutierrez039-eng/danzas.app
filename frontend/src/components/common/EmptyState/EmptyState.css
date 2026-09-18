@@ -1,0 +1,177 @@
+/* src/components/common/EmptyState.css */
+
+/* =========================
+   CONTENEDOR
+   ========================= */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  padding: 50px 30px;
+
+  box-sizing: border-box;
+
+  text-align: center;
+
+  background-color: var(--color-bg);
+
+  border: 1px dashed var(--color-border-light);
+  border-radius: var(--radius-xl);
+}
+
+/* =========================
+   ICONO
+   ========================= */
+
+.empty-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 72px;
+  height: 72px;
+
+  margin-bottom: 18px;
+
+  color: var(--color-primary);
+
+  background-color: var(--color-primary-bg-strong);
+
+  border-radius: 50%;
+
+  font-size: 32px;
+}
+
+/* =========================
+   CONTENIDO
+   ========================= */
+
+.empty-state__content {
+  max-width: 480px;
+}
+
+.empty-state__title {
+  margin: 0 0 8px;
+
+  color: var(--color-text-body);
+
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.3;
+}
+
+.empty-state__description {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =========================
+   ACCIÓN
+   ========================= */
+
+.empty-state__action {
+  margin-top: 22px;
+}
+
+/* =========================
+   VARIANTES
+   ========================= */
+
+/* DEFAULT */
+
+.empty-state--default .empty-state__icon {
+  color: var(--color-primary);
+
+  background-color: var(--color-primary-bg-strong);
+}
+
+/* INFO */
+
+.empty-state--info .empty-state__icon {
+  color: var(--color-info);
+
+  background-color: var(--color-info-bg);
+}
+
+/* SUCCESS */
+
+.empty-state--success .empty-state__icon {
+  color: var(--color-success-dark);
+
+  background-color: var(--color-success-bg);
+}
+
+/* WARNING */
+
+.empty-state--warning .empty-state__icon {
+  color: var(--color-warning-text);
+
+  background-color: var(--color-warning-bg);
+}
+
+/* DANGER */
+
+.empty-state--danger .empty-state__icon {
+  color: var(--color-danger);
+
+  background-color: var(--color-danger-bg);
+}
+
+/* =========================
+   COMPACTO
+   ========================= */
+
+.empty-state--compact {
+  padding: 28px 20px;
+}
+
+.empty-state--compact .empty-state__icon {
+  width: 56px;
+  height: 56px;
+
+  margin-bottom: 14px;
+
+  font-size: 25px;
+}
+
+.empty-state--compact .empty-state__title {
+  font-size: 17px;
+}
+
+.empty-state--compact .empty-state__description {
+  font-size: 13px;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 576px) {
+  .empty-state {
+    padding: 36px 20px;
+  }
+
+  .empty-state__icon {
+    width: 62px;
+    height: 62px;
+
+    font-size: 28px;
+  }
+
+  .empty-state__title {
+    font-size: 18px;
+  }
+
+  .empty-state__description {
+    font-size: 13px;
+  }
+}

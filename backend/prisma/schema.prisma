@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  admin
+  instructor
+  estudiante
+  padre
+}
+
+enum EstadoUsuario {
+  pendiente
+  activo
+  suspendido
+}
+
+model Usuario {
+  id           String        @id @default(uuid()) @db.Char(36)
+  nombre       String        @db.VarChar(150)
+  correo       String        @unique @db.VarChar(150)
+  passwordHash String        @map("password_hash") @db.VarChar(255)
+  rol          RolUsuario
+  ciudad       String        @db.VarChar(100)
+  estado       EstadoUsuario @default(pendiente)
+  creadoEn     DateTime      @default(now()) @map("creado_en")
+
+  menores              Menor[]
+  inscripciones        Inscripcion[]
+  clases               Clase[]             @relation("InstructorClases")
+  solicitudes          SolicitudAcademia[] @relation("InstructorSolicitudes")
+  solicitudesRevisadas SolicitudAcademia[] @relation("AdminRevisor")
+
+  @@map("usuario")
+}
+
+model Menor {
+  id              String   @id @default(uuid()) @db.Char(36)
+  padreId         String   @map("padre_id") @db.Char(36)
+  nombre          String   @db.VarChar(150)
+  fechaNacimiento DateTime @map("fecha_nacimiento") @db.Date
+
+  padre         Usuario       @relation(fields: [padreId], references: [id])
+  inscripciones Inscripcion[]
+
+  @@index([padreId])
+  @@map("menor")
+}
+
+enum EstadoSolicitud {
+  pendiente
+  aprobada
+  rechazada
+}
+
+model SolicitudAcademia {
+  id             String          @id @default(uuid()) @db.Char(36)
+  instructorId   String          @map("instructor_id") @db.Char(36)
+  nombreAcademia String?         @map("nombre_academia") @db.VarChar(150)
+  estado         EstadoSolicitud @default(pendiente)
+  revisadoPor    String?         @map("revisado_por") @db.Char(36)
+  revisadoEn     DateTime?       @map("revisado_en")
+
+  instructor Usuario  @relation("InstructorSolicitudes", fields: [instructorId], references: [id])
+  revisor    Usuario? @relation("AdminRevisor", fields: [revisadoPor], references: [id])
+
+  @@index([instructorId])
+  @@map("solicitud_academia")
+}
+
+enum Modalidad {
+  presencial
+  virtual
+}
+
+enum EstadoClase {
+  activa
+  cancelada
+  finalizada
+}
+
+model Clase {
+  id             String      @id @default(uuid()) @db.Char(36)
+  instructorId   String      @map("instructor_id") @db.Char(36)
+  tipoBaile      String      @map("tipo_baile") @db.VarChar(80)
+  ciudad         String      @db.VarChar(100)
+  modalidad      Modalidad   @default(presencial)
+  cupoMaximo     Int         @map("cupo_maximo")
+  cupoDisponible Int         @map("cupo_disponible")
+  precio         Decimal     @db.Decimal(10, 2)
+  estado         EstadoClase @default(activa)
+
+  instructor    Usuario       @relation("InstructorClases", fields: [instructorId], references: [id])
+  horarios      Horario[]
+  inscripciones Inscripcion[]
+
+  @@index([tipoBaile, ciudad, estado])
+  @@index([instructorId])
+  @@map("clase")
+}
+
+model Horario {
+  id         String   @id @default(uuid()) @db.Char(36)
+  claseId    String   @map("clase_id") @db.Char(36)
+  diaSemana  Int      @map("dia_semana") @db.TinyInt
+  horaInicio DateTime @map("hora_inicio") @db.Time(0)
+  horaFin    DateTime @map("hora_fin") @db.Time(0)
+
+  clase Clase @relation(fields: [claseId], references: [id])
+
+  @@index([claseId])
+  @@map("horario")
+}
+
+enum EstadoInscripcion {
+  pendiente_pago
+  confirmada
+  cancelada
+}
+
+enum CanceladoPor {
+  estudiante
+  instructor
+}
+
+model Inscripcion {
+  id           String            @id @default(uuid()) @db.Char(36)
+  claseId      String            @map("clase_id") @db.Char(36)
+  usuarioId    String            @map("usuario_id") @db.Char(36)
+  menorId      String?           @map("menor_id") @db.Char(36)
+  estado       EstadoInscripcion
+  canceladoPor CanceladoPor?     @map("cancelado_por")
+  creadoEn     DateTime          @default(now()) @map("creado_en")
+
+  clase       Clase        @relation(fields: [claseId], references: [id])
+  usuario     Usuario      @relation(fields: [usuarioId], references: [id])
+  menor       Menor?       @relation(fields: [menorId], references: [id])
+  pago        Pago?
+  asistencias Asistencia[]
+
+  @@index([claseId])
+  @@index([usuarioId])
+  @@map("inscripcion")
+}
+
+enum EstadoPago {
+  pendiente
+  aprobado
+  rechazado
+}
+
+enum MotivoReembolso {
+  cancelacion_instructor
+  cancelacion_estudiante_anticipada
+}
+
+model Pago {
+  id                 String           @id @default(uuid()) @db.Char(36)
+  inscripcionId      String           @unique @map("inscripcion_id") @db.Char(36)
+  monto              Decimal          @db.Decimal(10, 2)
+  estado             EstadoPago
+  esSimulado         Boolean          @default(true) @map("es_simulado")
+  reembolsado        Boolean          @default(false)
+  motivoReembolso    MotivoReembolso? @map("motivo_reembolso")
+  referenciaPasarela String?          @map("referencia_pasarela") @db.VarChar(255)
+  procesadoEn        DateTime?        @map("procesado_en")
+
+  inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id])
+
+  @@map("pago")
+}
+
+model Asistencia {
+  id            String   @id @default(uuid()) @db.Char(36)
+  inscripcionId String   @map("inscripcion_id") @db.Char(36)
+  fechaSesion   DateTime @map("fecha_sesion") @db.Date
+  asistio       Boolean
+
+  inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id])
+
+  @@index([inscripcionId])
+  @@map("asistencia")
+}

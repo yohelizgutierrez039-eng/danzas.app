@@ -1,0 +1,54 @@
+/* src/components/dashboard/RecentActivity.css */
+
+.recent-activity {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-activity__row {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-3);
+
+  padding: var(--space-3) 0;
+
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.recent-activity__row:last-child {
+  border-bottom: none;
+}
+
+.recent-activity__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  width: 32px;
+  height: 32px;
+
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+
+  background-color: var(--color-primary-bg);
+
+  border-radius: var(--radius-md);
+}
+
+.recent-activity__text {
+  flex: 1;
+
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.recent-activity__date {
+  flex: 0 0 auto;
+
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}

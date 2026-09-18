@@ -1,0 +1,239 @@
+/* src/components/common/Input.css */
+
+/* =========================
+   CONTENEDOR
+   ========================= */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.input-group--full-width {
+  width: 100%;
+}
+
+/* =========================
+   LABEL
+   ========================= */
+
+.input-label {
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  color: var(--color-text-body);
+
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.input-label__required {
+  color: var(--color-danger);
+}
+
+/* =========================
+   CONTENEDOR DEL INPUT
+   ========================= */
+
+.input-container {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+}
+
+/* =========================
+   INPUT
+   ========================= */
+
+.input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-body);
+
+  background-color: var(--color-bg);
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+
+  font-family: inherit;
+
+  outline: none;
+
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+}
+
+/* =========================
+   TAMAÑOS
+   ========================= */
+
+.input--small {
+  min-height: 34px;
+
+  padding: 7px 10px;
+
+  font-size: 12px;
+}
+
+.input--medium {
+  min-height: 42px;
+
+  padding: 10px 12px;
+
+  font-size: 14px;
+}
+
+.input--large {
+  min-height: 50px;
+
+  padding: 13px 14px;
+
+  font-size: 16px;
+}
+
+/* =========================
+   PLACEHOLDER
+   ========================= */
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* =========================
+   HOVER
+   ========================= */
+
+.input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-primary-light);
+}
+
+/* =========================
+   FOCUS
+   ========================= */
+
+.input:focus {
+  border-color: var(--color-primary);
+
+  box-shadow: var(--focus-ring-primary);
+}
+
+/* =========================
+   ICONO
+   ========================= */
+
+.input-icon {
+  position: absolute;
+
+  left: 12px;
+
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--color-text-icon-muted);
+
+  font-size: 18px;
+
+  pointer-events: none;
+}
+
+.input--with-icon {
+  padding-left: 40px;
+}
+
+.input-container:focus-within .input-icon {
+  color: var(--color-primary);
+}
+
+/* =========================
+   ERROR
+   ========================= */
+
+.input--error {
+  border-color: var(--color-danger);
+}
+
+.input--error:focus {
+  border-color: var(--color-danger);
+
+  box-shadow: var(--focus-ring-danger);
+}
+
+/* =========================
+   MENSAJES
+   ========================= */
+
+.input-message {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.input-message--helper {
+  color: var(--color-text-secondary);
+}
+
+.input-message--error {
+  color: var(--color-danger);
+
+  font-weight: var(--font-weight-medium);
+}
+
+/* =========================
+   DISABLED
+   ========================= */
+
+.input:disabled {
+  color: var(--color-text-muted);
+
+  background-color: #f3f4f6;
+
+  border-color: var(--color-border);
+
+  cursor: not-allowed;
+}
+
+/* =========================
+   READ ONLY
+   ========================= */
+
+.input:read-only:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+/* =========================
+   AUTOCOMPLETADO
+   ========================= */
+
+.input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-bg) inset;
+
+  -webkit-text-fill-color: var(--color-text-body);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 576px) {
+  .input--large {
+    min-height: 46px;
+
+    padding-top: 11px;
+    padding-bottom: 11px;
+
+    font-size: 14px;
+  }
+}

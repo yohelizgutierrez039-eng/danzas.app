@@ -1,0 +1,107 @@
+/* src/components/notifications/NotificationItem.css */
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+
+  width: 100%;
+
+  padding: var(--space-3) var(--space-4);
+
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-lighter);
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: background-color var(--transition-fast);
+}
+
+.notification-item:hover {
+  background-color: var(--color-bg-muted);
+}
+
+.notification-item--unread {
+  background-color: var(--color-primary-bg);
+}
+
+.notification-item--unread:hover {
+  background-color: var(--color-primary-bg-strong);
+}
+
+.notification-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+
+  border-radius: 50%;
+
+  font-size: var(--font-size-base);
+}
+
+.notification-item__icon--info {
+  color: var(--color-info);
+  background-color: var(--color-info-bg);
+}
+
+.notification-item__icon--success {
+  color: var(--color-success);
+  background-color: var(--color-success-bg);
+}
+
+.notification-item__icon--danger {
+  color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+}
+
+.notification-item__icon--warning {
+  color: var(--color-warning);
+  background-color: var(--color-warning-bg);
+}
+
+.notification-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-item__title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.notification-item__message {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-item__date {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.notification-item__dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+
+  margin-top: 6px;
+
+  border-radius: 50%;
+  background-color: var(--color-primary);
+}

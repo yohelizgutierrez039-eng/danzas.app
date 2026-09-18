@@ -1,4 +1,16 @@
-const API_URL = "http://localhost:3000/api";
+import api from "../api/api";
+
+/**
+ * Registrar un nuevo usuario
+ * @param {Object} datos - { rol, nombre, correo, contraseña, ciudad }
+ * @returns {Promise<Object>}
+ */
+export const register = async (datos) => {
+  return await api("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+};
 
 /**
  * Iniciar sesión
@@ -6,23 +18,10 @@ const API_URL = "http://localhost:3000/api";
  * @returns {Promise<Object>}
  */
 export const login = async (credenciales) => {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  return await api("/auth/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(credenciales),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.message || "No fue posible iniciar sesión."
-    );
-  }
-
-  return data;
 };
 
 /**
@@ -31,26 +30,10 @@ export const login = async (credenciales) => {
  * @returns {Promise<Object>}
  */
 export const recoverPassword = async (correo) => {
-  const response = await fetch(`${API_URL}/auth/forgot-password`, {
+  return await api("/auth/forgot-password", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: correo,
-    }),
+    body: JSON.stringify({ email: correo }),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.message ||
-        "No fue posible procesar la recuperación de contraseña."
-    );
-  }
-
-  return data;
 };
 
 /**
@@ -60,25 +43,8 @@ export const recoverPassword = async (correo) => {
  * @returns {Promise<Object>}
  */
 export const resetPassword = async (token, nuevaPassword) => {
-  const response = await fetch(`${API_URL}/auth/reset-password`, {
+  return await api("/auth/reset-password", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      token,
-      password: nuevaPassword,
-    }),
+    body: JSON.stringify({ token, password: nuevaPassword }),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.message ||
-        "No fue posible restablecer la contraseña."
-    );
-  }
-
-  return data;
 };
