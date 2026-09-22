@@ -40,3 +40,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
+
+const adminUsersRoutes = require("./routes/adminUsers.routes");
+
+app.use("/api/admin/users", adminUsersRoutes);
