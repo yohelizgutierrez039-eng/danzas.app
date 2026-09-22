@@ -327,7 +327,11 @@
 
   box-sizing: border-box;
 
-  background: linear-gradient(135deg, var(--color-accent-bg), var(--color-accent-bg));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-bg),
+    var(--color-accent-bg)
+  );
 }
 
 .explore-class-icon {
@@ -590,7 +594,11 @@
   border: 1px solid var(--color-accent-bg);
   border-radius: var(--radius-lg);
 
-  background: linear-gradient(135deg, var(--color-accent-bg), var(--color-accent-bg));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-bg),
+    var(--color-accent-bg)
+  );
 }
 
 .explore-classes-notice-icon {
