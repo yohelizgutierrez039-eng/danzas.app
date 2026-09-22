@@ -8,3 +8,13 @@ const classController = require("../controllers/class.controller");
 router.get("/search", classController.searchClasses);
 
 module.exports = router;
+
+attendanceController
+authMiddleware
+requireRole
+router.post(
+  "/:id/attendance",
+  authMiddleware,
+  requireRole("instructor"),
+  attendanceController.registerAttendance
+);
