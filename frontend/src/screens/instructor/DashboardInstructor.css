@@ -1,0 +1,138 @@
+/* =========================================================
+   DASHBOARD - INSTRUCTOR
+   ========================================================= */
+
+.dashboard-instructor-page {
+  width: 100%;
+}
+
+.dashboard-instructor-container {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: var(--space-6);
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.dashboard-instructor-header {
+  margin-bottom: var(--space-5);
+}
+
+.dashboard-instructor-subtitle {
+  display: block;
+
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.dashboard-instructor-header h1 {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-2xl);
+}
+
+.dashboard-instructor-header p {
+  max-width: 640px;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+.dashboard-instructor-error {
+  margin-bottom: var(--space-5);
+}
+
+/* =========================
+   STATS
+========================= */
+
+.instructor-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .instructor-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =========================
+   CONTENT GRID
+========================= */
+
+.instructor-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: var(--space-5);
+}
+
+@media (min-width: 900px) {
+  .instructor-content-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.instructor-panel {
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.instructor-panel-header {
+  margin-bottom: var(--space-4);
+}
+
+.instructor-panel-header h2 {
+  margin: 0 0 var(--space-1);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-lg);
+}
+
+.instructor-panel-header p {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 640px) {
+  .dashboard-instructor-container {
+    padding: var(--space-4);
+  }
+}
