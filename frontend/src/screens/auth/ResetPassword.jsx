@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { resetPassword } from "../../services/auth.service";
 import "./ResetPassword.css";
 
 function ResetPassword() {
@@ -39,23 +40,17 @@ function ResetPassword() {
       return;
     }
 
+    if (!token) {
+      setError(
+        "El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo."
+      );
+      return;
+    }
+
     setLoading(true);
 
-    /*
-      Posteriormente se conectará con el backend.
-
-      Endpoint sugerido:
-      POST /auth/reset-password
-
-      Body:
-      {
-        token: token,
-        password: password
-      }
-    */
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await resetPassword(token, password);
 
       setSuccess(
         "Tu contraseña ha sido actualizada correctamente. Ya puedes iniciar sesión."
@@ -69,7 +64,8 @@ function ResetPassword() {
       }, 1800);
     } catch (requestError) {
       setError(
-        "No fue posible cambiar la contraseña. Intenta nuevamente."
+        requestError.message ||
+          "No fue posible cambiar la contraseña. Intenta nuevamente."
       );
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDialog from "../../../components/common/ConfirmDialog/ConfirmDialog";
 import Loading from "../../../components/common/Loading/Loading";
@@ -19,10 +19,6 @@ function AcademyReview() {
     isOpen: false,
     type: null,
   });
-
-  useEffect(() => {
-    loadAcademy();
-  }, [id]);
 
   const loadAcademy = async () => {
     try {
@@ -59,6 +55,11 @@ function AcademyReview() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
+    loadAcademy();
+  }, [id]);
 
   const openDialog = (type) => {
     setDialog({

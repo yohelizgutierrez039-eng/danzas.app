@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/common/Loading/Loading";
 import EmptyState from "../../../components/common/EmptyState/EmptyState";
@@ -11,10 +11,6 @@ function AcademiesAdmin() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadRequests();
-  }, []);
 
   const loadRequests = async () => {
     try {
@@ -69,6 +65,11 @@ function AcademiesAdmin() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount, not a cascading update
+    loadRequests();
+  }, []);
 
   const handleReview = (id) => {
     navigate(`/admin/academias/${id}/revisar`);

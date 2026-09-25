@@ -1,4 +1,3 @@
-import React from "react";
 import "./InstructorCard.css";
 
 const InstructorCard = ({ instructor, onEdit, onView }) => {

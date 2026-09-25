@@ -1,15 +1,19 @@
-const deleteUser = async (id) => {
-  const user = await User.findByPk(id);
+const userRepository = require("../repositories/user.repository");
 
-  if (!user) {
-    const error = new Error("Usuario no encontrado");
-    error.status = 404;
-    throw error;
-  }
+const listarUsuarios = async () => {
+  return await userRepository.findAll();
+};
 
-  await user.destroy();
+const suspenderUsuario = async (id) => {
+  return await userRepository.updateEstado(id, "suspendido");
+};
 
-  return {
-    message: "Usuario eliminado correctamente",
-  };
+const eliminarUsuario = async (id) => {
+  return await userRepository.deleteById(id);
+};
+
+module.exports = {
+  listarUsuarios,
+  suspenderUsuario,
+  eliminarUsuario,
 };
