@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const pool = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
+const authRoutes = require("./routes/auth.routes");
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.get("/api/prueba-db", async (req, res) => {
         });
     }
 });
+
+app.use("/api/auth", authRoutes);
 
 app.use(errorHandler);
 
