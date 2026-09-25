@@ -4,7 +4,7 @@ const suspendUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await userService.suspendUser(id);
+    const user = await userService.suspenderUsuario(id);
 
     return res.status(200).json({
       message: "Usuario suspendido correctamente",
@@ -19,7 +19,28 @@ const suspendUser = async (req, res) => {
   }
 };
 
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await userService.listarUsuarios();
+    return res.status(200).json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await userService.eliminarUsuario(id);
+    return res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   // controladores existentes...
   suspendUser,
+  getUsers,
+  deleteUser,
 };

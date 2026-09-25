@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
@@ -81,6 +80,10 @@ function Sidebar({
         <div className="sidebar-user-info">
           <span className="sidebar-user-name">
             {userName}
+          </span>
+
+          <span className="sidebar-user-email">
+            {userEmail}
           </span>
 
           <span className="sidebar-user-role">

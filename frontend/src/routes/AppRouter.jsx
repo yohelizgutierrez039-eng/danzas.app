@@ -7,6 +7,8 @@ import PublicLayout from "../layouts/PublicLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import StudentLayout from "../layouts/StudentLayout";
 import ParentLayout from "../layouts/ParentLayout";
+import InstructorLayout from "../layouts/InstructorLayout";
+import AuthLayout from "../layouts/AuthLayout";
 
 // Público
 import Home from "../screens/public/Home";
@@ -24,6 +26,7 @@ import ForgotPassword from "../screens/auth/ForgotPassword";
 import ResetPassword from "../screens/auth/ResetPassword";
 
 // Admin
+import DashboardAdmin from "../screens/admin/DashboardAdmin";
 import AcademiesAdmin from "../screens/admin/academies/AcademiesAdmin";
 import AcademyReview from "../screens/admin/academies/AcademyReview";
 import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
@@ -31,11 +34,21 @@ import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
 import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
 
 // Estudiante
+import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
 
 // Padre / acudiente
+import DashboardParent from "../screens/parent/DashboardParent";
 import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
+import Dependents from "../screens/parent/Dependents";
+import DependentForm from "../screens/parent/DependentForm";
+
+// Instructor
+import DashboardInstructor from "../screens/instructor/DashboardInstructor";
+import MyClasses from "../screens/instructor/MyClasses";
+import ClassForm from "../screens/instructor/ClassForm";
+import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
 
 function AppRouter() {
   const { isAuthenticated, user } = useAuth();
@@ -56,10 +69,12 @@ function AppRouter() {
         </Route>
 
         {/* ===== Autenticación (pantallas de página completa) ===== */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Register />} />
-        <Route path="/recuperar-password" element={<ForgotPassword />} />
-        <Route path="/restablecer-password" element={<ResetPassword />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Register />} />
+          <Route path="/recuperar-password" element={<ForgotPassword />} />
+          <Route path="/restablecer-password" element={<ResetPassword />} />
+        </Route>
 
         {/* ===== Administrador ===== */}
         <Route
@@ -72,6 +87,7 @@ function AppRouter() {
           }
         >
           <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<DashboardAdmin />} />
             <Route path="/admin/academias" element={<AcademiesAdmin />} />
             <Route
               path="/admin/academias/:id/revisar"
@@ -100,6 +116,7 @@ function AppRouter() {
           }
         >
           <Route element={<StudentLayout />}>
+            <Route path="/estudiante" element={<DashboardStudent />} />
             <Route
               path="/estudiante/clases/:id"
               element={<ClassDetailStudent />}
@@ -122,7 +139,35 @@ function AppRouter() {
           }
         >
           <Route element={<ParentLayout />}>
+            <Route path="/padre" element={<DashboardParent />} />
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
+            <Route path="/padre/menores" element={<Dependents />} />
+            <Route path="/padre/menores/nuevo" element={<DependentForm />} />
+          </Route>
+        </Route>
+
+        {/* ===== Instructor ===== */}
+        <Route
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRole={userRole}
+              allowedRoles={["instructor"]}
+            />
+          }
+        >
+          <Route element={<InstructorLayout />}>
+            <Route path="/instructor" element={<DashboardInstructor />} />
+            <Route path="/instructor/clases" element={<MyClasses />} />
+            <Route path="/instructor/clases/nueva" element={<ClassForm />} />
+            <Route
+              path="/instructor/clases/:id/editar"
+              element={<ClassForm />}
+            />
+            <Route
+              path="/instructor/clases/:id"
+              element={<ClassDetailInstructor />}
+            />
           </Route>
         </Route>
 

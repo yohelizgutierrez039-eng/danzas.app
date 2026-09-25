@@ -1,4 +1,3 @@
-import React from "react";
 import "./InstructorInfo.css";
 
 const InstructorInfo = ({ instructor, onEdit, onChangeStatus, onBack }) => {

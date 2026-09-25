@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDialog from "../../../components/common/ConfirmDialog/ConfirmDialog";
 import Loading from "../../../components/common/Loading/Loading";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
 import api from "../../../api/api";
+import { getAcademyRequestById } from "../../../services/academies.service";
 import "./AcademyReview.css";
 
 function AcademyReview() {
@@ -20,45 +21,26 @@ function AcademyReview() {
     type: null,
   });
 
-  useEffect(() => {
-    loadAcademy();
-  }, [id]);
-
   const loadAcademy = async () => {
     try {
       setLoading(true);
       setError("");
 
-      /*
-       * Cuando el endpoint de detalle esté disponible:
-       *
-       * const data = await api(`/admin/academy-requests/${id}`);
-       * setAcademy(data);
-       */
+      const data = await getAcademyRequestById(id);
 
-      // Datos temporales para visualizar la pantalla.
-      setAcademy({
-        id,
-        academyName: "Academia Ritmo Caribe",
-        instructorName: "Carlos Rodríguez",
-        email: "carlos@ritmocaribe.com",
-        phone: "300 123 4567",
-        city: "Barranquilla",
-        address: "Carrera 45 # 80-20",
-        description:
-          "Academia dedicada a la enseñanza de diferentes estilos de danza.",
-        danceTypes: ["Salsa", "Bachata", "Cumbia"],
-        modality: "Presencial",
-        submittedAt: "10/09/2026",
-        status: "pending",
-        documents: ["Documento de identidad", "Documentación de la academia"],
-      });
+      setAcademy(data);
     } catch (err) {
+      setAcademy(null);
       setError(err.message || "No fue posible cargar la solicitud.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
+    loadAcademy();
+  }, [id]);
 
   const openDialog = (type) => {
     setDialog({

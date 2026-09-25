@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import Loading from "../../components/common/Loading/Loading";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
+import { searchClasses } from "../../services/classes.service";
 import "./ExploreClasses.css";
 
 function ExploreClasses() {
@@ -13,122 +14,52 @@ function ExploreClasses() {
   const [city, setCity] = useState("");
   const [modality, setModality] = useState("");
 
-  const [loading] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   /*
-    Datos de demostración.
-    Posteriormente serán reemplazados por la respuesta
-    del backend.
+    Conectado al backend real.
 
     Endpoint:
-    GET /classes/search?tipo=&ciudad=&modalidad=
+    GET /classes/search?tipo=&ciudad=
   */
-  const classes = [
-    {
-      id: 1,
-      name: "Salsa Básica",
-      instructor: "Carlos Martínez",
-      academy: "Academia Ritmo Caribe",
-      type: "Salsa",
-      city: "Barranquilla",
-      modality: "Presencial",
-      schedule: "Lunes y miércoles · 6:00 PM",
-      price: "$80.000",
-      available: 8,
-      duration: "1 hora",
-    },
-    {
-      id: 2,
-      name: "Bachata Inicial",
-      instructor: "Laura Rodríguez",
-      academy: "Baila Conmigo",
-      type: "Bachata",
-      city: "Cartagena",
-      modality: "Presencial",
-      schedule: "Martes y jueves · 5:00 PM",
-      price: "$75.000",
-      available: 5,
-      duration: "1 hora",
-    },
-    {
-      id: 3,
-      name: "Danza Urbana",
-      instructor: "Andrés Gómez",
-      academy: "Movimiento Urbano",
-      type: "Danza urbana",
-      city: "Bogotá",
-      modality: "Virtual",
-      schedule: "Sábados · 10:00 AM",
-      price: "$60.000",
-      available: 12,
-      duration: "1 hora",
-    },
-    {
-      id: 4,
-      name: "Salsa Intermedia",
-      instructor: "Sofía Torres",
-      academy: "Danza Viva",
-      type: "Salsa",
-      city: "Medellín",
-      modality: "Presencial",
-      schedule: "Viernes · 7:00 PM",
-      price: "$90.000",
-      available: 6,
-      duration: "1 hora",
-    },
-    {
-      id: 5,
-      name: "Folclor Colombiano",
-      instructor: "María González",
-      academy: "Pasos de Colombia",
-      type: "Folclor",
-      city: "Santa Marta",
-      modality: "Presencial",
-      schedule: "Sábados · 3:00 PM",
-      price: "$65.000",
-      available: 10,
-      duration: "1 hora",
-    },
-    {
-      id: 6,
-      name: "Salsa Online",
-      instructor: "Daniel Pérez",
-      academy: "Dance Studio",
-      type: "Salsa",
-      city: "Cali",
-      modality: "Virtual",
-      schedule: "Miércoles · 8:00 PM",
-      price: "$55.000",
-      available: 15,
-      duration: "1 hora",
-    },
-    {
-      id: 7,
-      name: "Bachata Avanzada",
-      instructor: "Natalia Herrera",
-      academy: "Baila Conmigo",
-      type: "Bachata",
-      city: "Cartagena",
-      modality: "Virtual",
-      schedule: "Domingos · 4:00 PM",
-      price: "$70.000",
-      available: 9,
-      duration: "1 hora",
-    },
-    {
-      id: 8,
-      name: "Danza Contemporánea",
-      instructor: "Camila Vargas",
-      academy: "Danza Viva",
-      type: "Contemporánea",
-      city: "Medellín",
-      modality: "Presencial",
-      schedule: "Martes · 6:30 PM",
-      price: "$85.000",
-      available: 4,
-      duration: "1 hora",
-    },
-  ];
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchClasses = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await searchClasses({
+          tipo: danceType || undefined,
+          ciudad: city || undefined,
+        });
+
+        if (isActive) {
+          setClasses(Array.isArray(result) ? result : []);
+        }
+      } catch (fetchError) {
+        if (isActive) {
+          setError(
+            fetchError?.message || "No se pudieron cargar las clases."
+          );
+          setClasses([]);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchClasses();
+
+    return () => {
+      isActive = false;
+    };
+  }, [danceType, city]);
 
   const danceTypeOptions = [
     { value: "", label: "Todos los tipos" },
@@ -151,33 +82,33 @@ function ExploreClasses() {
 
   const modalityOptions = [
     { value: "", label: "Todas las modalidades" },
-    { value: "Presencial", label: "Presencial" },
-    { value: "Virtual", label: "Virtual" },
+    { value: "presencial", label: "Presencial" },
+    { value: "virtual", label: "Virtual" },
   ];
 
+  /*
+    El backend filtra por ciudad en el propio query.
+    El texto de búsqueda y la modalidad se refinan acá
+    porque el endpoint de búsqueda no los soporta.
+  */
   const filteredClasses = useMemo(() => {
     const searchValue = search.toLowerCase().trim();
 
     return classes.filter((danceClass) => {
       const matchesSearch =
         !searchValue ||
-        danceClass.name.toLowerCase().includes(searchValue) ||
-        danceClass.instructor.toLowerCase().includes(searchValue) ||
-        danceClass.academy.toLowerCase().includes(searchValue) ||
-        danceClass.city.toLowerCase().includes(searchValue) ||
-        danceClass.type.toLowerCase().includes(searchValue);
+        danceClass.tipoBaile?.toLowerCase().includes(searchValue) ||
+        danceClass.ciudad?.toLowerCase().includes(searchValue);
 
-      const matchesDanceType = !danceType || danceClass.type === danceType;
+      const matchesDanceType =
+        !danceType || danceClass.tipoBaile === danceType;
 
-      const matchesCity = !city || danceClass.city === city;
+      const matchesModality =
+        !modality || danceClass.modalidad === modality;
 
-      const matchesModality = !modality || danceClass.modality === modality;
-
-      return (
-        matchesSearch && matchesDanceType && matchesCity && matchesModality
-      );
+      return matchesSearch && matchesDanceType && matchesModality;
     });
-  }, [classes, search, danceType, city, modality]);
+  }, [classes, search, danceType, modality]);
 
   const hasFilters = search || danceType || city || modality;
 
@@ -198,6 +129,20 @@ function ExploreClasses() {
 
   const handleRegister = () => {
     navigate("/registro");
+  };
+
+  const formatPrice = (precio) => {
+    const value = Number(precio);
+
+    if (Number.isNaN(value)) {
+      return "Precio por confirmar";
+    }
+
+    return value.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0,
+    });
   };
 
   if (loading) {
@@ -240,7 +185,7 @@ function ExploreClasses() {
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar clase, instructor o academia..."
+              placeholder="Buscar por tipo de baile o ciudad..."
             />
           </div>
 
@@ -307,7 +252,15 @@ function ExploreClasses() {
             </span>
           </div>
 
-          {filteredClasses.length > 0 ? (
+          {error && (
+            <EmptyState
+              icon="⚠"
+              title="No pudimos cargar las clases"
+              message={error}
+            />
+          )}
+
+          {!error && filteredClasses.length > 0 && (
             <div className="explore-classes-grid">
               {filteredClasses.map((danceClass) => (
                 <article className="explore-class-card" key={danceClass.id}>
@@ -315,43 +268,25 @@ function ExploreClasses() {
                     <div className="explore-class-icon">♫</div>
 
                     <span className="explore-class-modality">
-                      {danceClass.modality}
+                      {danceClass.modalidad === "virtual"
+                        ? "Virtual"
+                        : "Presencial"}
                     </span>
                   </div>
 
                   <div className="explore-class-body">
                     <span className="explore-class-type">
-                      {danceClass.type}
+                      {danceClass.tipoBaile}
                     </span>
 
-                    <h3>{danceClass.name}</h3>
-
-                    <p className="explore-class-academy">
-                      {danceClass.academy}
-                    </p>
-
-                    <div className="explore-class-instructor">
-                      <span>♙</span>
-                      <div>
-                        <small>Instructor</small>
-                        <strong>{danceClass.instructor}</strong>
-                      </div>
-                    </div>
+                    <h3>Clase de {danceClass.tipoBaile}</h3>
 
                     <div className="explore-class-data">
                       <div>
                         <span>📍</span>
                         <div>
                           <small>Ciudad</small>
-                          <strong>{danceClass.city}</strong>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span>◷</span>
-                        <div>
-                          <small>Horario</small>
-                          <strong>{danceClass.schedule}</strong>
+                          <strong>{danceClass.ciudad}</strong>
                         </div>
                       </div>
                     </div>
@@ -360,13 +295,15 @@ function ExploreClasses() {
                       <div className="explore-class-price">
                         <small>Precio</small>
 
-                        <strong>{danceClass.price}</strong>
+                        <strong>{formatPrice(danceClass.precio)}</strong>
                       </div>
 
                       <div className="explore-class-slots">
                         <small>Cupos</small>
 
-                        <strong>{danceClass.available} disponibles</strong>
+                        <strong>
+                          {danceClass.cupoDisponible} disponibles
+                        </strong>
                       </div>
                     </div>
 
@@ -381,7 +318,9 @@ function ExploreClasses() {
                 </article>
               ))}
             </div>
-          ) : (
+          )}
+
+          {!error && filteredClasses.length === 0 && (
             <EmptyState
               icon="⌕"
               title="No encontramos clases"

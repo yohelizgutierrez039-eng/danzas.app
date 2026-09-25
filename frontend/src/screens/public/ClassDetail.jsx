@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/common/Modal/Modal";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
