@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../../components/common/Loading/Loading";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
-import api from "../../../api/api";
 import "./AcademyDetailAdmin.css";
 
 function AcademyDetailAdmin() {
@@ -12,10 +11,6 @@ function AcademyDetailAdmin() {
   const [academy, setAcademy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadAcademy();
-  }, [id]);
 
   const loadAcademy = async () => {
     try {
@@ -55,6 +50,11 @@ function AcademyDetailAdmin() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
+    loadAcademy();
+  }, [id]);
 
   if (loading) {
     return <Loading text="Cargando academia..." />;
