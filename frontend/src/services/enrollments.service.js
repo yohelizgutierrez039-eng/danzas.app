@@ -16,6 +16,12 @@ export const createEnrollment = async ({ claseId, menorId }) => {
 	});
 };
 
+// Historial de inscripciones de un usuario (uso administrativo).
+export const getEnrollmentHistory = async (userId) => {
+	return await api(`/users/${userId}/enrollments`);
+};
+
 export default {
 	createEnrollment,
+	getEnrollmentHistory,
 };
