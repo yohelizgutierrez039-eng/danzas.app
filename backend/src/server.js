@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const pool = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
+const academyRequestsRoutes = require("./routes/academyRequests.routes");
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.get("/api/prueba-db", async (req, res) => {
         });
     }
 });
+
+app.use("/api/admin/academy-requests", academyRequestsRoutes);
 
 app.use(errorHandler);
 
