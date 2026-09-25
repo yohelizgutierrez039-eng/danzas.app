@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import Loading from "../../components/common/Loading/Loading";

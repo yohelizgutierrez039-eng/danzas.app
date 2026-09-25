@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
@@ -16,10 +16,6 @@ function ClassDetailStudent() {
   const [error, setError] = useState("");
 
   const [showConfirm, setShowConfirm] = useState(false);
-
-  useEffect(() => {
-    loadClass();
-  }, [id]);
 
   const loadClass = async () => {
     try {
@@ -62,6 +58,11 @@ function ClassDetailStudent() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
+    loadClass();
+  }, [id]);
 
   const handleEnroll = () => {
     if (danceClass?.enrolled) {

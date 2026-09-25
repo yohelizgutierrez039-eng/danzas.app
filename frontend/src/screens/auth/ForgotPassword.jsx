@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ForgotPassword.css";
 
@@ -51,7 +51,7 @@ function ForgotPassword() {
       );
 
       setEmail("");
-    } catch (requestError) {
+    } catch {
       setError(
         "No fue posible procesar la solicitud. Intenta nuevamente."
       );

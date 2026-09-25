@@ -119,6 +119,16 @@
   white-space: nowrap;
 }
 
+.sidebar-user-email {
+  overflow: hidden;
+
+  color: var(--color-text-muted);
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sidebar-user-role {
   color: var(--color-text-muted);
   font-size: 11px;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
@@ -13,10 +13,6 @@ function EnrollmentProcess() {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadClass();
-  }, [id]);
 
   const loadClass = async () => {
     try {
@@ -51,6 +47,11 @@ function EnrollmentProcess() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
+    loadClass();
+  }, [id]);
 
   const handleEnrollment = async () => {
     try {
