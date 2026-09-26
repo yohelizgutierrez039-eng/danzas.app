@@ -4,7 +4,7 @@ const suspendUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await userService.suspendUser(id);
+    const user = await userService.suspenderUsuario(id);
 
     return res.status(200).json({
       message: "Usuario suspendido correctamente",

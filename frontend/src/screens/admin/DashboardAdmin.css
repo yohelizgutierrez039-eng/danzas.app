@@ -1,0 +1,138 @@
+/* =========================================================
+   DASHBOARD - ADMINISTRADOR
+   ========================================================= */
+
+.dashboard-admin-page {
+  width: 100%;
+}
+
+.dashboard-admin-container {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: var(--space-6);
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.dashboard-admin-header {
+  margin-bottom: var(--space-5);
+}
+
+.dashboard-admin-subtitle {
+  display: block;
+
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.dashboard-admin-header h1 {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-2xl);
+}
+
+.dashboard-admin-header p {
+  max-width: 640px;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+.dashboard-admin-error {
+  margin-bottom: var(--space-5);
+}
+
+/* =========================
+   STATS
+========================= */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =========================
+   CONTENT GRID
+========================= */
+
+.admin-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: var(--space-5);
+}
+
+@media (min-width: 900px) {
+  .admin-content-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.admin-panel {
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-panel-header {
+  margin-bottom: var(--space-4);
+}
+
+.admin-panel-header h2 {
+  margin: 0 0 var(--space-1);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-lg);
+}
+
+.admin-panel-header p {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 640px) {
+  .dashboard-admin-container {
+    padding: var(--space-4);
+  }
+}

@@ -1,0 +1,243 @@
+/* =========================================================
+   INSCRIPCIONES DE MIS HIJOS - PADRE DE FAMILIA
+   ========================================================= */
+
+.my-enrollments-parent {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: var(--space-6);
+
+  box-sizing: border-box;
+}
+
+.my-enrollments-parent-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 240px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.my-enrollments-parent-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-5);
+}
+
+.parent-enrollments-eyebrow {
+  display: block;
+
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.my-enrollments-parent-header h1 {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-2xl);
+}
+
+.my-enrollments-parent-header p {
+  max-width: 640px;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+.parent-explore-button {
+  border: none;
+  border-radius: var(--radius-md);
+
+  padding: var(--space-3) var(--space-5);
+
+  background: var(--gradient-primary-diagonal);
+  color: var(--color-text-inverse);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.parent-explore-button:hover {
+  background: var(--gradient-primary-diagonal-hover);
+}
+
+/* =========================
+   FILTER
+========================= */
+
+.parent-enrollments-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-primary-bg);
+}
+
+.parent-enrollments-filter h2 {
+  margin: 0 0 var(--space-1);
+
+  color: var(--color-text-heading);
+
+  font-size: var(--font-size-base);
+}
+
+.parent-enrollments-filter p {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-xs);
+}
+
+.parent-enrollments-filter select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  padding: var(--space-2) var(--space-3);
+
+  background: var(--color-bg);
+  color: var(--color-text-body);
+
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+
+  min-width: 200px;
+}
+
+.parent-enrollments-filter select:focus {
+  outline: none;
+  box-shadow: var(--focus-ring-primary);
+}
+
+/* =========================
+   LIST
+========================= */
+
+.parent-enrollments-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-4);
+}
+
+.parent-enrollment-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.parent-enrollment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: var(--space-3);
+
+  margin-bottom: var(--space-4);
+}
+
+.parent-enrollment-header h2 {
+  margin: 0;
+
+  color: var(--color-text-heading);
+
+  font-size: var(--font-size-lg);
+}
+
+.parent-enrollment-status {
+  border-radius: var(--radius-pill);
+
+  padding: var(--space-1) var(--space-3);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral);
+}
+
+.parent-enrollment-status.status-confirmada {
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
+}
+
+.parent-enrollment-status.status-pendiente_pago {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-dark);
+}
+
+.parent-enrollment-status.status-cancelada {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+}
+
+.parent-class-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: var(--space-4);
+}
+
+.parent-class-details div {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-1);
+}
+
+.parent-class-details span {
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-xs);
+}
+
+.parent-class-details strong {
+  color: var(--color-text-body);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}

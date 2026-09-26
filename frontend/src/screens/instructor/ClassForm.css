@@ -1,0 +1,203 @@
+.class-form-page {
+  padding: var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+.class-form-container {
+  width: 100%;
+  max-width: 56rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.class-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.class-form-subtitle {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-2);
+}
+
+.class-form-header h1 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-2xl);
+  color: var(--color-text-heading);
+}
+
+.class-form-header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  max-width: 40rem;
+}
+
+.class-form-back {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+}
+
+.class-form-error {
+  margin-bottom: var(--space-2);
+}
+
+.schedule-conflict {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--color-warning-text);
+}
+
+.schedule-conflict h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.conflict-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: var(--space-2) 0;
+}
+
+.conflict-help {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-sm);
+}
+
+.class-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-section {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.form-section .section-title h2 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-heading);
+}
+
+.form-section .section-title p {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-group label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-body);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-body);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-primary);
+}
+
+.price-input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+}
+
+.price-input input {
+  border: none;
+  padding: var(--space-2) 0;
+}
+
+.price-input input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.validation-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.btn-cancel {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-5);
+  cursor: pointer;
+}
+
+.btn-save {
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--gradient-primary-diagonal);
+  color: var(--color-text-inverse);
+  padding: var(--space-2) var(--space-5);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.btn-save:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

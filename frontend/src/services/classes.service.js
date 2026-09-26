@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../api/api";
 
 // Buscar clases públicamente
 export const searchClasses = async ({ tipo, ciudad } = {}) => {
