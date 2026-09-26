@@ -26,6 +26,7 @@ import ForgotPassword from "../screens/auth/ForgotPassword";
 import ResetPassword from "../screens/auth/ResetPassword";
 
 // Admin
+import DashboardAdmin from "../screens/admin/DashboardAdmin";
 import AcademiesAdmin from "../screens/admin/academies/AcademiesAdmin";
 import AcademyReview from "../screens/admin/academies/AcademyReview";
 import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
@@ -33,10 +34,12 @@ import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
 import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
 
 // Estudiante
+import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
 
 // Padre / acudiente
+import DashboardParent from "../screens/parent/DashboardParent";
 import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
 import Dependents from "../screens/parent/Dependents";
 import DependentForm from "../screens/parent/DependentForm";
@@ -84,6 +87,7 @@ function AppRouter() {
           }
         >
           <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<DashboardAdmin />} />
             <Route path="/admin/academias" element={<AcademiesAdmin />} />
             <Route
               path="/admin/academias/:id/revisar"
@@ -112,6 +116,7 @@ function AppRouter() {
           }
         >
           <Route element={<StudentLayout />}>
+            <Route path="/estudiante" element={<DashboardStudent />} />
             <Route
               path="/estudiante/clases/:id"
               element={<ClassDetailStudent />}
@@ -134,6 +139,7 @@ function AppRouter() {
           }
         >
           <Route element={<ParentLayout />}>
+            <Route path="/padre" element={<DashboardParent />} />
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
             <Route path="/padre/menores" element={<Dependents />} />
             <Route path="/padre/menores/nuevo" element={<DependentForm />} />
