@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../../components/common/Loading/Loading";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
+import { getAcademyById } from "../../../services/academies.service";
 import "./AcademyDetailAdmin.css";
 
 function AcademyDetailAdmin() {
@@ -17,35 +18,20 @@ function AcademyDetailAdmin() {
       setLoading(true);
       setError("");
 
-      /*
-       * Cuando esté disponible el endpoint del backend:
-       *
-       * const data = await api(`/admin/academies/${id}`);
-       * setAcademy(data);
-       */
+      const data = await getAcademyById(id);
 
-      // Datos temporales para visualizar la pantalla.
-      setAcademy({
-        id,
-        academyName: "Academia Ritmo Caribe",
-        instructorName: "Carlos Rodríguez",
-        email: "carlos@ritmocaribe.com",
-        phone: "300 123 4567",
-        city: "Barranquilla",
-        address: "Carrera 45 # 80-20",
-        description:
-          "Academia dedicada a la enseñanza de diferentes estilos de danza.",
-        danceTypes: ["Salsa", "Bachata", "Cumbia"],
-        modality: "Presencial",
-        approvedAt: "13/09/2026",
-        status: "approved",
-        totalClasses: 8,
-        activeStudents: 32,
-      });
+      setAcademy(data);
     } catch (err) {
-      setError(
-        err.message || "No fue posible cargar la información de la academia.",
-      );
+      setAcademy(null);
+
+      if (err.status === 404) {
+        setError("No se encontró la academia solicitada.");
+      } else {
+        setError(
+          err.message ||
+            "No fue posible cargar la información de la academia.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +49,10 @@ function AcademyDetailAdmin() {
   if (!academy) {
     return (
       <div className="academy-detail-admin">
-        <ErrorMessage message="No se encontró la academia." type="error" />
+        <ErrorMessage
+          message={error || "No se encontró la academia."}
+          type="error"
+        />
       </div>
     );
   }
