@@ -15,7 +15,7 @@ const ESTADO_CONFIG = {
 function EnrollmentStatusBadge({ estado }) {
   const config = ESTADO_CONFIG[estado] || ESTADO_CONFIG.pendiente_pago;
 
-  return <span className={`badge badge--${config.variant}`}>{config.label}</span>;
+  return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
 export default EnrollmentStatusBadge;

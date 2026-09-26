@@ -1,0 +1,138 @@
+/* =========================================================
+   MIS MENORES - PADRE DE FAMILIA
+   ========================================================= */
+
+.dependents-page {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  min-height: 60vh;
+
+  padding: var(--space-6);
+
+  box-sizing: border-box;
+}
+
+.dependents-container {
+  width: 100%;
+  max-width: 960px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.dependents-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-5);
+}
+
+.dependents-subtitle {
+  display: block;
+
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.dependents-header h1 {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-2xl);
+}
+
+.dependents-header p {
+  max-width: 640px;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+.dependents-error {
+  margin-bottom: var(--space-5);
+}
+
+/* =========================
+   LIST
+========================= */
+
+.dependents-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-4);
+}
+
+.dependent-card {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-4);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dependent-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--color-primary-bg-strong);
+  color: var(--color-primary-dark);
+
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dependent-info {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-1);
+}
+
+.dependent-info strong {
+  color: var(--color-text-heading);
+
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dependent-info span {
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}

@@ -42,7 +42,7 @@ const api = async (endpoint, options = {}) => {
    * Intentamos obtener la respuesta como JSON.
    * Si el backend no devuelve contenido, dejamos data en null.
    */
-  let data = null;
+  let data;
 
   try {
     data = await response.json();
