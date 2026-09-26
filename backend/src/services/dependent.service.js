@@ -1,4 +1,5 @@
 const dependentRepository = require("../repositories/dependent.repository");
+const { AppError } = require("../middleware/errorHandler");
 
 const registrarMenor = async (
   padreId,
@@ -22,6 +23,22 @@ const registrarMenor = async (
   });
 };
 
+const listarMenores = async (padreId) => {
+  return await dependentRepository.findByPadre(padreId);
+};
+
+const obtenerMenorPorId = async (id) => {
+  const menor = await dependentRepository.findById(id);
+
+  if (!menor) {
+    throw new AppError("Menor no encontrado.", 404, "DEPENDENT_NOT_FOUND");
+  }
+
+  return menor;
+};
+
 module.exports = {
   registrarMenor,
+  listarMenores,
+  obtenerMenorPorId,
 };
