@@ -1,4 +1,5 @@
 const dependentRepository = require("../repositories/dependent.repository");
+const { AppError } = require("../middleware/errorHandler");
 
 const registrarMenor = async (
   padreId,
@@ -7,11 +8,11 @@ const registrarMenor = async (
 ) => {
   // El solicitante debe ser padre
   if (rolSolicitante !== "padre") {
-    const error = new Error(
+    throw new AppError(
       "Solo los usuarios con rol padre pueden registrar menores.",
+      403,
+      "FORBIDDEN_NOT_PARENT",
     );
-    error.status = 403;
-    throw error;
   }
 
   // El padreId proviene del usuario autenticado
