@@ -2,8 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
-const authMiddleware = require("../middlewares/auth.middleware");
-const requireRole = require("../middlewares/roleGuard.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
+const requireRole = require("../middleware/roleGuard.middleware");
 const academyRequestController = require("../controllers/academyRequest.controller");
 
 // Obtener solicitudes de academia
