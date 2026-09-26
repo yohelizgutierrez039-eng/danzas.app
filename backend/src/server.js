@@ -1,3 +1,4 @@
+const usersRoutes = require("./routes/users.routes");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -35,6 +36,7 @@ app.get("/api/prueba-db", async (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes);
 
 app.use(errorHandler);
 
