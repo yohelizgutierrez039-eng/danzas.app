@@ -23,7 +23,7 @@ const createDependent = async (req, res, next) => {
     next(error);
   }
 };
-/*
+
 const getDependents = async (req, res, next) => {
   try {
     const padreId = req.user.id;
@@ -51,7 +51,7 @@ const getDependentById = async (req, res, next) => {
     next(error);
   }
 };
-*/
+
 
 module.exports = {
   createDependent,
