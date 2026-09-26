@@ -8,6 +8,7 @@ const { errorHandler } = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 const academyRequestsRoutes = require("./routes/academyRequests.routes");
 const adminUsersRoutes = require("./routes/adminUsers.routes");
+const classesRoutes = require("./routes/classes.routes");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/admin/academy-requests", academyRequestsRoutes);
 app.use("/api/admin/users", adminUsersRoutes);
+app.use("/api/classes", classesRoutes);
 
 app.use(errorHandler);
 
