@@ -1,24 +1,19 @@
 const classService = require("../services/class.service");
 
-const searchClasses = async (req, res) => {
+const searchClasses = async (req, res, next) => {
   try {
-    const { tipoBaile, ciudad } = req.query;
+    const { tipo, ciudad } = req.query;
 
-    const classes = await classService.searchClasses({
-      tipoBaile,
+    const classes = await classService.buscarClases({
+      tipo,
       ciudad,
     });
 
     return res.status(200).json(classes);
   } catch (error) {
-    console.error("Error al buscar clases:", error);
-
-    return res.status(500).json({
-      message: "Error al buscar las clases",
-    });
+    next(error);
   }
 };
-
 const createClass = async (req, res, next) => {
   try {
     const instructorId = req.user.id;

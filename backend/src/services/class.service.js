@@ -40,6 +40,13 @@ const editarClase = async (claseId, instructorId, datosNuevos) => {
   return await classRepository.update(claseId, datosNuevos);
 };
 
+const buscarClases = async ({ tipo, ciudad }) => {
+  return await classRepository.search({
+    tipoBaile: tipo,
+    ciudad,
+  });
+};
+
 const cancelarClase = async (claseId, instructorId) => {
   const clase = await classRepository.findById(claseId);
 
@@ -59,4 +66,5 @@ module.exports = {
   crearClase,
   editarClase,
   cancelarClase,
+  buscarClases
 };
