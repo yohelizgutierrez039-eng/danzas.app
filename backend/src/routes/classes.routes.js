@@ -3,8 +3,8 @@ const router = express.Router();
 
 const classController = require("../controllers/class.controller");
 const attendanceController = require("../controllers/attendance.controller");
-const authMiddleware = require("../middlewares/auth.middleware");
-const requireRole = require("../middlewares/requireRole");
+const authMiddleware = require("../middleware/auth.middleware");
+const requireRole = require("../middleware/requireRole");
 
 // Búsqueda y filtrado de clases - RF-011
 // Ruta pública, sin verifyToken
