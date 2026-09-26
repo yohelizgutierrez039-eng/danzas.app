@@ -2,22 +2,19 @@ const bcrypt = require("bcrypt");
 const userRepository = require("../repositories/user.repository");
 const jwtUtil = require("../utils/jwt.util");
 const emailService = require("./email.service");
+const { AppError } = require("../middleware/errorHandler");
 
 const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
   const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!correoRegex.test(correo)) {
-    const error = new Error("El formato del correo no es válido.");
-    error.status = 400;
-    throw error;
+    throw new AppError("El formato del correo no es válido.", 400, "INVALID_EMAIL_FORMAT");
   }
 
   const usuarioExistente = await userRepository.findByEmail(correo);
 
   if (usuarioExistente) {
-    const error = new Error("El correo ya está registrado.");
-    error.status = 409;
-    throw error;
+    throw new AppError("El correo ya está registrado.", 409, "EMAIL_ALREADY_REGISTERED");
   }
 
   const contraseñaValida =
@@ -27,11 +24,11 @@ const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
     /\d/.test(contraseña);
 
   if (!contraseñaValida) {
-    const error = new Error(
+    throw new AppError(
       "La contraseña debe tener mínimo 8 caracteres y combinar letras y números.",
+      400,
+      "WEAK_PASSWORD",
     );
-    error.status = 400;
-    throw error;
   }
 
   const passwordHash = await bcrypt.hash(contraseña, 10);
@@ -51,7 +48,7 @@ const login = async ({ correo, contraseña }) => {
   const user = await userRepository.findByEmail(correo);
 
   if (!user) {
-    throw new Error("Correo o contraseña incorrectos");
+    throw new AppError("Correo o contraseña incorrectos", 401, "INVALID_CREDENTIALS");
   }
 
   const ahora = new Date();
@@ -59,11 +56,11 @@ const login = async ({ correo, contraseña }) => {
   if (user.bloqueadoHasta && new Date(user.bloqueadoHasta) > ahora) {
     const diferenciaMs = new Date(user.bloqueadoHasta).getTime() - ahora.getTime();
     const minutosRestantes = Math.ceil(diferenciaMs / 60000);
-    const error = new Error(
+    throw new AppError(
       `Cuenta bloqueada. Intenta nuevamente en ${minutosRestantes} minuto${minutosRestantes !== 1 ? "s" : ""}.`,
+      423,
+      "ACCOUNT_LOCKED",
     );
-    error.status = 423;
-    throw error;
   }
 
   const passwordCorrecta = await bcrypt.compare(contraseña, user.passwordHash);
@@ -79,14 +76,14 @@ const login = async ({ correo, contraseña }) => {
     await userRepository.update(user.id, datosActualizar);
 
     if (intentosFallidos >= 5) {
-      const error = new Error(
+      throw new AppError(
         "Cuenta bloqueada durante 15 minutos por demasiados intentos fallidos.",
+        423,
+        "ACCOUNT_LOCKED",
       );
-      error.status = 423;
-      throw error;
     }
 
-    throw new Error("Correo o contraseña incorrectos");
+    throw new AppError("Correo o contraseña incorrectos", 401, "INVALID_CREDENTIALS");
   }
 
   await userRepository.update(user.id, {
@@ -124,21 +121,23 @@ const restablecerPassword = async (token, nuevaPassword) => {
   try {
     payload = jwtUtil.verifyToken(token);
   } catch (error) {
-    const err = new Error("El enlace de recuperación no es válido o ha expirado.");
-    err.status = 400;
-    throw err;
+    throw new AppError(
+      "El enlace de recuperación no es válido o ha expirado.",
+      400,
+      "INVALID_TOKEN",
+    );
   }
 
   if (payload.tipo !== "recuperacion_password") {
-    const error = new Error("Token de recuperación inválido.");
-    error.status = 400;
-    throw error;
+    throw new AppError("Token de recuperación inválido.", 400, "INVALID_TOKEN");
   }
 
   if (!nuevaPassword || nuevaPassword.length < 8) {
-    const error = new Error("La contraseña debe tener al menos 8 caracteres.");
-    error.status = 400;
-    throw error;
+    throw new AppError(
+      "La contraseña debe tener al menos 8 caracteres.",
+      400,
+      "WEAK_PASSWORD",
+    );
   }
 
   const passwordHash = await bcrypt.hash(nuevaPassword, 10);
