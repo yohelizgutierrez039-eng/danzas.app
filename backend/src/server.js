@@ -6,6 +6,7 @@ require("dotenv").config();
 const pool = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
+const adminUsersRoutes = require("./routes/adminUsers.routes");
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.get("/api/prueba-db", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/admin/users", adminUsersRoutes);
 
 app.use(errorHandler);
 
@@ -45,7 +47,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
-
-const adminUsersRoutes = require("./routes/adminUsers.routes");
-
-app.use("/api/admin/users", adminUsersRoutes);
