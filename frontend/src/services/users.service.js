@@ -24,9 +24,25 @@ export const deleteUser = async (id) => {
   });
 };
 
+// Registrar un menor a cargo del padre autenticado
+// (el backend obtiene el padreId del token, no de la URL)
+export const createDependent = async (datos) => {
+  return await api("/users/dependents", {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+};
+
+// Obtener los menores a cargo del padre autenticado
+export const getDependents = async () => {
+  return await api("/users/dependents");
+};
+
 export default {
   getUsers,
   getUserById,
   suspendUser,
   deleteUser,
+  createDependent,
+  getDependents,
 };
