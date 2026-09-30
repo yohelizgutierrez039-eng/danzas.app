@@ -4,6 +4,7 @@ import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import api from "../../api/api";
 import "./EnrollmentProcess.css";
+import { createEnrollment } from "../../services/enrollments.service";
 
 function EnrollmentProcess() {
   const { id } = useParams();
@@ -58,12 +59,7 @@ function EnrollmentProcess() {
       setEnrolling(true);
       setError("");
 
-      const response = await api("/enrollments", {
-        method: "POST",
-        body: JSON.stringify({
-          class_id: classData.id,
-        }),
-      });
+      createEnrollment({ claseId });
 
       /*
        * El backend puede devolver paymentUrl
