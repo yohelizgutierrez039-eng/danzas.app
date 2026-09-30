@@ -22,7 +22,23 @@ export const getEnrollmentHistory = async (userId) => {
 	return await api(`/users/${userId}/enrollments`);
 };
 
+// Simula el pago de una inscripcion pendiente de pago.
+export const simulatePayment = async (enrollmentId) => {
+	return await api(`/enrollments/${enrollmentId}/simulate-payment`, {
+		method: "POST",
+	});
+};
+
+// Cancela una inscripcion (el backend decide si aplica reembolso).
+export const cancelEnrollment = async (enrollmentId) => {
+	return await api(`/enrollments/${enrollmentId}`, {
+		method: "DELETE",
+	});
+};
+
 export default {
 	createEnrollment,
 	getEnrollmentHistory,
+	simulatePayment,
+	cancelEnrollment,
 };
