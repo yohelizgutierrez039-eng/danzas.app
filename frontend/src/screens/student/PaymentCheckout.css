@@ -1,0 +1,105 @@
+.payment-checkout {
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--color-background);
+}
+
+.payment-card {
+  width: 100%;
+  max-width: 650px;
+  padding: var(--spacing-xl);
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.payment-card h1 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+}
+
+.payment-card h2 {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.payment-description {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-secondary);
+}
+
+.enrollment-summary,
+.payment-receipt {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+}
+
+.summary-row,
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary-row:last-child,
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row span,
+.receipt-row span {
+  color: var(--color-text-secondary);
+}
+
+.summary-row strong,
+.receipt-row strong {
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+.payment-success {
+  text-align: center;
+}
+
+.payment-success-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: var(--color-white);
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.payment-success-message {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-secondary);
+}
+
+.payment-rejected {
+  text-align: center;
+}
+
+.payment-rejected p {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-secondary);
+}
+
+.payment-error {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
