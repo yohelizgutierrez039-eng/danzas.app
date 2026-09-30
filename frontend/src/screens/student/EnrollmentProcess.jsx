@@ -7,7 +7,16 @@ import "./EnrollmentProcess.css";
 
 function EnrollmentProcess() {
   const { id } = useParams();
-  const navigate = useNavigate();
+ const response = await createEnrollment(data);
+
+if (response?.status === "pendiente_pago") {
+  navigate(`/estudiante/clases/${claseId}/inscribir/pago`, {
+    state: {
+      enrollmentId: response.enrollmentId,
+      enrollment: response,
+    },
+  });
+}
 
   const [classData, setClassData] = useState(null);
   const [loading, setLoading] = useState(true);
