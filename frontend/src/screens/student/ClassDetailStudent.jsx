@@ -5,6 +5,7 @@ import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
 import api from "../../api/api";
 import "./ClassDetailStudent.css";
+import { createEnrollment } from "../../services/enrollments.service";
 
 function ClassDetailStudent() {
   const { id } = useParams();
@@ -95,13 +96,7 @@ function ClassDetailStudent() {
        * para continuar con el pago.
        */
 
-      const response = await api("/enrollments", {
-        method: "POST",
-        body: JSON.stringify({
-          class_id: danceClass.id,
-        }),
-      });
-
+      await createEnrollment({ claseId });
       setShowConfirm(false);
 
       if (response?.paymentUrl) {
