@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import "./ExploreClassesParent.css";
+import { createEnrollment } from "../../services/enrollments.service";
+import { getMe } from "../../services/users.service";
 
 const demoChildren = [
   {
@@ -72,6 +74,11 @@ function ExploreClassesParent() {
   const [city, setCity] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [dependents, setDependents] = useState([]);
+  const [selectedDependent, setSelectedDependent] = useState("");
+  const [enrollingClassId, setEnrollingClassId] = useState(null);
+  const [enrollmentSuccess, setEnrollmentSuccess] = useState("");
+  const [enrollmentError, setEnrollmentError] = useState("");
 
   const childOptions = demoChildren.map((child) => ({
     value: child.id,
@@ -118,6 +125,53 @@ function ExploreClassesParent() {
     }
 
     navigate(`/padre/clases/${classId}/inscribir/${selectedChild}`);
+  };
+
+  useEffect(() => {
+    const loadDependents = async () => {
+      try {
+        const response = await getMe();
+
+        const menores =
+          response?.user?.dependents || response?.dependents || [];
+
+        setDependents(menores);
+      } catch (error) {
+        console.error("Error al obtener los menores:", error);
+      }
+    };
+
+    loadDependents();
+  }, []);
+
+  const handleEnroll = async (claseId) => {
+    if (!selectedDependent) {
+      setEnrollmentError("Selecciona un menor para realizar la inscripción.");
+      setEnrollmentSuccess("");
+      return;
+    }
+
+    try {
+      setEnrollingClassId(claseId);
+      setEnrollmentError("");
+      setEnrollmentSuccess("");
+
+      await createEnrollment({
+        claseId,
+        menorId: selectedDependent,
+      });
+
+      setEnrollmentSuccess("¡Inscripción realizada correctamente!");
+    } catch (error) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo realizar la inscripción.";
+
+      setEnrollmentError(backendMessage);
+    } finally {
+      setEnrollingClassId(null);
+    }
   };
 
   const clearFilters = () => {
@@ -250,56 +304,28 @@ function ExploreClassesParent() {
       ) : (
         <div className="parent-classes-grid">
           {filteredClasses.map((danceClass) => (
-            <article className="parent-class-card" key={danceClass.id}>
-              <div className="parent-class-card-top">
-                <span className="dance-type-badge">{danceClass.danceType}</span>
+            <div className="class-enrollment">
+              <select
+                value={selectedDependent}
+                onChange={(event) => setSelectedDependent(event.target.value)}
+              >
+                <option value="">Selecciona un menor</option>
 
-                <span className="modality-badge">{danceClass.modality}</span>
-              </div>
+                {dependents.map((menor) => (
+                  <option key={menor.id} value={menor.id}>
+                    {menor.nombre}
+                  </option>
+                ))}
+              </select>
 
-              <div className="parent-class-card-body">
-                <h2>{danceClass.name}</h2>
-
-                <p className="parent-academy">🏫 {danceClass.academy}</p>
-
-                <div className="parent-class-info">
-                  <span>📍 {danceClass.city}</span>
-                  <span>👤 {danceClass.instructor}</span>
-                  <span>🕐 {danceClass.schedule}</span>
-                  <span>⏱️ {danceClass.duration}</span>
-                  <span>👧 {danceClass.ageRange}</span>
-                </div>
-
-                <div className="parent-class-footer">
-                  <div>
-                    <span className="price-label">Mensualidad</span>
-                    <strong>${danceClass.price.toLocaleString("es-CO")}</strong>
-                  </div>
-
-                  <span className="available-spots">
-                    {danceClass.availableSpots} cupos disponibles
-                  </span>
-                </div>
-              </div>
-
-              <div className="parent-class-actions">
-                <button
-                  type="button"
-                  className="details-button"
-                  onClick={() => navigate(`/clases/${danceClass.id}`)}
-                >
-                  Ver detalles
-                </button>
-
-                <button
-                  type="button"
-                  className="enroll-child-button"
-                  onClick={() => handleViewClass(danceClass.id)}
-                >
-                  Inscribir hijo/a
-                </button>
-              </div>
-            </article>
+              <button
+                type="button"
+                onClick={() => handleEnroll(item.id)}
+                disabled={!selectedDependent || enrollingClassId === item.id}
+              >
+                {enrollingClassId === item.id ? "Inscribiendo..." : "Inscribir"}
+              </button>
+            </div>
           ))}
         </div>
       )}
