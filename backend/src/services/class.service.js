@@ -3,6 +3,33 @@ const classRepository = require("../repositories/class.repository");
 const enrollmentRepository = require("../repositories/enrollment.repository");
 const scheduleService = require("./schedule.service");
 const { AppError } = require("../middleware/errorHandler");
+const emitirCorreo = require("../events/emitirCorreo");
+const plantillas = require("../utils/emailTemplates");
+
+/**
+ * RF-017: un correo por cada inscripcion afectada por la cancelacion de la clase
+ * (al estudiante, o al padre si la inscripcion es de un menor). Se arma con las
+ * inscripciones leidas antes de cancelarlas y se emite despues del commit.
+ */
+const notificarClaseCancelada = (clase, inscripciones) => {
+  emitirCorreo(() =>
+    inscripciones.map((inscripcion) => {
+      const pago = inscripcion.pago;
+      const reembolso = Boolean(pago) && pago.estado === "aprobado" && !pago.reembolsado;
+
+      return {
+        destinatario: inscripcion.usuario?.correo,
+        ...plantillas.claseCanceladaPorInstructor({
+          nombre: inscripcion.usuario?.nombre,
+          clase,
+          reembolso,
+          monto: pago?.monto,
+          nombreMenor: inscripcion.menor?.nombre,
+        }),
+      };
+    }),
+  );
+};
 
 const searchClasses = async ({ tipoBaile, ciudad }) => {
   return await classRepository.searchClasses({
@@ -60,12 +87,22 @@ const cancelarClase = async (claseId, instructorId) => {
   // RF-009: la clase y todas sus inscripciones se cancelan de forma atómica.
   // Marcar primero la clase toma su lock de fila, así que una inscripción
   // concurrente (que bloquea esa misma fila) verá la clase ya cancelada.
-  return await prisma.$transaction(async (tx) => {
-    const claseCancelada = await classRepository.delete(claseId, tx);
-    const resumen = await enrollmentRepository.cancelarPorClaseDeInstructor(claseId, tx);
+  const { claseCancelada, resumen, afectadas } = await prisma.$transaction(async (tx) => {
+    const claseActualizada = await classRepository.delete(claseId, tx);
+    // Se leen antes de cancelarlas: despues ya no serian "activas".
+    const inscripcionesAfectadas = await enrollmentRepository.findActivasPorClase(claseId, tx);
+    const resultado = await enrollmentRepository.cancelarPorClaseDeInstructor(claseId, tx);
 
-    return { ...claseCancelada, ...resumen };
+    return {
+      claseCancelada: claseActualizada,
+      resumen: resultado,
+      afectadas: inscripcionesAfectadas,
+    };
   });
+
+  notificarClaseCancelada(clase, afectadas);
+
+  return { ...claseCancelada, ...resumen };
 };
 
 module.exports = {
