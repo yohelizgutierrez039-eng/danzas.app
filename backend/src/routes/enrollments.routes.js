@@ -22,4 +22,12 @@ router.post(
   paymentController.simulatePayment,
 );
 
+// Cancelación con reembolso condicional - RF-018
+router.delete(
+  "/:id",
+  authMiddleware,
+  requireRole("estudiante", "padre"),
+  enrollmentController.cancelarInscripcion,
+);
+
 module.exports = router;

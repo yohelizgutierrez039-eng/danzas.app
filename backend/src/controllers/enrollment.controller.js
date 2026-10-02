@@ -32,7 +32,18 @@ const obtenerHistorial = async (req, res, next) => {
   }
 };
 
+const cancelarInscripcion = async (req, res, next) => {
+  try {
+    const resultado = await enrollmentService.cancelarInscripcion(req.params.id, req.user);
+
+    return res.status(200).json(resultado);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   crearInscripcion,
   obtenerHistorial,
+  cancelarInscripcion,
 };
