@@ -1,24 +1,11 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import "./ExploreClassesParent.css";
 import { createEnrollment } from "../../services/enrollments.service";
-import { getMe } from "../../services/users.service";
-
-const demoChildren = [
-  {
-    id: 1,
-    name: "Sofía Gutiérrez",
-    age: 10,
-  },
-  {
-    id: 2,
-    name: "Mateo Gutiérrez",
-    age: 8,
-  },
-];
+import { getDependents } from "../../services/users.service";
+import "./ExploreClassesParent.css";
 
 const demoClasses = [
   {
@@ -75,14 +62,29 @@ function ExploreClassesParent() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [dependents, setDependents] = useState([]);
-  const [selectedDependent, setSelectedDependent] = useState("");
   const [enrollingClassId, setEnrollingClassId] = useState(null);
   const [enrollmentSuccess, setEnrollmentSuccess] = useState("");
-  const [enrollmentError, setEnrollmentError] = useState("");
 
-  const childOptions = demoChildren.map((child) => ({
-    value: child.id,
-    label: `${child.name} (${child.age} años)`,
+  // Menores a cargo del padre autenticado (GET /users/dependents).
+  useEffect(() => {
+    const loadDependents = async () => {
+      try {
+        const data = await getDependents();
+
+        setDependents(
+          Array.isArray(data) ? data : data?.dependents || data?.data || [],
+        );
+      } catch (err) {
+        setError(err.message || "No se pudieron cargar los menores.");
+      }
+    };
+
+    loadDependents();
+  }, []);
+
+  const childOptions = dependents.map((child) => ({
+    value: String(child.id),
+    label: child.nombre,
   }));
 
   const danceTypeOptions = [
@@ -118,57 +120,27 @@ function ExploreClassesParent() {
     });
   }, [search, danceType, modality, city]);
 
-  const handleViewClass = (classId) => {
+  // POST /enrollments/:claseId con { menorId } en el cuerpo.
+  const handleEnroll = async (claseId) => {
     if (!selectedChild) {
       setError("Primero debes seleccionar cuál hijo/a quieres inscribir.");
-      return;
-    }
-
-    navigate(`/padre/clases/${classId}/inscribir/${selectedChild}`);
-  };
-
-  useEffect(() => {
-    const loadDependents = async () => {
-      try {
-        const response = await getMe();
-
-        const menores =
-          response?.user?.dependents || response?.dependents || [];
-
-        setDependents(menores);
-      } catch (error) {
-        console.error("Error al obtener los menores:", error);
-      }
-    };
-
-    loadDependents();
-  }, []);
-
-  const handleEnroll = async (claseId) => {
-    if (!selectedDependent) {
-      setEnrollmentError("Selecciona un menor para realizar la inscripción.");
       setEnrollmentSuccess("");
       return;
     }
 
     try {
       setEnrollingClassId(claseId);
-      setEnrollmentError("");
+      setError("");
       setEnrollmentSuccess("");
 
       await createEnrollment({
         claseId,
-        menorId: selectedDependent,
+        menorId: selectedChild,
       });
 
       setEnrollmentSuccess("¡Inscripción realizada correctamente!");
-    } catch (error) {
-      const backendMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "No se pudo realizar la inscripción.";
-
-      setEnrollmentError(backendMessage);
+    } catch (err) {
+      setError(err.message || "No se pudo realizar la inscripción.");
     } finally {
       setEnrollingClassId(null);
     }
@@ -216,6 +188,11 @@ function ExploreClassesParent() {
             }}
             options={childOptions}
             placeholder="Selecciona un hijo/a"
+            helperText={
+              dependents.length === 0
+                ? "Aún no tienes menores registrados. Regístralos en Mis menores."
+                : ""
+            }
             required
             fullWidth
           />
@@ -223,6 +200,15 @@ function ExploreClassesParent() {
       </section>
 
       {error && <ErrorMessage message={error} onClose={() => setError("")} />}
+
+      {enrollmentSuccess && (
+        <ErrorMessage
+          title="Inscripción registrada"
+          message={enrollmentSuccess}
+          type="success"
+          onClose={() => setEnrollmentSuccess("")}
+        />
+      )}
 
       <section className="parent-filters">
         <div className="parent-search">
@@ -287,9 +273,9 @@ function ExploreClassesParent() {
             Inscripción para:{" "}
             <strong>
               {
-                demoChildren.find(
+                dependents.find(
                   (child) => String(child.id) === String(selectedChild),
-                )?.name
+                )?.nombre
               }
             </strong>
           </div>
@@ -304,28 +290,59 @@ function ExploreClassesParent() {
       ) : (
         <div className="parent-classes-grid">
           {filteredClasses.map((danceClass) => (
-            <div className="class-enrollment">
-              <select
-                value={selectedDependent}
-                onChange={(event) => setSelectedDependent(event.target.value)}
-              >
-                <option value="">Selecciona un menor</option>
+            <article className="parent-class-card" key={danceClass.id}>
+              <div className="parent-class-card-top">
+                <span className="dance-type-badge">{danceClass.danceType}</span>
 
-                {dependents.map((menor) => (
-                  <option key={menor.id} value={menor.id}>
-                    {menor.nombre}
-                  </option>
-                ))}
-              </select>
+                <span className="modality-badge">{danceClass.modality}</span>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => handleEnroll(item.id)}
-                disabled={!selectedDependent || enrollingClassId === item.id}
-              >
-                {enrollingClassId === item.id ? "Inscribiendo..." : "Inscribir"}
-              </button>
-            </div>
+              <div className="parent-class-card-body">
+                <h2>{danceClass.name}</h2>
+
+                <p className="parent-academy">🏫 {danceClass.academy}</p>
+
+                <div className="parent-class-info">
+                  <span>📍 {danceClass.city}</span>
+                  <span>👤 {danceClass.instructor}</span>
+                  <span>🕐 {danceClass.schedule}</span>
+                  <span>⏱️ {danceClass.duration}</span>
+                  <span>👧 {danceClass.ageRange}</span>
+                </div>
+
+                <div className="parent-class-footer">
+                  <div>
+                    <span className="price-label">Mensualidad</span>
+                    <strong>${danceClass.price.toLocaleString("es-CO")}</strong>
+                  </div>
+
+                  <span className="available-spots">
+                    {danceClass.availableSpots} cupos disponibles
+                  </span>
+                </div>
+              </div>
+
+              <div className="parent-class-actions">
+                <button
+                  type="button"
+                  className="details-button"
+                  onClick={() => navigate(`/clases/${danceClass.id}`)}
+                >
+                  Ver detalles
+                </button>
+
+                <button
+                  type="button"
+                  className="enroll-child-button"
+                  onClick={() => handleEnroll(danceClass.id)}
+                  disabled={enrollingClassId === danceClass.id}
+                >
+                  {enrollingClassId === danceClass.id
+                    ? "Inscribiendo..."
+                    : "Inscribir hijo/a"}
+                </button>
+              </div>
+            </article>
           ))}
         </div>
       )}

@@ -3,9 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
-import api from "../../api/api";
-import "./ClassDetailStudent.css";
 import { createEnrollment } from "../../services/enrollments.service";
+import "./ClassDetailStudent.css";
 
 function ClassDetailStudent() {
   const { id } = useParams();
@@ -26,7 +25,7 @@ function ClassDetailStudent() {
       /*
        * Cuando esté disponible el endpoint del backend:
        *
-       * const data = await api(`/classes/${id}`);
+       * const data = await getClassById(id);
        * setDanceClass(data);
        */
 
@@ -79,24 +78,13 @@ function ClassDetailStudent() {
       setError("");
 
       /*
-       * Endpoint definido en el proyecto:
-       *
-       * POST /enrollments
-       *
-       * Ejemplo:
-       *
-       * const response = await api("/enrollments", {
-       *   method: "POST",
-       *   body: JSON.stringify({
-       *     class_id: danceClass.id,
-       *   }),
-       * });
+       * POST /enrollments/:claseId (el estudiante sale del token).
        *
        * El backend puede devolver una URL
        * para continuar con el pago.
        */
+      const response = await createEnrollment({ claseId: danceClass.id });
 
-      await createEnrollment({ claseId });
       setShowConfirm(false);
 
       if (response?.paymentUrl) {

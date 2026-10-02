@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import api from "../../api/api";
-import "./EnrollmentProcess.css";
 import { createEnrollment } from "../../services/enrollments.service";
+import "./EnrollmentProcess.css";
 
 function EnrollmentProcess() {
   const { id } = useParams();
@@ -23,7 +22,7 @@ function EnrollmentProcess() {
       /*
        * Cuando esté disponible el endpoint del backend:
        *
-       * const data = await api(`/classes/${id}`);
+       * const data = await getClassById(id);
        * setClassData(data);
        */
 
@@ -59,7 +58,8 @@ function EnrollmentProcess() {
       setEnrolling(true);
       setError("");
 
-      createEnrollment({ claseId });
+      // POST /enrollments/:claseId (el estudiante sale del token).
+      const response = await createEnrollment({ claseId: classData.id });
 
       /*
        * El backend puede devolver paymentUrl

@@ -1,16 +1,17 @@
 import api from "../api/api";
 
+/**
+ * Inscribe al usuario autenticado en una clase.
+ *
+ * POST /enrollments/:claseId
+ *
+ * Cuando un padre inscribe a un menor a su cargo se envia ademas
+ * `{ menorId }` en el cuerpo; para un estudiante el cuerpo va vacio.
+ */
 export const createEnrollment = async ({ claseId, menorId }) => {
-	const body = {
-		class_id: claseId,
-	};
+	const body = menorId ? { menorId } : {};
 
-	// Se envía solo cuando el padre está inscribiendo a un menor.
-	if (menorId) {
-		body.dependent_id = menorId;
-	}
-
-	return await api("/enrollments", {
+	return await api(`/enrollments/${claseId}`, {
 		method: "POST",
 		body: JSON.stringify(body),
 	});
