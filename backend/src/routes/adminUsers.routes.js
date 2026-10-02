@@ -12,6 +12,12 @@ router.use(authMiddleware, requireRole("admin"));
 // Obtener usuarios
 router.get("/", userController.getUsers);
 
+// Obtener un usuario por id
+router.get("/:id", userController.getUserById);
+
+// Editar usuario (nombre, correo, ciudad, estado)
+router.put("/:id", userController.updateUser);
+
 // Suspender usuario
 router.patch("/:id/suspend", userController.suspendUser);
 

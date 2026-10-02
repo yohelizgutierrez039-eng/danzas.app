@@ -175,6 +175,8 @@ const UserForm = () => {
                 value={formData.rol}
                 onChange={handleChange}
                 required
+                disabled
+                title="El rol de un usuario no se puede modificar."
               >
                 <option value="">Seleccionar rol</option>
                 <option value="admin">Administrador</option>
