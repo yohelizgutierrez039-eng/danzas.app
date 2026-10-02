@@ -23,6 +23,11 @@ const crearInscripcion = async (solicitante, { claseId, menorId }) => {
     throw new AppError("El identificador de la clase es obligatorio.", 400, "VALIDATION_ERROR");
   }
 
+  // Los ids llegan del body: se exige texto para no pasarle objetos a Prisma.
+  if (typeof claseId !== "string" || (menorId != null && typeof menorId !== "string")) {
+    throw new AppError("Los identificadores enviados no son válidos.", 400, "VALIDATION_ERROR");
+  }
+
   let usuarioId = solicitante.id;
   let menorAInscribir = null;
 
