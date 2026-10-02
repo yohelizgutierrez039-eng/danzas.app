@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { updateUser } from "../../../services/users.service";
+import Loading from "../../../components/common/Loading/Loading";
+import { getUserById, updateUser } from "../../../services/users.service";
 import "./UserForm.css";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const UserForm = () => {
   const { id } = useParams();
@@ -15,12 +18,53 @@ const UserForm = () => {
     estado: "",
   });
 
+  const [loadingUser, setLoadingUser] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Precarga los datos actuales del usuario para que "editar" no parta
+  // de un formulario vacio (y no pise datos con valores en blanco).
   useEffect(() => {
-    // Si la pantalla recibe datos por otra vía, puedes reemplazar
-    // esta carga por los datos del usuario seleccionado.
+    let cancelled = false;
+
+    const loadUser = async () => {
+      try {
+        setLoadingUser(true);
+        setError("");
+
+        const data = await getUserById(id);
+        const user = data?.user || data?.data || data;
+
+        if (cancelled) return;
+
+        if (!user) {
+          setError("No se encontró el usuario solicitado.");
+          return;
+        }
+
+        setFormData({
+          nombre: user.nombre || "",
+          correo: user.correo || "",
+          rol: user.rol || "",
+          ciudad: user.ciudad || "",
+          estado: user.estado || "",
+        });
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err.message || "No se pudo cargar la información del usuario.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingUser(false);
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleChange = (event) => {
@@ -32,26 +76,53 @@ const UserForm = () => {
     }));
   };
 
+  const validate = () => {
+    if (!formData.nombre.trim()) return "El nombre es obligatorio.";
+    if (!formData.correo.trim()) return "El correo electrónico es obligatorio.";
+    if (!EMAIL_REGEX.test(formData.correo.trim())) {
+      return "Ingresa un correo electrónico válido.";
+    }
+    if (!formData.rol) return "Debes seleccionar un rol.";
+    if (!formData.estado) return "Debes seleccionar un estado.";
+    return "";
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
 
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     try {
       setLoading(true);
 
-      await updateUser(id, formData);
+      await updateUser(id, {
+        ...formData,
+        nombre: formData.nombre.trim(),
+        correo: formData.correo.trim(),
+        ciudad: formData.ciudad.trim(),
+      });
 
-      navigate("/admin/usuarios");
+      navigate(`/admin/usuarios/${id}`);
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          "No fue posible actualizar el usuario.",
-      );
+      // El wrapper `api` lanza Error con el mensaje ya resuelto del backend.
+      setError(err?.message || "No fue posible actualizar el usuario.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (loadingUser) {
+    return (
+      <section className="user-form-page">
+        <Loading />
+      </section>
+    );
+  }
 
   return (
     <section className="user-form-page">
@@ -145,7 +216,7 @@ const UserForm = () => {
             <button
               type="button"
               className="user-form-cancel"
-              onClick={() => navigate("/admin/usuarios")}
+              onClick={() => navigate(`/admin/usuarios/${id}`)}
               disabled={loading}
             >
               Cancelar

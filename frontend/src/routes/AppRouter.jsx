@@ -32,6 +32,10 @@ import AcademyReview from "../screens/admin/academies/AcademyReview";
 import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
 import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
 import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
+import Users from "../screens/admin/Users/Users";
+import UserDetail from "../screens/admin/Users/UserDetail";
+import UserForm from "../screens/admin/Users/UserForm";
+import UserHistory from "../screens/admin/Users/UserHistory";
 
 // Estudiante
 import DashboardStudent from "../screens/student/DashboardStudent";
@@ -101,6 +105,13 @@ function AppRouter() {
             <Route
               path="/admin/classes/:id"
               element={<ClassDetailAdmin />}
+            />
+            <Route path="/admin/usuarios" element={<Users />} />
+            <Route path="/admin/usuarios/:id" element={<UserDetail />} />
+            <Route path="/admin/usuarios/:id/editar" element={<UserForm />} />
+            <Route
+              path="/admin/usuarios/:id/historial"
+              element={<UserHistory />}
             />
           </Route>
         </Route>
