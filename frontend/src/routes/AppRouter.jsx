@@ -37,12 +37,14 @@ import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
 import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
+import MyEnrollments from "../screens/student/MyEnrollments";
 
 // Padre / acudiente
 import DashboardParent from "../screens/parent/DashboardParent";
 import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
 import Dependents from "../screens/parent/Dependents";
 import DependentForm from "../screens/parent/DependentForm";
+import MyEnrollmentsParent from "../screens/parent/MyEnrollmentsParent";
 
 // Instructor
 import DashboardInstructor from "../screens/instructor/DashboardInstructor";
@@ -125,6 +127,10 @@ function AppRouter() {
               path="/estudiante/clases/:id/inscribir"
               element={<EnrollmentProcess />}
             />
+            <Route
+              path="/estudiante/inscripciones"
+              element={<MyEnrollments />}
+            />
           </Route>
         </Route>
 
@@ -143,6 +149,10 @@ function AppRouter() {
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
             <Route path="/padre/menores" element={<Dependents />} />
             <Route path="/padre/menores/nuevo" element={<DependentForm />} />
+            <Route
+              path="/padre/inscripciones"
+              element={<MyEnrollmentsParent />}
+            />
           </Route>
         </Route>
 
