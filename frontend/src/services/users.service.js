@@ -17,6 +17,14 @@ export const suspendUser = async (id) => {
   });
 };
 
+// Actualizar los datos de un usuario (nombre, correo, rol, ciudad, estado)
+export const updateUser = async (id, datos) => {
+  return await api(`/admin/users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(datos),
+  });
+};
+
 // Eliminar un usuario
 export const deleteUser = async (id) => {
   return await api(`/users/${id}`, {
@@ -42,6 +50,7 @@ export default {
   getUsers,
   getUserById,
   suspendUser,
+  updateUser,
   deleteUser,
   createDependent,
   getDependents,

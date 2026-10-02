@@ -273,6 +273,14 @@ function UserDetail() {
           </div>
 
           <div className="admin-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => navigate(`/admin/usuarios/${id}/editar`)}
+            >
+              Editar usuario
+            </button>
+
             {!isSuspended && (
               <button
                 type="button"

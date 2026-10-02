@@ -1,61 +1,41 @@
-// src/screens/admin/Users/UserForm.jsx
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import Loading from "../../../components/common/Loading/Loading";
-import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
-import Input from "../../../components/common/Input/Input";
-import Select from "../../../components/common/Select/Select";
-import { getUserById } from "../../../services/users.service";
-
+import { getUserById, updateUser } from "../../../services/users.service";
 import "./UserForm.css";
 
-const ROLE_OPTIONS = [
-  { value: "estudiante", label: "Estudiante" },
-  { value: "padre", label: "Padre de familia" },
-  { value: "instructor", label: "Instructor" },
-  { value: "admin", label: "Administrador" },
-];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const STATUS_OPTIONS = [
-  { value: "activo", label: "Activo" },
-  { value: "pendiente", label: "Pendiente" },
-  { value: "suspendido", label: "Suspendido" },
-];
-
-function UserForm() {
-  const navigate = useNavigate();
+const UserForm = () => {
   const { id } = useParams();
-
-  const isEditing = Boolean(id);
-
-  const [loading, setLoading] = useState(isEditing);
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     nombre: "",
     correo: "",
-    rol: "estudiante",
+    rol: "",
     ciudad: "",
-    estado: "activo",
+    estado: "",
   });
 
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Precarga los datos actuales del usuario para que "editar" no parta
+  // de un formulario vacio (y no pise datos con valores en blanco).
   useEffect(() => {
-    // El estado inicial de "loading" ya es `isEditing`, por lo que en modo
-    // creación no hace falta actualizarlo de nuevo aquí.
-    if (!isEditing) {
-      return;
-    }
+    let cancelled = false;
 
     const loadUser = async () => {
       try {
-        setLoading(true);
+        setLoadingUser(true);
         setError("");
 
         const data = await getUserById(id);
-
         const user = data?.user || data?.data || data;
+
+        if (cancelled) return;
 
         if (!user) {
           setError("No se encontró el usuario solicitado.");
@@ -65,21 +45,27 @@ function UserForm() {
         setFormData({
           nombre: user.nombre || "",
           correo: user.correo || "",
-          rol: user.rol || "estudiante",
+          rol: user.rol || "",
           ciudad: user.ciudad || "",
-          estado: user.estado || "activo",
+          estado: user.estado || "",
         });
       } catch (err) {
-        setError(
-          err.message || "No se pudo cargar la información del usuario.",
-        );
+        if (!cancelled) {
+          setError(
+            err.message || "No se pudo cargar la información del usuario.",
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoadingUser(false);
       }
     };
 
     loadUser();
-  }, [id, isEditing]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -90,182 +76,164 @@ function UserForm() {
     }));
   };
 
-  const validateForm = () => {
-    if (!formData.nombre.trim()) {
-      return "El nombre es obligatorio.";
-    }
-
-    if (!formData.correo.trim()) {
-      return "El correo electrónico es obligatorio.";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(formData.correo)) {
+  const validate = () => {
+    if (!formData.nombre.trim()) return "El nombre es obligatorio.";
+    if (!formData.correo.trim()) return "El correo electrónico es obligatorio.";
+    if (!EMAIL_REGEX.test(formData.correo.trim())) {
       return "Ingresa un correo electrónico válido.";
     }
-
-    if (!formData.rol) {
-      return "Debes seleccionar un rol.";
-    }
-
-    if (!formData.ciudad.trim()) {
-      return "La ciudad es obligatoria.";
-    }
-
+    if (!formData.rol) return "Debes seleccionar un rol.";
+    if (!formData.estado) return "Debes seleccionar un estado.";
     return "";
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
-    const validationError = validateForm();
-
+    const validationError = validate();
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    /*
-     * El backend todavía no expone un endpoint para crear o actualizar
-     * usuarios (users.service.js solo implementa getUsers, getUserById,
-     * suspendUser y deleteUser). En vez de simular un guardado exitoso,
-     * se informa la limitación real para no engañar a quien administra.
-     */
-    setError(
-      `Todavía no es posible ${isEditing ? "actualizar" : "crear"} usuarios: el backend no expone ese endpoint.`,
-    );
+    try {
+      setLoading(true);
+
+      await updateUser(id, {
+        ...formData,
+        nombre: formData.nombre.trim(),
+        correo: formData.correo.trim(),
+        ciudad: formData.ciudad.trim(),
+      });
+
+      navigate(`/admin/usuarios/${id}`);
+    } catch (err) {
+      // El wrapper `api` lanza Error con el mensaje ya resuelto del backend.
+      setError(err?.message || "No fue posible actualizar el usuario.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCancel = () => {
-    navigate("/admin/usuarios");
-  };
-
-  if (loading) {
+  if (loadingUser) {
     return (
-      <div className="user-form-page">
+      <section className="user-form-page">
         <Loading />
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="user-form-page">
+    <section className="user-form-page">
       <div className="user-form-container">
         <div className="user-form-header">
-          <div>
-            <span className="user-form-subtitle">
-              Administración de usuarios
-            </span>
+          <span className="user-form-eyebrow">ADMINISTRACIÓN</span>
 
-            <h1>{isEditing ? "Editar usuario" : "Nuevo usuario"}</h1>
+          <h1>Editar usuario</h1>
 
-            <p>
-              {isEditing
-                ? "Actualiza la información del usuario seleccionado."
-                : "Registra un nuevo usuario en Danzas.app."}
-            </p>
-          </div>
-
-          <button type="button" className="back-button" onClick={handleCancel}>
-            ← Volver
-          </button>
+          <p>Actualiza la información del usuario seleccionado.</p>
         </div>
 
         {error && (
-          <div className="user-form-error">
-            <ErrorMessage message={error} onClose={() => setError("")} />
+          <div className="user-form-error" role="alert">
+            {error}
           </div>
         )}
 
         <form className="user-form" onSubmit={handleSubmit}>
-          <section className="form-section">
-            <div className="form-section-header">
-              <h2>Información personal</h2>
-              <p>Completa los datos básicos del usuario.</p>
-            </div>
-
-            <div className="form-grid">
-              <Input
-                label="Nombre completo"
+          <div className="user-form-grid">
+            <div className="user-form-field">
+              <label htmlFor="nombre">Nombre</label>
+              <input
+                id="nombre"
                 name="nombre"
                 type="text"
                 value={formData.nombre}
                 onChange={handleChange}
-                placeholder="Ej. María González"
-                maxLength={100}
                 required
               />
+            </div>
 
-              <Input
-                label="Correo electrónico"
+            <div className="user-form-field">
+              <label htmlFor="correo">Correo</label>
+              <input
+                id="correo"
                 name="correo"
                 type="email"
                 value={formData.correo}
                 onChange={handleChange}
-                placeholder="Ej. usuario@email.com"
-                maxLength={120}
                 required
               />
+            </div>
 
-              <Input
-                label="Ciudad"
+            <div className="user-form-field">
+              <label htmlFor="rol">Rol</label>
+              <select
+                id="rol"
+                name="rol"
+                value={formData.rol}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar rol</option>
+                <option value="admin">Administrador</option>
+                <option value="instructor">Instructor</option>
+                <option value="estudiante">Estudiante</option>
+                <option value="padre">Padre de familia</option>
+              </select>
+            </div>
+
+            <div className="user-form-field">
+              <label htmlFor="ciudad">Ciudad</label>
+              <input
+                id="ciudad"
                 name="ciudad"
                 type="text"
                 value={formData.ciudad}
                 onChange={handleChange}
-                placeholder="Ej. Guamal"
-                maxLength={80}
-                required
               />
             </div>
-          </section>
 
-          <section className="form-section">
-            <div className="form-section-header">
-              <h2>Configuración de la cuenta</h2>
-              <p>Define el rol y estado del usuario.</p>
-            </div>
-
-            <div className="form-grid">
-              <Select
-                label="Rol"
-                name="rol"
-                value={formData.rol}
-                onChange={handleChange}
-                options={ROLE_OPTIONS}
-                placeholder=""
-                required
-              />
-
-              <Select
-                label="Estado"
+            <div className="user-form-field">
+              <label htmlFor="estado">Estado</label>
+              <select
+                id="estado"
                 name="estado"
                 value={formData.estado}
                 onChange={handleChange}
-                options={STATUS_OPTIONS}
-                placeholder=""
-              />
+                required
+              >
+                <option value="">Seleccionar estado</option>
+                <option value="activo">Activo</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="suspendido">Suspendido</option>
+              </select>
             </div>
-          </section>
+          </div>
 
-          <div className="form-actions">
+          <div className="user-form-actions">
             <button
               type="button"
-              className="cancel-button"
-              onClick={handleCancel}
+              className="user-form-cancel"
+              onClick={() => navigate(`/admin/usuarios/${id}`)}
+              disabled={loading}
             >
               Cancelar
             </button>
 
-            <button type="submit" className="save-button">
-              {isEditing ? "Guardar cambios" : "Crear usuario"}
+            <button
+              type="submit"
+              className="user-form-submit"
+              disabled={loading}
+            >
+              {loading ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </section>
   );
-}
+};
 
 export default UserForm;
