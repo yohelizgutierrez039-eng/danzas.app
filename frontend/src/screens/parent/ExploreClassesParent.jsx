@@ -1,22 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
+import { createEnrollment } from "../../services/enrollments.service";
+import { getDependents } from "../../services/users.service";
 import "./ExploreClassesParent.css";
-
-const demoChildren = [
-  {
-    id: 1,
-    name: "Sofía Gutiérrez",
-    age: 10,
-  },
-  {
-    id: 2,
-    name: "Mateo Gutiérrez",
-    age: 8,
-  },
-];
 
 const demoClasses = [
   {
@@ -72,10 +61,30 @@ function ExploreClassesParent() {
   const [city, setCity] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [dependents, setDependents] = useState([]);
+  const [enrollingClassId, setEnrollingClassId] = useState(null);
+  const [enrollmentSuccess, setEnrollmentSuccess] = useState("");
 
-  const childOptions = demoChildren.map((child) => ({
-    value: child.id,
-    label: `${child.name} (${child.age} años)`,
+  // Menores a cargo del padre autenticado (GET /users/dependents).
+  useEffect(() => {
+    const loadDependents = async () => {
+      try {
+        const data = await getDependents();
+
+        setDependents(
+          Array.isArray(data) ? data : data?.dependents || data?.data || [],
+        );
+      } catch (err) {
+        setError(err.message || "No se pudieron cargar los menores.");
+      }
+    };
+
+    loadDependents();
+  }, []);
+
+  const childOptions = dependents.map((child) => ({
+    value: String(child.id),
+    label: child.nombre,
   }));
 
   const danceTypeOptions = [
@@ -111,13 +120,30 @@ function ExploreClassesParent() {
     });
   }, [search, danceType, modality, city]);
 
-  const handleViewClass = (classId) => {
+  // POST /enrollments/:claseId con { menorId } en el cuerpo.
+  const handleEnroll = async (claseId) => {
     if (!selectedChild) {
       setError("Primero debes seleccionar cuál hijo/a quieres inscribir.");
+      setEnrollmentSuccess("");
       return;
     }
 
-    navigate(`/padre/clases/${classId}/inscribir/${selectedChild}`);
+    try {
+      setEnrollingClassId(claseId);
+      setError("");
+      setEnrollmentSuccess("");
+
+      await createEnrollment({
+        claseId,
+        menorId: selectedChild,
+      });
+
+      setEnrollmentSuccess("¡Inscripción realizada correctamente!");
+    } catch (err) {
+      setError(err.message || "No se pudo realizar la inscripción.");
+    } finally {
+      setEnrollingClassId(null);
+    }
   };
 
   const clearFilters = () => {
@@ -162,6 +188,11 @@ function ExploreClassesParent() {
             }}
             options={childOptions}
             placeholder="Selecciona un hijo/a"
+            helperText={
+              dependents.length === 0
+                ? "Aún no tienes menores registrados. Regístralos en Mis menores."
+                : ""
+            }
             required
             fullWidth
           />
@@ -169,6 +200,15 @@ function ExploreClassesParent() {
       </section>
 
       {error && <ErrorMessage message={error} onClose={() => setError("")} />}
+
+      {enrollmentSuccess && (
+        <ErrorMessage
+          title="Inscripción registrada"
+          message={enrollmentSuccess}
+          type="success"
+          onClose={() => setEnrollmentSuccess("")}
+        />
+      )}
 
       <section className="parent-filters">
         <div className="parent-search">
@@ -233,9 +273,9 @@ function ExploreClassesParent() {
             Inscripción para:{" "}
             <strong>
               {
-                demoChildren.find(
+                dependents.find(
                   (child) => String(child.id) === String(selectedChild),
-                )?.name
+                )?.nombre
               }
             </strong>
           </div>
@@ -294,9 +334,12 @@ function ExploreClassesParent() {
                 <button
                   type="button"
                   className="enroll-child-button"
-                  onClick={() => handleViewClass(danceClass.id)}
+                  onClick={() => handleEnroll(danceClass.id)}
+                  disabled={enrollingClassId === danceClass.id}
                 >
-                  Inscribir hijo/a
+                  {enrollingClassId === danceClass.id
+                    ? "Inscribiendo..."
+                    : "Inscribir hijo/a"}
                 </button>
               </div>
             </article>
