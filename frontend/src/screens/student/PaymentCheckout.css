@@ -1,105 +1,111 @@
-.payment-checkout {
+/* =========================================================
+   CHECKOUT DE PAGO SIMULADO
+   (clases prefijadas con "checkout-" para no chocar con
+   PaymentCard.css ni EnrollmentProcess.css)
+   ========================================================= */
+
+.checkout-page {
   min-height: 100vh;
-  padding: var(--spacing-xl);
+  padding: var(--space-6);
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: var(--color-background);
+  background: var(--color-bg-muted);
 }
 
-.payment-card {
+.checkout-card {
   width: 100%;
   max-width: 650px;
-  padding: var(--spacing-xl);
-  background: var(--color-surface);
-  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+  box-sizing: border-box;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
 }
 
-.payment-card h1 {
-  margin-bottom: var(--spacing-sm);
+.checkout-card h1 {
+  margin: 0 0 var(--space-2);
   color: var(--color-text-primary);
 }
 
-.payment-card h2 {
-  margin-bottom: var(--spacing-md);
+.checkout-card h2 {
+  margin: 0 0 var(--space-4);
   color: var(--color-text-primary);
 }
 
-.payment-description {
-  margin-bottom: var(--spacing-lg);
+.checkout-description {
+  margin: 0 0 var(--space-5);
   color: var(--color-text-secondary);
 }
 
-.enrollment-summary,
-.payment-receipt {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-lg);
+.checkout-box {
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius-md);
 }
 
-.summary-row,
-.receipt-row {
+.checkout-row {
   display: flex;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  padding: var(--spacing-sm) 0;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
   border-bottom: 1px solid var(--color-border);
 }
 
-.summary-row:last-child,
-.receipt-row:last-child {
+.checkout-row:last-child {
   border-bottom: none;
 }
 
-.summary-row span,
-.receipt-row span {
+.checkout-row span {
   color: var(--color-text-secondary);
 }
 
-.summary-row strong,
-.receipt-row strong {
+.checkout-row strong {
   color: var(--color-text-primary);
   text-align: right;
 }
 
-.payment-success {
+.checkout-success,
+.checkout-rejected {
   text-align: center;
 }
 
-.payment-success-icon {
+.checkout-success .checkout-box {
+  text-align: left;
+}
+
+.checkout-success-icon {
   width: 60px;
   height: 60px;
-  margin: 0 auto var(--spacing-md);
+  margin: 0 auto var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: var(--color-success);
-  color: var(--color-white);
-  font-size: 2rem;
-  font-weight: bold;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
 }
 
-.payment-success-message {
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text-secondary);
+.checkout-error {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
 }
 
-.payment-rejected {
-  text-align: center;
-}
+@media (max-width: 640px) {
+  .checkout-page {
+    padding: var(--space-4);
+  }
 
-.payment-rejected p {
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text-secondary);
-}
-
-.payment-error {
-  margin-bottom: var(--spacing-md);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  background: var(--color-error-light);
-  color: var(--color-error);
+  .checkout-card {
+    padding: var(--space-5);
+  }
 }

@@ -2,21 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import { createEnrollment } from "../../services/enrollments.service";
+import {
+  buildCheckoutRoute,
+  createEnrollment,
+} from "../../services/enrollments.service";
 import "./EnrollmentProcess.css";
 
 function EnrollmentProcess() {
   const { id } = useParams();
- const response = await createEnrollment(data);
-
-if (response?.status === "pendiente_pago") {
-  navigate(`/estudiante/clases/${claseId}/inscribir/pago`, {
-    state: {
-      enrollmentId: response.enrollmentId,
-      enrollment: response,
-    },
-  });
-}
+  const navigate = useNavigate();
 
   const [classData, setClassData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +70,17 @@ if (response?.status === "pendiente_pago") {
        */
       if (response?.paymentUrl) {
         window.location.href = response.paymentUrl;
+        return;
+      }
+
+      // Cupo reservado: continuar al checkout para confirmar el pago.
+      const checkout = buildCheckoutRoute(response, {
+        basePath: "/estudiante",
+        clase: { nombre: classData.name, precio: classData.price },
+      });
+
+      if (checkout) {
+        navigate(checkout.path, { state: checkout.state });
         return;
       }
 

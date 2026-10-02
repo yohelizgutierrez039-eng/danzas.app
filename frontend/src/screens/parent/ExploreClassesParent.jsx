@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import { createEnrollment } from "../../services/enrollments.service";
+import {
+  buildCheckoutRoute,
+  createEnrollment,
+} from "../../services/enrollments.service";
 import { getDependents } from "../../services/users.service";
 import "./ExploreClassesParent.css";
 
@@ -121,7 +124,7 @@ function ExploreClassesParent() {
   }, [search, danceType, modality, city]);
 
   // POST /enrollments/:claseId con { menorId } en el cuerpo.
-  const handleEnroll = async (claseId) => {
+  const handleEnroll = async (danceClass) => {
     if (!selectedChild) {
       setError("Primero debes seleccionar cuál hijo/a quieres inscribir.");
       setEnrollmentSuccess("");
@@ -129,14 +132,25 @@ function ExploreClassesParent() {
     }
 
     try {
-      setEnrollingClassId(claseId);
+      setEnrollingClassId(danceClass.id);
       setError("");
       setEnrollmentSuccess("");
 
-      await createEnrollment({
-        claseId,
+      const response = await createEnrollment({
+        claseId: danceClass.id,
         menorId: selectedChild,
       });
+
+      // Cupo reservado: continuar al checkout para confirmar el pago.
+      const checkout = buildCheckoutRoute(response, {
+        basePath: "/padre",
+        clase: { nombre: danceClass.name, precio: danceClass.price },
+      });
+
+      if (checkout) {
+        navigate(checkout.path, { state: checkout.state });
+        return;
+      }
 
       setEnrollmentSuccess("¡Inscripción realizada correctamente!");
     } catch (err) {
@@ -334,7 +348,7 @@ function ExploreClassesParent() {
                 <button
                   type="button"
                   className="enroll-child-button"
-                  onClick={() => handleEnroll(danceClass.id)}
+                  onClick={() => handleEnroll(danceClass)}
                   disabled={enrollingClassId === danceClass.id}
                 >
                   {enrollingClassId === danceClass.id
