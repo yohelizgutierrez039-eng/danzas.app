@@ -131,8 +131,40 @@ const incrementarCupoDisponible = async (claseId, client = prisma) => {
   });
 };
 
+/**
+ * RF-009: cuando el instructor cancela la clase, todas las inscripciones
+ * activas se cancelan (`canceladoPor: instructor`) y los pagos aprobados se
+ * reembolsan por completo. Debe ejecutarse dentro de la misma transaccion que
+ * marca la clase como cancelada.
+ */
+const cancelarPorClaseDeInstructor = async (claseId, client = prisma) => {
+  const reembolsos = await client.pago.updateMany({
+    where: {
+      estado: "aprobado",
+      reembolsado: false,
+      inscripcion: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    },
+    data: {
+      reembolsado: true,
+      motivoReembolso: "cancelacion_instructor",
+      procesadoEn: new Date(),
+    },
+  });
+
+  const inscripciones = await client.inscripcion.updateMany({
+    where: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    data: { estado: "cancelada", canceladoPor: "instructor" },
+  });
+
+  return {
+    inscripcionesCanceladas: inscripciones.count,
+    reembolsosProcesados: reembolsos.count,
+  };
+};
+
 module.exports = {
   ESTADOS_ACTIVOS,
+  cancelarPorClaseDeInstructor,
   crearConDecrementoDeCupo,
   findById,
   findByUsuario,
