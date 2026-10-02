@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import { createEnrollment } from "../../services/enrollments.service";
+import {
+  buildCheckoutRoute,
+  createEnrollment,
+} from "../../services/enrollments.service";
 import "./EnrollmentProcess.css";
 
 function EnrollmentProcess() {
@@ -67,6 +70,17 @@ function EnrollmentProcess() {
        */
       if (response?.paymentUrl) {
         window.location.href = response.paymentUrl;
+        return;
+      }
+
+      // Cupo reservado: continuar al checkout para confirmar el pago.
+      const checkout = buildCheckoutRoute(response, {
+        basePath: "/estudiante",
+        clase: { nombre: classData.name, precio: classData.price },
+      });
+
+      if (checkout) {
+        navigate(checkout.path, { state: checkout.state });
         return;
       }
 

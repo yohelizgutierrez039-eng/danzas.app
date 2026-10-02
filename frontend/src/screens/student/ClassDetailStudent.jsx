@@ -3,7 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
-import { createEnrollment } from "../../services/enrollments.service";
+import {
+  buildCheckoutRoute,
+  createEnrollment,
+} from "../../services/enrollments.service";
 import "./ClassDetailStudent.css";
 
 function ClassDetailStudent() {
@@ -89,6 +92,17 @@ function ClassDetailStudent() {
 
       if (response?.paymentUrl) {
         window.location.href = response.paymentUrl;
+        return;
+      }
+
+      // Cupo reservado: continuar al checkout para confirmar el pago.
+      const checkout = buildCheckoutRoute(response, {
+        basePath: "/estudiante",
+        clase: { nombre: danceClass.name, precio: danceClass.price },
+      });
+
+      if (checkout) {
+        navigate(checkout.path, { state: checkout.state });
         return;
       }
 

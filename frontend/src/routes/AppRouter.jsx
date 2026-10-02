@@ -38,6 +38,7 @@ import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
 import MyEnrollments from "../screens/student/MyEnrollments";
+import PaymentCheckout from "../screens/student/PaymentCheckout";
 
 // Padre / acudiente
 import DashboardParent from "../screens/parent/DashboardParent";
@@ -131,6 +132,10 @@ function AppRouter() {
               path="/estudiante/inscripciones"
               element={<MyEnrollments />}
             />
+            <Route
+              path="/estudiante/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
+            />
           </Route>
         </Route>
 
@@ -152,6 +157,10 @@ function AppRouter() {
             <Route
               path="/padre/inscripciones"
               element={<MyEnrollmentsParent />}
+            />
+            <Route
+              path="/padre/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
             />
           </Route>
         </Route>
