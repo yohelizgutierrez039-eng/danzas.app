@@ -124,6 +124,17 @@ const transicionarEstado = async (id, estadoEsperado, estado, extra = {}, client
   return count === 1;
 };
 
+/**
+ * Bloquea la fila de la clase hasta el fin de la transaccion. Toda operacion que
+ * cambia inscripciones/pagos/cupo de una clase (inscribir, pagar, cancelar, y
+ * la cancelacion de la clase) la toma PRIMERO: asi se serializan entre si y se
+ * evitan tanto las carreras (pagar vs. cancelar la clase) como los deadlocks
+ * por orden de bloqueo inconsistente.
+ */
+const bloquearClase = async (claseId, client) => {
+  await client.$queryRaw`SELECT id FROM clase WHERE id = ${claseId} FOR UPDATE`;
+};
+
 const incrementarCupoDisponible = async (claseId, client = prisma) => {
   return await client.clase.update({
     where: { id: claseId },
@@ -131,8 +142,41 @@ const incrementarCupoDisponible = async (claseId, client = prisma) => {
   });
 };
 
+/**
+ * RF-009: cuando el instructor cancela la clase, todas las inscripciones
+ * activas se cancelan (`canceladoPor: instructor`) y los pagos aprobados se
+ * reembolsan por completo. Debe ejecutarse dentro de la misma transaccion que
+ * marca la clase como cancelada.
+ */
+const cancelarPorClaseDeInstructor = async (claseId, client = prisma) => {
+  const reembolsos = await client.pago.updateMany({
+    where: {
+      estado: "aprobado",
+      reembolsado: false,
+      inscripcion: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    },
+    data: {
+      reembolsado: true,
+      motivoReembolso: "cancelacion_instructor",
+      procesadoEn: new Date(),
+    },
+  });
+
+  const inscripciones = await client.inscripcion.updateMany({
+    where: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    data: { estado: "cancelada", canceladoPor: "instructor" },
+  });
+
+  return {
+    inscripcionesCanceladas: inscripciones.count,
+    reembolsosProcesados: reembolsos.count,
+  };
+};
+
 module.exports = {
   ESTADOS_ACTIVOS,
+  cancelarPorClaseDeInstructor,
+  bloquearClase,
   crearConDecrementoDeCupo,
   findById,
   findByUsuario,
