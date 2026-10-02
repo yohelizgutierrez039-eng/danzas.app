@@ -124,6 +124,17 @@ const transicionarEstado = async (id, estadoEsperado, estado, extra = {}, client
   return count === 1;
 };
 
+/**
+ * Bloquea la fila de la clase hasta el fin de la transaccion. Toda operacion que
+ * cambia inscripciones/pagos/cupo de una clase (inscribir, pagar, cancelar, y
+ * la cancelacion de la clase) la toma PRIMERO: asi se serializan entre si y se
+ * evitan tanto las carreras (pagar vs. cancelar la clase) como los deadlocks
+ * por orden de bloqueo inconsistente.
+ */
+const bloquearClase = async (claseId, client) => {
+  await client.$queryRaw`SELECT id FROM clase WHERE id = ${claseId} FOR UPDATE`;
+};
+
 const incrementarCupoDisponible = async (claseId, client = prisma) => {
   return await client.clase.update({
     where: { id: claseId },
@@ -165,6 +176,7 @@ const cancelarPorClaseDeInstructor = async (claseId, client = prisma) => {
 module.exports = {
   ESTADOS_ACTIVOS,
   cancelarPorClaseDeInstructor,
+  bloquearClase,
   crearConDecrementoDeCupo,
   findById,
   findByUsuario,

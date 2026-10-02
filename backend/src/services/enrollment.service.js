@@ -161,6 +161,8 @@ const cancelarInscripcion = async (inscripcionId, solicitante, ahora = new Date(
   const reembolsado = tienePagoReembolsable && horasRestantes >= HORAS_MINIMAS_PARA_REEMBOLSO;
 
   await prisma.$transaction(async (tx) => {
+    await enrollmentRepository.bloquearClase(inscripcion.claseId, tx);
+
     const cambio = await enrollmentRepository.transicionarEstado(
       inscripcionId,
       inscripcion.estado,

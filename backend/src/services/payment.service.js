@@ -39,6 +39,10 @@ const simularPago = async (inscripcionId, solicitante, { simularRechazo = false 
   const aprobado = resultado.aprobado === true;
 
   const pago = await prisma.$transaction(async (tx) => {
+    // Primero el lock de la clase (ver bloquearClase): serializa este pago con
+    // otras inscripciones/cancelaciones de la clase, incluida la del instructor.
+    await enrollmentRepository.bloquearClase(inscripcion.claseId, tx);
+
     // La transicion condicional evita que dos pagos simultaneos de la misma
     // inscripcion se apliquen ambos.
     const cambio = await enrollmentRepository.transicionarEstado(
