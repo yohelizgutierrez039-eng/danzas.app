@@ -13,7 +13,7 @@ function AcademiesAdmin() {
     useAcademies();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount, not a cascading update
+     
     fetchAcademyRequests().catch(() => {});
   }, [fetchAcademyRequests]);
 
