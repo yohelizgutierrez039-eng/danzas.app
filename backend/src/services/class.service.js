@@ -1,4 +1,6 @@
+const prisma = require("../config/prisma");
 const classRepository = require("../repositories/class.repository");
+const enrollmentRepository = require("../repositories/enrollment.repository");
 const scheduleService = require("./schedule.service");
 const { AppError } = require("../middleware/errorHandler");
 
@@ -51,7 +53,19 @@ const cancelarClase = async (claseId, instructorId) => {
     throw new AppError("No tenés permiso para cancelar esta clase.", 403, "FORBIDDEN");
   }
 
-  return await classRepository.delete(claseId);
+  if (clase.estado === "cancelada") {
+    throw new AppError("La clase ya está cancelada.", 409, "CLASS_ALREADY_CANCELLED");
+  }
+
+  // RF-009: la clase y todas sus inscripciones se cancelan de forma atómica.
+  // Marcar primero la clase toma su lock de fila, así que una inscripción
+  // concurrente (que bloquea esa misma fila) verá la clase ya cancelada.
+  return await prisma.$transaction(async (tx) => {
+    const claseCancelada = await classRepository.delete(claseId, tx);
+    const resumen = await enrollmentRepository.cancelarPorClaseDeInstructor(claseId, tx);
+
+    return { ...claseCancelada, ...resumen };
+  });
 };
 
 module.exports = {

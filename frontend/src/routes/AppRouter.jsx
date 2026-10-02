@@ -32,17 +32,24 @@ import AcademyReview from "../screens/admin/academies/AcademyReview";
 import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
 import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
 import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
+import Users from "../screens/admin/Users/Users";
+import UserDetail from "../screens/admin/Users/UserDetail";
+import UserForm from "../screens/admin/Users/UserForm";
+import UserHistory from "../screens/admin/Users/UserHistory";
 
 // Estudiante
 import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
+import MyEnrollments from "../screens/student/MyEnrollments";
+import PaymentCheckout from "../screens/student/PaymentCheckout";
 
 // Padre / acudiente
 import DashboardParent from "../screens/parent/DashboardParent";
 import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
 import Dependents from "../screens/parent/Dependents";
 import DependentForm from "../screens/parent/DependentForm";
+import MyEnrollmentsParent from "../screens/parent/MyEnrollmentsParent";
 
 // Instructor
 import DashboardInstructor from "../screens/instructor/DashboardInstructor";
@@ -102,6 +109,13 @@ function AppRouter() {
               path="/admin/classes/:id"
               element={<ClassDetailAdmin />}
             />
+            <Route path="/admin/usuarios" element={<Users />} />
+            <Route path="/admin/usuarios/:id" element={<UserDetail />} />
+            <Route path="/admin/usuarios/:id/editar" element={<UserForm />} />
+            <Route
+              path="/admin/usuarios/:id/historial"
+              element={<UserHistory />}
+            />
           </Route>
         </Route>
 
@@ -125,6 +139,14 @@ function AppRouter() {
               path="/estudiante/clases/:id/inscribir"
               element={<EnrollmentProcess />}
             />
+            <Route
+              path="/estudiante/inscripciones"
+              element={<MyEnrollments />}
+            />
+            <Route
+              path="/estudiante/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
+            />
           </Route>
         </Route>
 
@@ -143,6 +165,14 @@ function AppRouter() {
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
             <Route path="/padre/menores" element={<Dependents />} />
             <Route path="/padre/menores/nuevo" element={<DependentForm />} />
+            <Route
+              path="/padre/inscripciones"
+              element={<MyEnrollmentsParent />}
+            />
+            <Route
+              path="/padre/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
+            />
           </Route>
         </Route>
 

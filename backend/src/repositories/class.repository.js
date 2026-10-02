@@ -99,8 +99,8 @@ const update = async (id, datos) => {
   });
 };
 
-const eliminar = async (id) => {
-  return await prisma.clase.update({
+const eliminar = async (id, client = prisma) => {
+  return await client.clase.update({
     where: { id },
     data: { estado: "cancelada" },
   });

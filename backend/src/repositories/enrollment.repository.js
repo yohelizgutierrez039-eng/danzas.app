@@ -1,30 +1,187 @@
-import enrollmentRepository from "../repositories/enrollment.repository.js";
-import dependentRepository from "../repositories/dependent.repository.js";
-import AppError from "../utils/AppError.js";
+const prisma = require("../config/prisma");
 
-export const obtenerHistorial = async (
-  usuarioId,
-  solicitanteId,
-  solicitanteRol
-) => {
-  // El usuario puede consultar su propio historial
-  if (usuarioId === solicitanteId) {
-    return enrollmentRepository.findHistorialByUsuario(usuarioId);
-  }
+// Estados en los que una inscripción "ocupa" un cupo y bloquea una nueva
+// inscripción del mismo estudiante/menor a la misma clase.
+const ESTADOS_ACTIVOS = ["pendiente_pago", "confirmada"];
 
-  // Un padre puede consultar el historial de uno de sus menores
-  if (solicitanteRol === "padre") {
-    const menor = await dependentRepository.findById(usuarioId);
+// Relaciones que consume el historial (RF-014): clase con horarios, pago,
+// asistencias y, si aplica, el menor inscrito.
+const INCLUDE_DETALLE = {
+  clase: { include: { horarios: true } },
+  pago: true,
+  asistencias: true,
+  menor: true,
+};
 
-    if (menor && menor.padreId === solicitanteId) {
-      return enrollmentRepository.findHistorialByUsuario(usuarioId);
+/**
+ * Crea una inscripción `pendiente_pago` y descuenta un cupo de la clase en una
+ * única transacción. La fila de la clase se bloquea con SELECT ... FOR UPDATE,
+ * de modo que dos solicitudes concurrentes por el último cupo se serializan
+ * y solo una de ellas lo obtiene (SDD 7.2).
+ *
+ * No lanza errores de negocio: devuelve `{ error }` con un código para que el
+ * service lo traduzca a una respuesta HTTP, o `{ inscripcion }` si tuvo éxito.
+ */
+const crearConDecrementoDeCupo = async ({ claseId, usuarioId, menorId = null }) => {
+  return await prisma.$transaction(async (tx) => {
+    const filas = await tx.$queryRaw`
+      SELECT id, estado, cupo_disponible AS cupoDisponible
+      FROM clase
+      WHERE id = ${claseId}
+      FOR UPDATE
+    `;
+
+    const clase = filas[0];
+
+    if (!clase) {
+      return { error: "CLASE_NO_ENCONTRADA" };
     }
-  }
 
-  // Cualquier otro caso no tiene autorización
-  throw new AppError(
-    "No tenés permiso para ver este historial.",
-    403,
-    "FORBIDDEN"
-  );
+    if (clase.estado !== "activa") {
+      return { error: "CLASE_NO_ACTIVA" };
+    }
+
+    if (Number(clase.cupoDisponible) <= 0) {
+      return { error: "SIN_CUPO" };
+    }
+
+    // Con la fila de la clase bloqueada, esta verificación no tiene carreras.
+    const duplicada = await tx.inscripcion.findFirst({
+      where: {
+        claseId,
+        usuarioId,
+        menorId,
+        estado: { in: ESTADOS_ACTIVOS },
+      },
+      select: { id: true },
+    });
+
+    if (duplicada) {
+      return { error: "INSCRIPCION_DUPLICADA" };
+    }
+
+    await tx.clase.update({
+      where: { id: claseId },
+      data: { cupoDisponible: { decrement: 1 } },
+    });
+
+    const inscripcion = await tx.inscripcion.create({
+      data: {
+        claseId,
+        usuarioId,
+        menorId,
+        estado: "pendiente_pago",
+      },
+      include: INCLUDE_DETALLE,
+    });
+
+    return { inscripcion };
+  });
+};
+
+const findById = async (id, client = prisma) => {
+  return await client.inscripcion.findUnique({
+    where: { id },
+    include: INCLUDE_DETALLE,
+  });
+};
+
+// Inscripciones hechas por una cuenta (incluye las de sus menores si es padre).
+const findByUsuario = async (usuarioId) => {
+  return await prisma.inscripcion.findMany({
+    where: { usuarioId },
+    include: INCLUDE_DETALLE,
+    orderBy: { creadoEn: "desc" },
+  });
+};
+
+const findByMenor = async (menorId) => {
+  return await prisma.inscripcion.findMany({
+    where: { menorId },
+    include: INCLUDE_DETALLE,
+    orderBy: { creadoEn: "desc" },
+  });
+};
+
+const updateEstado = async (id, estado, extra = {}, client = prisma) => {
+  return await client.inscripcion.update({
+    where: { id },
+    data: { estado, ...extra },
+  });
+};
+
+/**
+ * Cambia el estado solo si la inscripción sigue en `estadoEsperado`.
+ * Devuelve true si la transición se aplicó. Evita que dos solicitudes
+ * concurrentes (p. ej. pagar dos veces) apliquen el mismo cambio.
+ */
+const transicionarEstado = async (id, estadoEsperado, estado, extra = {}, client = prisma) => {
+  const { count } = await client.inscripcion.updateMany({
+    where: { id, estado: estadoEsperado },
+    data: { estado, ...extra },
+  });
+
+  return count === 1;
+};
+
+/**
+ * Bloquea la fila de la clase hasta el fin de la transaccion. Toda operacion que
+ * cambia inscripciones/pagos/cupo de una clase (inscribir, pagar, cancelar, y
+ * la cancelacion de la clase) la toma PRIMERO: asi se serializan entre si y se
+ * evitan tanto las carreras (pagar vs. cancelar la clase) como los deadlocks
+ * por orden de bloqueo inconsistente.
+ */
+const bloquearClase = async (claseId, client) => {
+  await client.$queryRaw`SELECT id FROM clase WHERE id = ${claseId} FOR UPDATE`;
+};
+
+const incrementarCupoDisponible = async (claseId, client = prisma) => {
+  return await client.clase.update({
+    where: { id: claseId },
+    data: { cupoDisponible: { increment: 1 } },
+  });
+};
+
+/**
+ * RF-009: cuando el instructor cancela la clase, todas las inscripciones
+ * activas se cancelan (`canceladoPor: instructor`) y los pagos aprobados se
+ * reembolsan por completo. Debe ejecutarse dentro de la misma transaccion que
+ * marca la clase como cancelada.
+ */
+const cancelarPorClaseDeInstructor = async (claseId, client = prisma) => {
+  const reembolsos = await client.pago.updateMany({
+    where: {
+      estado: "aprobado",
+      reembolsado: false,
+      inscripcion: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    },
+    data: {
+      reembolsado: true,
+      motivoReembolso: "cancelacion_instructor",
+      procesadoEn: new Date(),
+    },
+  });
+
+  const inscripciones = await client.inscripcion.updateMany({
+    where: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    data: { estado: "cancelada", canceladoPor: "instructor" },
+  });
+
+  return {
+    inscripcionesCanceladas: inscripciones.count,
+    reembolsosProcesados: reembolsos.count,
+  };
+};
+
+module.exports = {
+  ESTADOS_ACTIVOS,
+  cancelarPorClaseDeInstructor,
+  bloquearClase,
+  crearConDecrementoDeCupo,
+  findById,
+  findByUsuario,
+  findByMenor,
+  updateEstado,
+  transicionarEstado,
+  incrementarCupoDisponible,
 };
