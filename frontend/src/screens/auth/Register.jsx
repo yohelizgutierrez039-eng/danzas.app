@@ -20,8 +20,8 @@ function Register() {
   const [loading, setLoading] = useState(false);
 
   const roles = [
-    { value: "student", label: "Estudiante" },
-    { value: "parent", label: "Padre de familia" },
+    { value: "estudiante", label: "Estudiante" },
+    { value: "padre", label: "Padre de familia" },
     { value: "instructor", label: "Instructor" },
   ];
 

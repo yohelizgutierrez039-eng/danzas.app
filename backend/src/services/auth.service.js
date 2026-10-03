@@ -4,8 +4,20 @@ const jwtUtil = require("../utils/jwt.util");
 const emailService = require("./email.service");
 const { AppError } = require("../middleware/errorHandler");
 
+// RF-001: el registro público solo admite Instructor, Estudiante y Padre de familia.
+// "admin" existe en el enum RolUsuario pero nunca se obtiene por auto-registro.
+const ROLES_REGISTRABLES = ["estudiante", "padre", "instructor"];
+
 const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
   const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!ROLES_REGISTRABLES.includes(rol)) {
+    throw new AppError(
+      "El rol indicado no es válido. Debe ser estudiante, padre o instructor.",
+      400,
+      "INVALID_ROLE",
+    );
+  }
 
   if (!correoRegex.test(correo)) {
     throw new AppError("El formato del correo no es válido.", 400, "INVALID_EMAIL_FORMAT");
