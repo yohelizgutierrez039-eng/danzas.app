@@ -24,7 +24,7 @@ el detalle de datos o variantes, ese documento manda.
 | ID | RF | Caso | Prioridad | Cómo se ejecuta | Estado conocido |
 | -- | -- | ---- | --------- | --------------- | --------------- |
 | CP-S23-001 | RF-006 | Regresión: admin aprueba y rechaza solicitudes de academia (origen CP-S12-002/003) | Alta | API | OK |
-| CP-S23-002 | RF-006 | Regresión: academia rechazada o pendiente no puede publicar clases (origen CP-S12-004) | Alta | API | DEFECTO (OBS-01) |
+| CP-S23-002 | RF-006 | Regresión: academia rechazada o pendiente no puede publicar clases (origen CP-S12-004) | Alta | API | OK (OBS-01 corregido en `fix/auth-clases-cuatro-bugs`) |
 | CP-S23-003 | RF-007 | Regresión: admin gestiona usuarios (listar, suspender, eliminar) (origen CP-S12-006 a 010) | Alta | UI + API | OK |
 | CP-S23-004 | RF-007 | Regresión: control de acceso al panel de administración (origen CP-S12-005/006) | Media | UI + API | OK |
 | CP-S23-005 | RF-008 | Regresión: cruce de horario y espacio mínimo de 15 minutos (origen CP-S12-014 a 016) | Alta | API | OK / verificar OBS-02 |
@@ -134,11 +134,11 @@ indica ese documento; re-sembrar entre casos que modifican datos.
 
 **Dado** que la solicitud de `instructor.pendiente@danzas.app` fue rechazada (o sigue pendiente)
 **Cuando** ese instructor hace `POST /api/classes` con un cuerpo válido (ver CP-S12-004)
-**Entonces** según el ERS debe recibir un error 4xx y la clase no debe existir ni aparecer en `GET /api/classes/search`
+**Entonces** según el ERS recibe un error 4xx y la clase no existe ni aparece en `GET /api/classes/search`
 
 **Resultado esperado**
-- Esperado por ERS: `403` y ninguna clase creada.
-- **Estado conocido: DEFECTO (OBS-01).** El código responde `201` y la clase queda visible en el buscador (no se consulta `solicitud_academia`). Marcar fallido hasta que se corrija.
+- `403 ACADEMY_NOT_APPROVED` y ninguna clase creada.
+- **Estado conocido: OK, corregido en `fix/auth-clases-cuatro-bugs` (OBS-01).** `crearClase` consulta `solicitud_academia` y exige una solicitud aprobada. Antes respondía `201`.
 
 **Fuente:** `backend/src/routes/classes.routes.js`, `backend/src/services/class.service.js` (`crearClase`).
 
@@ -155,7 +155,7 @@ indica ese documento; re-sembrar entre casos que modifican datos.
 - Eliminar con datos asociados: `409 USER_HAS_RELATED_DATA` "No se puede eliminar el usuario porque tiene información asociada. Suspéndelo en su lugar."
 - Eliminar sin datos asociados: `204`; el usuario desaparece de la lista y `GET /api/admin/users/<id>` da `404 USER_NOT_FOUND`.
 - Sobre la propia cuenta del admin, suspender o eliminar da `409 CANNOT_MODIFY_SELF`.
-- Informativo (OBS-03): un usuario suspendido sigue pudiendo iniciar sesión.
+- Informativo (OBS-03, corregido en `fix/auth-clases-cuatro-bugs`): un usuario suspendido ya no puede iniciar sesión (`403 ACCOUNT_SUSPENDED`).
 
 **Fuente:** `backend/src/services/user.service.js`, `frontend/src/screens/admin/Users/Users.jsx`, `frontend/src/screens/admin/Users/UserDetail.jsx`.
 
@@ -491,16 +491,16 @@ Archivos revisados: `backend/src/routes/users.routes.js`,
 ## Observaciones (discrepancias ERS / código)
 
 Las observaciones OBS-01 a OBS-12 de `casos-prueba-sprint1-2.md` siguen vigentes
-para la regresión de Sprint 2 (en particular: una academia rechazada o
-pendiente sí puede publicar clases; un usuario suspendido puede iniciar sesión;
+para la regresión de Sprint 2 (OBS-01, OBS-05, OBS-06 y la parte de rutas de OBS-12 quedaron corregidas en `fix/auth-clases-cuatro-bugs`; antes: una academia rechazada o
+pendiente sí podía publicar clases; un usuario suspendido podía iniciar sesión;
 el formato de hora de las clases es incoherente entre la validación de cruce y
 Prisma). Las siguientes son nuevas de Sprint 3 y usan numeración propia:
 
-**OBS-01 (S2-3) — RF-006: ver OBS-01 de Sprint 1-2.** Se repite aquí porque el caso CP-S23-002 falla por esa causa: `backend/src/services/class.service.js` nunca consulta el estado de la solicitud de academia.
+**OBS-01 (S2-3) — RF-006: ver OBS-01 de Sprint 1-2. CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`).** El caso CP-S23-002 fallaba porque `backend/src/services/class.service.js` nunca consultaba el estado de la solicitud de academia; ahora `crearClase` responde `403 ACADEMY_NOT_APPROVED`.
 
 **OBS-02 (S2-3) — RF-008: ver OBS-07 de Sprint 1-2.** La regla de cruce y de 15 minutos (`schedule.service.js`) solo detecta conflictos con horas en formato `"HH:MM"`; con ISO calcula `NaN`. Verificar en ejecución en CP-S23-005.
 
-**OBS-03 (S2-3) — RF-007: ver OBS-05 de Sprint 1-2.** El usuario suspendido conserva el acceso (`auth.service.js#login` no mira `estado`).
+**OBS-03 (S2-3) — RF-007: ver OBS-05 de Sprint 1-2. CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`).** Antes el usuario suspendido conservaba el acceso (`auth.service.js#login` no miraba `estado`); ahora el login responde `403 ACCOUNT_SUSPENDED`.
 
 **OBS-04 (S2-3) — RF-012: las pantallas de clase del estudiante y del padre usan datos de ejemplo (Alta para la demo).**
 `ClassDetail.jsx` (pública, `/clases/:id`) es una maqueta sin llamada al backend: siempre muestra "Salsa Básica" y su botón "Inscribirme" abre el aviso de inicio de sesión aunque el usuario ya haya iniciado sesión. `ClassDetailStudent.jsx` y `EnrollmentProcess.jsx` muestran datos fijos (nombre, precio $80.000, cupos 8) aunque inscriben de verdad con el id de la URL; no existe `GET /api/classes/:id` en el backend. `ExploreClassesParent.jsx` trabaja con `demoClasses` de ids numéricos (101 a 103), así que el backend rechaza la inscripción con `400 VALIDATION_ERROR`; además `DashboardStudent.jsx` y varios accesos rápidos (`/estudiante/clases`, `/estudiante/asistencia`, `/estudiante/pagos`) apuntan a datos de ejemplo o a rutas que no existen en `AppRouter.jsx` (caen en `/`). En la práctica solo se llega a la inscripción real escribiendo la URL con el UUID.
@@ -517,5 +517,5 @@ Prisma). Las siguientes son nuevas de Sprint 3 y usan numeración propia:
 **OBS-08 (S2-3) — RF-012: la reserva de cupo no vence (Media).**
 El ERS (CU-03) habla de "reservar temporalmente el cupo". El código descuenta el cupo al inscribirse y lo mantiene mientras la inscripción esté `pendiente_pago`, sin tiempo límite ni tarea que lo libere (`enrollment.repository.js#crearConDecrementoDeCupo`); una inscripción que nunca se paga retiene el cupo indefinidamente (como la de estudiante2 en el seed).
 
-**OBS-09 (S2-3) — Registro: el alta desde la UI y los roles (informativo, ver OBS-06 de Sprint 1-2).**
-Para crear estudiantes o padres de prueba se usa la API con `"rol":"estudiante"` / `"padre"`; el formulario envía `student` / `parent`, valores que no existen en el enum de la base.
+**OBS-09 (S2-3) — Registro: el alta desde la UI y los roles (informativo, ver OBS-06 de Sprint 1-2). CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`).**
+Antes, para crear estudiantes o padres de prueba había que usar la API con `"rol":"estudiante"` / `"padre"` porque el formulario enviaba `student` / `parent`, valores que no existen en el enum de la base. Ahora el formulario envía `estudiante` / `padre`.

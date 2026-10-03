@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
 const classRepository = require("../repositories/class.repository");
+const academyRequestRepository = require("../repositories/academyRequest.repository");
 const enrollmentRepository = require("../repositories/enrollment.repository");
 const scheduleService = require("./schedule.service");
 const { AppError } = require("../middleware/errorHandler");
@@ -38,8 +39,38 @@ const searchClasses = async ({ tipoBaile, ciudad }) => {
   });
 };
 
+/**
+ * RF-006 / RF-008: un instructor no puede publicar clases hasta que el administrador
+ * apruebe su solicitud de academia (o de instructor independiente). Una solicitud
+ * pendiente o rechazada, o la ausencia de solicitud, bloquean la publicación.
+ * Si el instructor tiene varias solicitudes (varias academias), basta una aprobada.
+ */
+const exigirAcademiaAprobada = async (instructorId) => {
+  const solicitudes = await academyRequestRepository.findByInstructor(instructorId);
+
+  if (solicitudes.some((solicitud) => solicitud.estado === "aprobada")) {
+    return;
+  }
+
+  let motivo = "Aún no tienes una solicitud de academia aprobada.";
+
+  if (solicitudes.some((solicitud) => solicitud.estado === "pendiente")) {
+    motivo = "Tu solicitud de academia sigue pendiente de aprobación.";
+  } else if (solicitudes.some((solicitud) => solicitud.estado === "rechazada")) {
+    motivo = "Tu solicitud de academia fue rechazada.";
+  }
+
+  throw new AppError(
+    `${motivo} No puedes publicar clases hasta que el administrador la apruebe.`,
+    403,
+    "ACADEMY_NOT_APPROVED",
+  );
+};
+
 const crearClase = async (instructorId, datos) => {
   const { diaSemana, horaInicio, horaFin } = datos;
+
+  await exigirAcademiaAprobada(instructorId);
 
   await scheduleService.hayConflictoDeHorario(instructorId, { diaSemana, horaInicio, horaFin }, null);
 

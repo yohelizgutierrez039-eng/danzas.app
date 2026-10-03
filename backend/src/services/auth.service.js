@@ -4,8 +4,20 @@ const jwtUtil = require("../utils/jwt.util");
 const emailService = require("./email.service");
 const { AppError } = require("../middleware/errorHandler");
 
+// RF-001: el registro público solo admite Instructor, Estudiante y Padre de familia.
+// "admin" existe en el enum RolUsuario pero nunca se obtiene por auto-registro.
+const ROLES_REGISTRABLES = ["estudiante", "padre", "instructor"];
+
 const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
   const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!ROLES_REGISTRABLES.includes(rol)) {
+    throw new AppError(
+      "El rol indicado no es válido. Debe ser estudiante, padre o instructor.",
+      400,
+      "INVALID_ROLE",
+    );
+  }
 
   if (!correoRegex.test(correo)) {
     throw new AppError("El formato del correo no es válido.", 400, "INVALID_EMAIL_FORMAT");
@@ -84,6 +96,18 @@ const login = async ({ correo, contraseña }) => {
     }
 
     throw new AppError("Correo o contraseña incorrectos", 401, "INVALID_CREDENTIALS");
+  }
+
+  // RF-007: una cuenta suspendida no puede iniciar sesión. Se verifica después de
+  // validar la contraseña para no revelar el estado de la cuenta a quien no la conoce.
+  // Los usuarios "pendiente" sí pueden entrar (p. ej. un instructor que espera la
+  // aprobación de su academia, RF-006); solo "suspendido" se bloquea.
+  if (user.estado === "suspendido") {
+    throw new AppError(
+      "Tu cuenta está suspendida. Contacta al administrador.",
+      403,
+      "ACCOUNT_SUSPENDED",
+    );
   }
 
   await userRepository.update(user.id, {

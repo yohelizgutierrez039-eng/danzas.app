@@ -25,7 +25,7 @@ Archivos revisados: `frontend/src/screens/auth/Register.jsx`,
 > Nota: el campo de contraseña en `Register.jsx` solo indica en el HTML `minLength={6}` y el texto de ayuda "La contraseña debe tener mínimo 6 caracteres.", lo cual es inconsistente con la regla real del backend (mínimo 8 caracteres + letras y números). El formulario permite enviar una contraseña de 6 o 7 caracteres, pero el backend la rechazará igual con `WEAK_PASSWORD`.
 
 ### RF-001 — Caso: Registro exitoso
-**Dado** que un visitante completa el formulario con rol (`student`, `parent` o `instructor`), nombre, correo no registrado previamente, ciudad, y una contraseña de al menos 8 caracteres que combina letras y números
+**Dado** que un visitante completa el formulario con rol (`estudiante`, `padre` o `instructor`), nombre, correo no registrado previamente, ciudad, y una contraseña de al menos 8 caracteres que combina letras y números
 **Cuando** envía el formulario de registro
 **Entonces** el backend responde `201` con el usuario creado (sin `passwordHash`), y el frontend redirige a `/login` mostrando el mensaje "Registro exitoso. Ahora puedes iniciar sesión."
 
@@ -84,7 +84,7 @@ Archivos revisados: `backend/src/controllers/dependent.controller.js`,
 **Entonces** el backend responde `201` con el menor creado, asociado al `padreId` del usuario autenticado
 
 ### RF-004 — Caso: Un usuario que no es padre intenta registrar un menor (debe rechazar)
-**Dado** un usuario autenticado cuyo rol NO es `padre` (por ejemplo `student` o `instructor`)
+**Dado** un usuario autenticado cuyo rol NO es `padre` (por ejemplo `estudiante` o `instructor`)
 **Cuando** envía una solicitud para registrar un menor
 **Entonces** la intención de negocio es rechazar la operación con `403` y el mensaje "Solo los usuarios con rol padre pueden registrar menores.", **pero el comportamiento actual observado en el código es distinto**: `dependent.service.js` lanza un `Error` estableciendo `error.status = 403` en vez de usar la clase `AppError` (que expone `statusCode`); como `errorHandler.js` solo lee `err.statusCode` (no `err.status`), la propiedad se ignora y el middleware responde `500` con código `INTERNAL_ERROR` y el mensaje genérico "Ocurrió un error inesperado" en lugar del `403` esperado
 

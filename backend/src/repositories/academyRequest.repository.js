@@ -16,6 +16,14 @@ const findById = async (id) => {
   });
 };
 
+const findByInstructor = async (instructorId) => {
+  return await prisma.solicitudAcademia.findMany({
+    where: {
+      instructorId,
+    },
+  });
+};
+
 const updateEstado = async (id, { estado, revisadoPor, revisadoEn }) => {
   return await prisma.solicitudAcademia.update({
     where: {
@@ -32,5 +40,6 @@ const updateEstado = async (id, { estado, revisadoPor, revisadoEn }) => {
 module.exports = {
   findPending,
   findById,
+  findByInstructor,
   updateEstado,
 };

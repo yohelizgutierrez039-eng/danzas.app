@@ -32,7 +32,7 @@ export const login = async (credenciales) => {
 export const recoverPassword = async (correo) => {
   return await api("/auth/forgot-password", {
     method: "POST",
-    body: JSON.stringify({ email: correo }),
+    body: JSON.stringify({ correo }),
   });
 };
 
