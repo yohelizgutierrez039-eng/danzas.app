@@ -98,6 +98,18 @@ const login = async ({ correo, contraseña }) => {
     throw new AppError("Correo o contraseña incorrectos", 401, "INVALID_CREDENTIALS");
   }
 
+  // RF-007: una cuenta suspendida no puede iniciar sesión. Se verifica después de
+  // validar la contraseña para no revelar el estado de la cuenta a quien no la conoce.
+  // Los usuarios "pendiente" sí pueden entrar (p. ej. un instructor que espera la
+  // aprobación de su academia, RF-006); solo "suspendido" se bloquea.
+  if (user.estado === "suspendido") {
+    throw new AppError(
+      "Tu cuenta está suspendida. Contacta al administrador.",
+      403,
+      "ACCOUNT_SUSPENDED",
+    );
+  }
+
   await userRepository.update(user.id, {
     intentosFallidos: 0,
     bloqueadoHasta: null,
