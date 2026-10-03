@@ -235,6 +235,136 @@ describe("hayConflictoDeHorario", () => {
     });
   });
 
+  describe("horas recibidas como texto ISO-8601 (formato real de la API)", () => {
+    // Salsa los lunes de 18:00 a 19:00, como en el caso real del instructor aprobado.
+    const iso = (hhmm) => `1970-01-01T${hhmm}:00.000Z`;
+    const horarioIso = (diaSemana, inicio, fin) => ({
+      diaSemana,
+      horaInicio: iso(inicio),
+      horaFin: iso(fin),
+    });
+
+    beforeEach(() => {
+      clasesPorInstructor[INSTRUCTOR_A] = [
+        claseConHorarios("clase-1", horario(LUNES, "18:00", "19:00")),
+      ];
+    });
+
+    it("lanza SCHEDULE_CONFLICT cuando el rango ISO se superpone (18:30-19:30)", async () => {
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, "18:30", "19:30")),
+      ).rejects.toMatchObject({ code: "SCHEDULE_CONFLICT", statusCode: 409 });
+    });
+
+    it("lanza SCHEDULE_CONFLICT con solo 5 minutos de separacion (19:05-20:00)", async () => {
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, "19:05", "20:00")),
+      ).rejects.toMatchObject({ code: "SCHEDULE_CONFLICT", statusCode: 409 });
+    });
+
+    it("lanza SCHEDULE_CONFLICT con 14 minutos de separacion", async () => {
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, "19:14", "20:00")),
+      ).rejects.toMatchObject({ code: "SCHEDULE_CONFLICT" });
+    });
+
+    it("LIMITE: con exactamente 15 minutos de separacion NO lanza error", async () => {
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, "19:15", "20:00")),
+      ).resolves.toBeUndefined();
+    });
+
+    it("no lanza error si el mismo rango ISO cae en otro dia de la semana", async () => {
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(MARTES, "18:30", "19:30")),
+      ).resolves.toBeUndefined();
+    });
+
+    it("tambien funciona cuando el horario existente viene como texto ISO", async () => {
+      clasesPorInstructor[INSTRUCTOR_A] = [
+        claseConHorarios("clase-1", {
+          diaSemana: LUNES,
+          horaInicio: iso("18:00"),
+          horaFin: iso("19:00"),
+        }),
+      ];
+
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, "18:30", "19:30")),
+      ).rejects.toMatchObject({ code: "SCHEDULE_CONFLICT" });
+    });
+
+    it("ISO y Date son equivalentes: mismo resultado para el mismo horario", async () => {
+      const casos = [
+        ["18:30", "19:30"], // se superpone
+        ["19:14", "20:00"], // 14 min
+        ["19:15", "20:00"], // 15 min, limite
+        ["10:00", "11:00"], // lejos
+      ];
+
+      for (const [inicio, fin] of casos) {
+        const conDate = await capturarError(
+          hayConflictoDeHorario(INSTRUCTOR_A, horario(LUNES, inicio, fin)),
+        );
+        const conIso = await capturarError(
+          hayConflictoDeHorario(INSTRUCTOR_A, horarioIso(LUNES, inicio, fin)),
+        );
+
+        expect(conIso?.code).toBe(conDate?.code);
+      }
+    });
+
+    it("usa la hora UTC aunque el ISO traiga un offset", async () => {
+      // 13:30-14:30 en -05:00 equivale a 18:30-19:30 UTC.
+      await expect(
+        hayConflictoDeHorario(INSTRUCTOR_A, {
+          diaSemana: LUNES,
+          horaInicio: "1970-01-01T13:30:00.000-05:00",
+          horaFin: "1970-01-01T14:30:00.000-05:00",
+        }),
+      ).rejects.toMatchObject({ code: "SCHEDULE_CONFLICT" });
+    });
+  });
+
+  describe("horario invalido (falla en voz alta, no pasa en silencio)", () => {
+    const H = "1970-01-01T18:00:00.000Z";
+
+    it.each([
+      ["hora de inicio no numerica", { horaInicio: "abc", horaFin: H }],
+      ["hora de fin no numerica", { horaInicio: H, horaFin: "abc" }],
+      ["hora de inicio undefined", { horaInicio: undefined, horaFin: H }],
+      ["hora de fin undefined", { horaInicio: H, horaFin: undefined }],
+      ["hora de inicio null", { horaInicio: null, horaFin: H }],
+      ["hora de fin numerica", { horaInicio: H, horaFin: 1900 }],
+      ["ISO con fecha invalida", { horaInicio: "1970-01-01Tzz:00:00.000Z", horaFin: H }],
+      ["Date invalido", { horaInicio: new Date("nope"), horaFin: H }],
+      ["hora fuera de rango (25:00)", { horaInicio: "25:00", horaFin: "26:00" }],
+      ["minutos fuera de rango (10:75)", { horaInicio: "10:75", horaFin: "11:00" }],
+      [
+        "fin igual al inicio",
+        { horaInicio: "1970-01-01T18:00:00.000Z", horaFin: "1970-01-01T18:00:00.000Z" },
+      ],
+      [
+        "fin anterior al inicio",
+        { horaInicio: "1970-01-01T19:00:00.000Z", horaFin: "1970-01-01T18:00:00.000Z" },
+      ],
+      ["fin anterior al inicio en HH:MM", { horaInicio: "19:00", horaFin: "18:00" }],
+    ])("%s: 400 INVALID_SCHEDULE y no consulta la base de datos", async (_caso, horas) => {
+      const intento = hayConflictoDeHorario(INSTRUCTOR_A, { diaSemana: LUNES, ...horas });
+
+      await expect(intento).rejects.toBeInstanceOf(AppError);
+      await expect(intento).rejects.toMatchObject({ statusCode: 400, code: "INVALID_SCHEDULE" });
+      expect(classRepository.findByInstructor).not.toHaveBeenCalled();
+    });
+
+    it("un horario sin ningun dato tambien lanza INVALID_SCHEDULE", async () => {
+      await expect(hayConflictoDeHorario(INSTRUCTOR_A, undefined)).rejects.toMatchObject({
+        statusCode: 400,
+        code: "INVALID_SCHEDULE",
+      });
+    });
+  });
+
   describe("formato de la hora", () => {
     it("acepta horas de entrada en formato texto HH:MM", async () => {
       clasesPorInstructor[INSTRUCTOR_A] = [

@@ -4,13 +4,67 @@ const { AppError } = require("../middleware/errorHandler");
 
 const MARGEN_MINUTOS = 15;
 
+const HORA_TEXTO = /^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/;
+const FECHA_HORA_ISO = /^\d{4}-\d{2}-\d{2}T/;
+
+const horarioInvalido = () =>
+  new AppError(
+    "El horario no es válido: la hora de inicio y de fin deben tener un formato correcto y la hora de fin debe ser posterior a la de inicio.",
+    400,
+    "INVALID_SCHEDULE",
+  );
+
+/**
+ * Convierte una hora a minutos desde la medianoche. Acepta tres formas:
+ *  - Date (lo que entrega Prisma para columnas TIME): se usa la hora UTC.
+ *  - Texto ISO-8601 ("1970-01-01T18:30:00.000Z", lo que llega por la API): se
+ *    parsea a Date y se usa la hora UTC, igual que Prisma al guardarla.
+ *  - Texto "HH:MM" (o "HH:MM:SS").
+ * Cualquier otro valor lanza INVALID_SCHEDULE (400) en lugar de producir NaN,
+ * porque con NaN toda comparacion es falsa y el cruce de horarios no se detecta.
+ */
 const aMinutos = (valor) => {
   if (valor instanceof Date) {
+    if (Number.isNaN(valor.getTime())) {
+      throw horarioInvalido();
+    }
+
     return valor.getUTCHours() * 60 + valor.getUTCMinutes();
   }
 
-  const [horas, minutos] = String(valor).split(":").map(Number);
-  return horas * 60 + (minutos || 0);
+  if (typeof valor === "string") {
+    const texto = valor.trim();
+
+    if (FECHA_HORA_ISO.test(texto)) {
+      return aMinutos(new Date(texto));
+    }
+
+    const coincidencia = HORA_TEXTO.exec(texto);
+
+    if (coincidencia) {
+      const horas = Number(coincidencia[1]);
+      const minutos = Number(coincidencia[2]);
+
+      if (horas <= 23 && minutos <= 59) {
+        return horas * 60 + minutos;
+      }
+    }
+  }
+
+  throw horarioInvalido();
+};
+
+/**
+ * Valida un horario antes de consultar la base de datos: ambas horas deben ser
+ * convertibles a minutos y la hora de fin debe ser posterior a la de inicio.
+ */
+const validarHorario = (horario) => {
+  const inicio = aMinutos(horario?.horaInicio);
+  const fin = aMinutos(horario?.horaFin);
+
+  if (fin <= inicio) {
+    throw horarioInvalido();
+  }
 };
 
 const seSuperponen = (horarioExistente, nuevoHorario) => {
@@ -29,6 +83,8 @@ const seSuperponen = (horarioExistente, nuevoHorario) => {
 };
 
 const hayConflictoDeHorario = async (instructorId, nuevoHorario, claseIdAExcluir = null) => {
+  validarHorario(nuevoHorario);
+
   const hayConflicto = await prisma.$transaction(async (tx) => {
     const clasesDelInstructor = await classRepository.findByInstructor(
       instructorId,
