@@ -21,14 +21,14 @@ real de la implementación (backend en `backend/src` y pantallas en
 | CP-S12-001 | RF-006 | Admin lista las solicitudes de academia pendientes | Alta | API | OK |
 | CP-S12-002 | RF-006 | Admin aprueba una solicitud (notifica al instructor) | Alta | API | OK |
 | CP-S12-003 | RF-006 | Admin rechaza una solicitud (notifica al instructor) | Alta | API | OK |
-| CP-S12-004 | RF-006 | Una academia RECHAZADA (o pendiente) no puede publicar clases (caso límite a) | Alta | API | DEFECTO (OBS-01) |
+| CP-S12-004 | RF-006 | Una academia RECHAZADA (o pendiente) no puede publicar clases (caso límite a) | Alta | API | OK (OBS-01 corregido en `fix/auth-clases-cuatro-bugs`) |
 | CP-S12-005 | RF-006 | Solo el admin puede aprobar o rechazar solicitudes | Alta | API | OK |
 | CP-S12-006 | RF-007 | Admin lista y filtra usuarios; los demás roles no entran | Media | UI + API | OK |
 | CP-S12-007 | RF-007 | Admin suspende un usuario (caso límite b) | Alta | UI + API | OK |
 | CP-S12-008 | RF-007 | Admin elimina un usuario sin información asociada (caso límite b) | Alta | UI + API | OK |
 | CP-S12-009 | RF-007 | Admin no puede eliminar un usuario con información asociada (caso límite b) | Alta | UI + API | OK |
 | CP-S12-010 | RF-007 | Admin no puede suspender ni eliminar su propia cuenta (caso límite b) | Media | API | OK |
-| CP-S12-011 | RF-007 | Un usuario suspendido intenta iniciar sesión | Media | API | POR CONFIRMAR (OBS-05) |
+| CP-S12-011 | RF-007 | Un usuario suspendido intenta iniciar sesión | Media | API | OK (OBS-05 corregido en `fix/auth-clases-cuatro-bugs`) |
 | CP-S12-012 | RF-007 | Admin edita un usuario (validaciones) | Baja | UI + API | OK |
 | CP-S12-013 | RF-008 | Instructor aprobado crea una clase | Alta | API | OK (verificar formato de hora, OBS-07) |
 | CP-S12-014 | RF-008 | Horario que se cruza con otra clase del instructor (caso límite c) | Alta | API | OK / verificar OBS-07 |
@@ -182,15 +182,15 @@ Archivos revisados: `backend/src/routes/academyRequests.routes.js`,
   "horaInicio": "1970-01-01T10:00:00.000Z", "horaFin": "1970-01-01T11:00:00.000Z"
 }
 ```
-**Entonces** según el ERS el sistema debe rechazar la publicación y la clase no debe existir ni aparecer en el buscador
+**Entonces** según el ERS el sistema rechaza la publicación y la clase no existe ni aparece en el buscador
 
 **Resultado esperado (según ERS RF-006)**
-- Respuesta de error 4xx (se sugiere `403 FORBIDDEN`, coherente con el resto de reglas de permisos) y ninguna clase creada.
+- `403 ACADEMY_NOT_APPROVED` ("Tu solicitud de academia fue rechazada." / "... sigue pendiente de aprobación." + "No puedes publicar clases hasta que el administrador la apruebe.") y ninguna clase creada.
 - `GET /api/classes/search?tipoBaile=Merengue` devuelve `[]`.
 
-**Estado conocido: DEFECTO (OBS-01).** El código actual no consulta el estado de la solicitud de academia al crear una clase: `POST /api/classes` solo exige rol `instructor`, por lo que responde `201` con la clase creada y la clase aparece en el buscador. El caso debe marcarse como fallido hasta que se corrija.
+**Estado conocido: OK, corregido en `fix/auth-clases-cuatro-bugs` (OBS-01).** `crearClase` ahora exige al menos una solicitud `aprobada` del instructor; con solicitud rechazada, pendiente o inexistente responde `403 ACADEMY_NOT_APPROVED`. Antes respondía `201`.
 
-**Fuente:** `backend/src/routes/classes.routes.js` (solo `requireRole("instructor")`), `backend/src/services/class.service.js` (`crearClase` no consulta `solicitudAcademia`); criterio en ERS RF-006.
+**Fuente:** `backend/src/services/class.service.js` (`crearClase`, `exigirAcademiaAprobada`), `backend/src/repositories/academyRequest.repository.js` (`findByInstructor`); criterio en ERS RF-006 y RF-008.
 
 ### CP-S12-005 — RF-006 — Caso: solo el admin puede aprobar o rechazar solicitudes
 - **RF:** RF-006 · **Prioridad:** Alta · **Ejecución:** API
@@ -299,15 +299,15 @@ Archivos revisados: `backend/src/routes/adminUsers.routes.js`,
 
 **Dado** una cuenta en estado `suspendido`
 **Cuando** su titular hace `POST /api/auth/login` con sus credenciales correctas (y luego usa el token para `GET /api/users/<ID_E2>/enrollments`)
-**Entonces** el comportamiento actual es que el acceso NO se bloquea
+**Entonces** el login se bloquea con `403 ACCOUNT_SUSPENDED` y no se emite token
 
 **Resultado esperado (comportamiento actual del código)**
-- `200` con token y usuario (con `estado: "suspendido"` dentro del objeto `user`); el token sigue siendo válido para las rutas protegidas.
-- El ERS solo dice que el administrador puede "suspender" cuentas; no define qué impide la suspensión. Lo razonable es bloquear el login (por ejemplo `403`), pero eso hay que confirmarlo con el cliente.
+- `403 ACCOUNT_SUSPENDED` "Tu cuenta está suspendida. Contacta al administrador." y sin token. La comprobación va después de validar la contraseña: con contraseña incorrecta se responde el `401 INVALID_CREDENTIALS` normal y el contador de intentos fallidos sigue igual. Los usuarios `pendiente` (p. ej. `instructor.pendiente@danzas.app`) sí pueden iniciar sesión.
+- El ERS solo dice que el administrador puede "suspender" cuentas (RF-007) y no define el efecto; se tomó la decisión de bloquear el login. Un JWT emitido antes de la suspensión sigue siendo válido hasta que expire (`auth.middleware.js` solo verifica el token).
 
-**Estado conocido: POR CONFIRMAR (OBS-05).** Registrar el resultado y escalarlo al responsable del ERS.
+**Estado conocido: OK, corregido en `fix/auth-clases-cuatro-bugs` (OBS-05).**
 
-**Fuente:** `backend/src/services/auth.service.js` (`login` no lee `estado`), `backend/src/middleware/auth.middleware.js` (solo verifica el JWT).
+**Fuente:** `backend/src/services/auth.service.js` (`login`, rama `estado === "suspendido"`), `backend/src/middleware/auth.middleware.js` (solo verifica el JWT).
 
 ### CP-S12-012 — RF-007 — Caso: Admin edita un usuario (reglas de validación)
 - **RF:** RF-007 · **Prioridad:** Baja · **Ejecución:** UI + API · **Modifica datos**
@@ -540,7 +540,7 @@ Archivos revisados: `backend/src/routes/classes.routes.js`,
 
 ## Observaciones (discrepancias ERS / código)
 
-**OBS-01 — RF-006: una academia rechazada o pendiente SÍ puede publicar clases (Alta).**
+**OBS-01 — RF-006: una academia rechazada o pendiente SÍ puede publicar clases (Alta). CORREGIDA: corregido en `fix/auth-clases-cuatro-bugs`.** `crearClase` responde `403 ACADEMY_NOT_APPROVED` si el instructor no tiene una solicitud aprobada (la edición y el registro de asistencia no cambian a propósito). Descripción original:
 El ERS RF-006 exige que "una academia rechazada no puede publicar clases" y que un instructor "no puede publicar clases ni operar en la plataforma hasta ser verificada y aprobada". El código solo valida el rol: `backend/src/routes/classes.routes.js` (`requireRole("instructor")`) y `backend/src/services/class.service.js` (`crearClase`) nunca leen la tabla `solicitud_academia`. Afecta CP-S12-004. Tampoco se valida al editar ni al registrar asistencia.
 
 **OBS-02 — RF-006: aprobar/rechazar no valida el estado actual ni actualiza la cuenta (Media).**
@@ -552,10 +552,10 @@ El ERS RF-006 exige que "una academia rechazada no puede publicar clases" y que 
 **OBS-04 — RF-006: las pantallas de administración de academias no coinciden con el backend (Alta para la demo).**
 `GET /api/admin/academy-requests` devuelve `{ requests: [filas de solicitud con id, instructorId, nombreAcademia, estado, ...] }`, pero `frontend/src/hooks/useAcademies.js` guarda ese objeto como si fuera un arreglo y `frontend/src/screens/admin/academies/AcademiesAdmin.jsx` espera campos que no existen (`academyName`, `instructorName`, `city`, `danceTypes`, ...); la lista fallaría al renderizar. `AcademyReview.jsx` y `frontend/src/services/academies.service.js` llaman a `GET /admin/academy-requests/:id` y `GET /admin/academies/:id`, rutas que el backend no define. Hasta alinear el contrato, aprobar y rechazar solo se puede probar por API. Verificar en ejecución.
 
-**OBS-05 — RF-007: un usuario suspendido puede iniciar sesión y operar (Media, por confirmar).**
+**OBS-05 — RF-007: un usuario suspendido puede iniciar sesión y operar (Media, por confirmar). CORREGIDA (login): corregido en `fix/auth-clases-cuatro-bugs`.** El login responde `403 ACCOUNT_SUSPENDED`; los tokens ya emitidos siguen válidos hasta expirar. Descripción original:
 `auth.service.js#login` no consulta `usuario.estado` y `auth.middleware.js` solo verifica el JWT. El ERS no define el efecto de "suspender"; se recomienda bloquear el login y los tokens existentes.
 
-**OBS-06 — RF-007 / registro: el alta no valida el rol y el formulario envía valores que no coinciden con el enum (Alta).**
+**OBS-06 — RF-007 / registro: el alta no valida el rol y el formulario envía valores que no coinciden con el enum (Alta). CORREGIDA: corregido en `fix/auth-clases-cuatro-bugs`.** `registrar` solo acepta `estudiante`, `padre` e `instructor` (`400 INVALID_ROLE` para `admin` y cualquier otro valor) y `Register.jsx` envía `estudiante` / `padre`. Descripción original:
 `auth.service.js#registrar` pasa `rol` a Prisma sin validarlo: la API acepta `"rol": "admin"` y crearía un administrador sin autorización alguna. Además `frontend/src/screens/auth/Register.jsx` envía `student` y `parent`, pero el enum de la base es `estudiante` / `padre`, por lo que registrarse como estudiante o padre desde el formulario fallaría en Prisma (verificar en ejecución); solo `instructor` coincide. Por eso estos casos crean usuarios de prueba como instructor por UI o con el rol correcto por API.
 
 **OBS-07 — RF-008 / RF-009: formatos de hora incompatibles entre la validación de cruce y Prisma (Alta, verificar en ejecución).**
@@ -574,4 +574,4 @@ El ERS RF-006 exige que "una academia rechazada no puede publicar clases" y que 
 `attendance.service.js` / `attendance.repository.js`: no valida `registros` ni `fechaSesion` (500 si faltan), descarta en silencio las inscripciones que no son de la clase (`201 { count: 0 }`), no exige inscripción confirmada, no restringe a clases activas y permite duplicados por sesión.
 
 **OBS-12 — Sprint 1 (informativo): `casos-prueba-sprint1.md` está desactualizado.**
-(a) `auth.routes.js` solo monta `POST /register` y `POST /login`; las rutas de recuperación de contraseña que llaman `frontend/src/services/auth.service.js` (`/auth/forgot-password`, `/auth/reset-password`) no existen en el backend. (b) `dependent.service.js` ya usa `AppError` y responde `403` con código `FORBIDDEN_NOT_PARENT`; la nota del documento de Sprint 1 que describe un `500` ya no aplica. Conviene revisar esos casos de Sprint 1 antes del regreso.
+(a) (CORREGIDO, corregido en `fix/auth-clases-cuatro-bugs`: `auth.routes.js` ya monta `POST /forgot-password` y `POST /reset-password`, y el frontend envía `{ correo }` como espera el controller.) Antes `auth.routes.js` solo montaba `POST /register` y `POST /login`; las rutas de recuperación de contraseña que llama `frontend/src/services/auth.service.js` (`/auth/forgot-password`, `/auth/reset-password`) no existían en el backend. (b) `dependent.service.js` ya usa `AppError` y responde `403` con código `FORBIDDEN_NOT_PARENT`; la nota del documento de Sprint 1 que describe un `500` ya no aplica. Conviene revisar esos casos de Sprint 1 antes del regreso.
