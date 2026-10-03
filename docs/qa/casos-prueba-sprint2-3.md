@@ -498,7 +498,7 @@ Prisma). Las siguientes son nuevas de Sprint 3 y usan numeración propia:
 
 **OBS-01 (S2-3) — RF-006: ver OBS-01 de Sprint 1-2. CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`).** El caso CP-S23-002 fallaba porque `backend/src/services/class.service.js` nunca consultaba el estado de la solicitud de academia; ahora `crearClase` responde `403 ACADEMY_NOT_APPROVED`.
 
-**OBS-02 (S2-3) — RF-008: ver OBS-07 de Sprint 1-2.** La regla de cruce y de 15 minutos (`schedule.service.js`) solo detecta conflictos con horas en formato `"HH:MM"`; con ISO calcula `NaN`. Verificar en ejecución en CP-S23-005.
+**OBS-02 (S2-3) — RF-008: ver OBS-07 de Sprint 1-2. CORREGIDA (corregido en `fix/horarios-iso-solicitud-instructor`).** La regla de cruce y de 15 minutos (`schedule.service.js`) solo detecta conflictos con horas en formato `"HH:MM"`; con ISO calcula `NaN`. Verificar en ejecución en CP-S23-005.
 
 **OBS-03 (S2-3) — RF-007: ver OBS-05 de Sprint 1-2. CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`).** Antes el usuario suspendido conservaba el acceso (`auth.service.js#login` no miraba `estado`); ahora el login responde `403 ACCOUNT_SUSPENDED`.
 

@@ -12,9 +12,28 @@ const selectPublico = {
   creadoEn: true,
 };
 
-const create = async ({ rol, nombre, correo, passwordHash, ciudad }) => {
+/**
+ * Si se recibe `solicitudAcademia` ({ nombreAcademia }), la solicitud pendiente se
+ * crea con una escritura anidada: Prisma ejecuta usuario + solicitud en una misma
+ * transacción, así nunca queda un instructor sin solicitud (ni al revés).
+ */
+const create = async ({ rol, nombre, correo, passwordHash, ciudad, solicitudAcademia }) => {
   return await prisma.usuario.create({
-    data: { rol, nombre, correo, passwordHash, ciudad },
+    data: {
+      rol,
+      nombre,
+      correo,
+      passwordHash,
+      ciudad,
+      ...(solicitudAcademia && {
+        solicitudes: {
+          create: {
+            nombreAcademia: solicitudAcademia.nombreAcademia ?? null,
+            estado: "pendiente",
+          },
+        },
+      }),
+    },
   });
 };
 
