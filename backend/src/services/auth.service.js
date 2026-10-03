@@ -8,7 +8,35 @@ const { AppError } = require("../middleware/errorHandler");
 // "admin" existe en el enum RolUsuario pero nunca se obtiene por auto-registro.
 const ROLES_REGISTRABLES = ["estudiante", "padre", "instructor"];
 
-const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
+const MAX_LONGITUD_NOMBRE_ACADEMIA = 150;
+
+/**
+ * Normaliza el nombre de academia opcional del registro de un instructor.
+ * Sin valor (o vacío) es un instructor independiente: devuelve null.
+ */
+const normalizarNombreAcademia = (nombreAcademia) => {
+  if (nombreAcademia === undefined || nombreAcademia === null) {
+    return null;
+  }
+
+  if (typeof nombreAcademia !== "string") {
+    throw new AppError("El nombre de la academia debe ser texto.", 400, "INVALID_ACADEMY_NAME");
+  }
+
+  const nombreLimpio = nombreAcademia.trim();
+
+  if (nombreLimpio.length > MAX_LONGITUD_NOMBRE_ACADEMIA) {
+    throw new AppError(
+      `El nombre de la academia no puede superar los ${MAX_LONGITUD_NOMBRE_ACADEMIA} caracteres.`,
+      400,
+      "INVALID_ACADEMY_NAME",
+    );
+  }
+
+  return nombreLimpio || null;
+};
+
+const registrar = async ({ rol, nombre, correo, contraseña, ciudad, nombreAcademia }) => {
   const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!ROLES_REGISTRABLES.includes(rol)) {
@@ -18,6 +46,11 @@ const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
       "INVALID_ROLE",
     );
   }
+
+  // RF-006: un instructor nace con una solicitud de academia pendiente (creada
+  // junto con el usuario). Para los demás roles el campo se ignora.
+  const solicitudAcademia =
+    rol === "instructor" ? { nombreAcademia: normalizarNombreAcademia(nombreAcademia) } : undefined;
 
   if (!correoRegex.test(correo)) {
     throw new AppError("El formato del correo no es válido.", 400, "INVALID_EMAIL_FORMAT");
@@ -51,6 +84,7 @@ const registrar = async ({ rol, nombre, correo, contraseña, ciudad }) => {
     correo,
     passwordHash,
     ciudad,
+    solicitudAcademia,
   });
 
   return usuario;
