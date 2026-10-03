@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import bcrypt from "bcrypt";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Los modulos de src son CommonJS: se cargan con el require nativo para compartir
 // la misma instancia que usa el service, y asi poder espiar sus funciones.
@@ -200,6 +200,75 @@ describe("userRepository.create (usuario y solicitud en una sola escritura atomi
     await userRepository.create({ ...base, rol: "estudiante" });
 
     expect(crear.mock.calls[0][0].data).not.toHaveProperty("solicitudes");
+  });
+});
+
+describe("recuperarPassword (correo de recuperacion y enlace configurable)", () => {
+  const emailService = require("../src/services/email.service");
+  const { recuperarPassword } = require("../src/services/auth.service");
+
+  const stubs = (usuario = { id: "usuario-1", correo: "ana@danzas.app" }) => {
+    vi.spyOn(userRepository, "findByEmail").mockResolvedValue(usuario);
+    vi.spyOn(jwtUtil, "signToken").mockReturnValue("token-falso");
+    return {
+      recuperacion: vi.spyOn(emailService, "enviarCorreoRecuperacion").mockResolvedValue(undefined),
+      verificacion: vi.spyOn(emailService, "enviarCorreoVerificacion").mockResolvedValue(undefined),
+    };
+  };
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("usa el correo de recuperacion (no el de verificacion) y firma un token de 30 minutos", async () => {
+    const { recuperacion, verificacion } = stubs();
+    vi.stubEnv("FRONTEND_URL", "https://app.danzas.test");
+
+    await recuperarPassword("ana@danzas.app");
+
+    expect(verificacion).not.toHaveBeenCalled();
+    expect(recuperacion).toHaveBeenCalledWith(
+      "ana@danzas.app",
+      "https://app.danzas.test/restablecer-password?token=token-falso",
+    );
+    expect(jwtUtil.signToken).toHaveBeenCalledWith(
+      { id: "usuario-1", tipo: "recuperacion_password" },
+      "30m",
+    );
+  });
+
+  it("quita la barra final de FRONTEND_URL", async () => {
+    const { recuperacion } = stubs();
+    vi.stubEnv("FRONTEND_URL", "https://app.danzas.test///");
+
+    await recuperarPassword("ana@danzas.app");
+
+    expect(recuperacion.mock.calls[0][1]).toBe(
+      "https://app.danzas.test/restablecer-password?token=token-falso",
+    );
+  });
+
+  it.each([["sin definir", undefined], ["vacia", ""]])(
+    "con FRONTEND_URL %s cae a http://localhost:5173",
+    async (_caso, valor) => {
+      const { recuperacion } = stubs();
+      vi.stubEnv("FRONTEND_URL", valor ?? "");
+
+      await recuperarPassword("ana@danzas.app");
+
+      expect(recuperacion.mock.calls[0][1]).toBe(
+        "http://localhost:5173/restablecer-password?token=token-falso",
+      );
+    },
+  );
+
+  it("con un correo no registrado responde igual y no envia nada", async () => {
+    const { recuperacion } = stubs(null);
+
+    const resultado = await recuperarPassword("nadie@danzas.app");
+
+    expect(resultado.message).toMatch(/Si el correo está registrado/);
+    expect(recuperacion).not.toHaveBeenCalled();
   });
 });
 

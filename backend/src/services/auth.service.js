@@ -164,9 +164,11 @@ const recuperarPassword = async (correo) => {
   }
 
   const token = jwtUtil.signToken({ id: user.id, tipo: "recuperacion_password" }, "30m");
-  const link = `http://localhost:5173/restablecer-password?token=${token}`;
+  // La base del enlace sale de FRONTEND_URL (sin barra final); en local cae a Vite.
+  const urlFrontend = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
+  const link = `${urlFrontend}/restablecer-password?token=${token}`;
 
-  await emailService.enviarCorreoVerificacion(correo, link);
+  await emailService.enviarCorreoRecuperacion(correo, link);
 
   return {
     message: "Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.",
