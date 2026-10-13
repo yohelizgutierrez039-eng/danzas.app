@@ -73,6 +73,18 @@
   white-space: nowrap;
 }
 
+.review-status--aprobada {
+  color: var(--color-success-dark);
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.review-status--rechazada {
+  color: var(--color-danger-dark);
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+}
+
 .academy-review-grid {
   display: grid;
   grid-template-columns: 1fr;
