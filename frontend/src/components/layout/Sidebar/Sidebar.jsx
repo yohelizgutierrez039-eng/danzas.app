@@ -20,7 +20,8 @@ function Sidebar({
 
     parent: [
       { label: "Dashboard", path: "/padre", icon: "⌂" },
-      { label: "Mis hijos", path: "/padre/hijos", icon: "♙" },
+      { label: "Explorar clases", path: "/padre/clases", icon: "⌕" },
+      { label: "Mis hijos", path: "/padre/menores", icon: "♙" },
       { label: "Inscripciones", path: "/padre/inscripciones", icon: "▣" },
       { label: "Asistencia", path: "/padre/asistencia", icon: "✓" },
       { label: "Pagos", path: "/padre/pagos", icon: "$" },
