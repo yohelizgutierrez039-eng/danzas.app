@@ -36,7 +36,8 @@ import Users from "../screens/admin/Users/Users";
 import UserDetail from "../screens/admin/Users/UserDetail";
 import UserForm from "../screens/admin/Users/UserForm";
 import UserHistory from "../screens/admin/Users/UserHistory";
-import SectionComingSoon from "../screens/admin/SectionComingSoon";
+import SectionComingSoon from "../components/common/SectionComingSoon/SectionComingSoon";
+import COMING_SOON_SECTIONS from "./comingSoonSections";
 
 // Estudiante
 import DashboardStudent from "../screens/student/DashboardStudent";
@@ -57,6 +58,27 @@ import DashboardInstructor from "../screens/instructor/DashboardInstructor";
 import MyClasses from "../screens/instructor/MyClasses";
 import ClassForm from "../screens/instructor/ClassForm";
 import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
+
+// Rutas provisorias de las secciones del menú que todavía no tienen pantalla
+// (ver comingSoonSections.js).
+const renderComingSoonRoutes = (role) => {
+  const { area, backTo, items } = COMING_SOON_SECTIONS[role];
+
+  return items.map((item) => (
+    <Route
+      key={item.path}
+      path={item.path}
+      element={
+        <SectionComingSoon
+          area={area}
+          backTo={backTo}
+          title={item.title}
+          description={item.description}
+        />
+      }
+    />
+  ));
+};
 
 function AppRouter() {
   const { isAuthenticated, user } = useAuth();
@@ -117,42 +139,7 @@ function AppRouter() {
               path="/admin/usuarios/:id/historial"
               element={<UserHistory />}
             />
-            <Route
-              path="/admin/pagos"
-              element={
-                <SectionComingSoon
-                  title="Pagos"
-                  description="Aquí podrás consultar los pagos recibidos en la plataforma."
-                />
-              }
-            />
-            <Route
-              path="/admin/reportes"
-              element={
-                <SectionComingSoon
-                  title="Reportes"
-                  description="Aquí podrás generar reportes de pagos filtrados por fecha, academia o instructor."
-                />
-              }
-            />
-            <Route
-              path="/admin/notificaciones"
-              element={
-                <SectionComingSoon
-                  title="Notificaciones"
-                  description="Por ahora los avisos del sistema se envían por correo electrónico."
-                />
-              }
-            />
-            <Route
-              path="/admin/perfil"
-              element={
-                <SectionComingSoon
-                  title="Mi perfil"
-                  description="La gestión de tu perfil estará disponible más adelante."
-                />
-              }
-            />
+            {renderComingSoonRoutes("admin")}
           </Route>
         </Route>
 
@@ -184,6 +171,7 @@ function AppRouter() {
               path="/estudiante/inscripciones/:enrollmentId/pago"
               element={<PaymentCheckout />}
             />
+            {renderComingSoonRoutes("student")}
           </Route>
         </Route>
 
@@ -210,6 +198,7 @@ function AppRouter() {
               path="/padre/inscripciones/:enrollmentId/pago"
               element={<PaymentCheckout />}
             />
+            {renderComingSoonRoutes("parent")}
           </Route>
         </Route>
 
@@ -235,6 +224,7 @@ function AppRouter() {
               path="/instructor/clases/:id"
               element={<ClassDetailInstructor />}
             />
+            {renderComingSoonRoutes("instructor")}
           </Route>
         </Route>
 
