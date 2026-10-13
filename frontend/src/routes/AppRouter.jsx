@@ -36,6 +36,7 @@ import Users from "../screens/admin/Users/Users";
 import UserDetail from "../screens/admin/Users/UserDetail";
 import UserForm from "../screens/admin/Users/UserForm";
 import UserHistory from "../screens/admin/Users/UserHistory";
+import SectionComingSoon from "../screens/admin/SectionComingSoon";
 
 // Estudiante
 import DashboardStudent from "../screens/student/DashboardStudent";
@@ -115,6 +116,42 @@ function AppRouter() {
             <Route
               path="/admin/usuarios/:id/historial"
               element={<UserHistory />}
+            />
+            <Route
+              path="/admin/pagos"
+              element={
+                <SectionComingSoon
+                  title="Pagos"
+                  description="Aquí podrás consultar los pagos recibidos en la plataforma."
+                />
+              }
+            />
+            <Route
+              path="/admin/reportes"
+              element={
+                <SectionComingSoon
+                  title="Reportes"
+                  description="Aquí podrás generar reportes de pagos filtrados por fecha, academia o instructor."
+                />
+              }
+            />
+            <Route
+              path="/admin/notificaciones"
+              element={
+                <SectionComingSoon
+                  title="Notificaciones"
+                  description="Por ahora los avisos del sistema se envían por correo electrónico."
+                />
+              }
+            />
+            <Route
+              path="/admin/perfil"
+              element={
+                <SectionComingSoon
+                  title="Mi perfil"
+                  description="La gestión de tu perfil estará disponible más adelante."
+                />
+              }
             />
           </Route>
         </Route>
