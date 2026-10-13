@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
 import Loading from "../../components/common/Loading/Loading";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
@@ -8,10 +8,11 @@ import "./ExploreClasses.css";
 
 function ExploreClasses() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [search, setSearch] = useState("");
-  const [danceType, setDanceType] = useState("");
-  const [city, setCity] = useState("");
+  const [danceType, setDanceType] = useState(searchParams.get("tipo") || "");
+  const [city, setCity] = useState(searchParams.get("ciudad") || "");
   const [modality, setModality] = useState("");
 
   const [classes, setClasses] = useState([]);
