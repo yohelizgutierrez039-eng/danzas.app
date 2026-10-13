@@ -1,10 +1,18 @@
 const prisma = require("../config/prisma");
 
+// Datos del instructor solicitante que necesitan las pantallas de administracion.
+const incluirInstructor = {
+  instructor: {
+    select: { id: true, nombre: true, correo: true, ciudad: true },
+  },
+};
+
 const findPending = async () => {
   return await prisma.solicitudAcademia.findMany({
     where: {
       estado: "pendiente",
     },
+    include: incluirInstructor,
   });
 };
 
@@ -13,6 +21,7 @@ const findById = async (id) => {
     where: {
       id,
     },
+    include: incluirInstructor,
   });
 };
 

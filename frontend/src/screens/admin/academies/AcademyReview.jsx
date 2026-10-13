@@ -4,15 +4,24 @@ import ConfirmDialog from "../../../components/common/ConfirmDialog/ConfirmDialo
 import Loading from "../../../components/common/Loading/Loading";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
 import api from "../../../api/api";
-import { getAcademyRequestById } from "../../../services/academies.service";
+import useAcademies from "../../../hooks/useAcademies";
+import {
+  ETIQUETAS_ESTADO_SOLICITUD,
+  formatearFechaSolicitud,
+} from "../../../utils/solicitudAcademia";
 import "./AcademyReview.css";
 
 function AcademyReview() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [academy, setAcademy] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    academy,
+    loading,
+    error: loadError,
+    fetchAcademyRequest,
+  } = useAcademies();
+
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,26 +30,9 @@ function AcademyReview() {
     type: null,
   });
 
-  const loadAcademy = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getAcademyRequestById(id);
-
-      setAcademy(data);
-    } catch (err) {
-      setAcademy(null);
-      setError(err.message || "No fue posible cargar la solicitud.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
-    loadAcademy();
-  }, [id]);
+    fetchAcademyRequest(id).catch(() => {});
+  }, [id, fetchAcademyRequest]);
 
   const openDialog = (type) => {
     setDialog({
@@ -104,14 +96,14 @@ function AcademyReview() {
     return (
       <div className="academy-review">
         <ErrorMessage
-          message="No se encontró la solicitud de la academia."
+          message={loadError || "No se encontró la solicitud de la academia."}
           type="error"
         />
       </div>
     );
   }
 
-  const isPending = academy.status === "pending";
+  const isPending = academy.status === "pendiente";
 
   return (
     <div className="academy-review">
@@ -134,8 +126,8 @@ function AcademyReview() {
           </p>
         </div>
 
-        <span className="review-status">
-          {isPending ? "Pendiente" : academy.status}
+        <span className={`review-status review-status--${academy.status}`}>
+          {ETIQUETAS_ESTADO_SOLICITUD[academy.status] ?? academy.status}
         </span>
       </div>
 
@@ -163,31 +155,6 @@ function AcademyReview() {
               <span>Ciudad</span>
               <strong>{academy.city}</strong>
             </div>
-
-            <div className="review-info">
-              <span>Dirección</span>
-              <strong>{academy.address}</strong>
-            </div>
-
-            <div className="review-info">
-              <span>Modalidad</span>
-              <strong>{academy.modality}</strong>
-            </div>
-          </div>
-
-          <div className="review-description">
-            <span>Descripción</span>
-            <p>{academy.description}</p>
-          </div>
-
-          <div className="review-dances">
-            <span>Tipos de danza</span>
-
-            <div className="dance-tags">
-              {academy.danceTypes.map((dance) => (
-                <span key={dance}>{dance}</span>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -207,33 +174,12 @@ function AcademyReview() {
               <strong>{academy.email}</strong>
             </div>
 
-            <div className="review-info">
-              <span>Teléfono</span>
-              <strong>{academy.phone}</strong>
-            </div>
-
-            <div className="review-info">
-              <span>Fecha de solicitud</span>
-              <strong>{academy.submittedAt}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="review-card">
-          <div className="review-card-header">
-            <h2>Documentación</h2>
-          </div>
-
-          <div className="documents-list">
-            {academy.documents.map((document, index) => (
-              <div className="document-item" key={index}>
-                <div className="document-icon">📄</div>
-
-                <span>{document}</span>
-
-                <button type="button">Ver</button>
+            {!isPending && (
+              <div className="review-info">
+                <span>Fecha de revisión</span>
+                <strong>{formatearFechaSolicitud(academy.reviewedAt)}</strong>
               </div>
-            ))}
+            )}
           </div>
         </section>
       </div>

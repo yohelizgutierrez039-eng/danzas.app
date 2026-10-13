@@ -2,6 +2,7 @@ const academyRequestRepository = require("../repositories/academyRequest.reposit
 const userRepository = require("../repositories/user.repository");
 const emitirCorreo = require("../events/emitirCorreo");
 const plantillas = require("../utils/emailTemplates");
+const { AppError } = require("../middleware/errorHandler");
 
 /**
  * RF-017: avisa por correo al instructor solicitante la decision del admin.
@@ -34,6 +35,16 @@ const listarPendientes = async () => {
   return await academyRequestRepository.findPending();
 };
 
+const obtenerSolicitud = async (solicitudId) => {
+  const solicitud = await academyRequestRepository.findById(solicitudId);
+
+  if (!solicitud) {
+    throw new AppError("Solicitud no encontrada.", 404, "REQUEST_NOT_FOUND");
+  }
+
+  return solicitud;
+};
+
 const aprobar = async (solicitudId, adminId) => {
   const solicitud = await academyRequestRepository.updateEstado(solicitudId, {
     estado: "aprobada",
@@ -60,6 +71,7 @@ const rechazar = async (solicitudId, adminId) => {
 
 module.exports = {
   listarPendientes,
+  obtenerSolicitud,
   aprobar,
   rechazar,
 };

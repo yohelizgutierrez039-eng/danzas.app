@@ -45,12 +45,14 @@ export const rejectAcademyRequest = async (id) => {
 
 /**
  * Obtener el detalle de una academia ya aprobada.
+ * Una academia aprobada es una solicitud en estado "aprobada": se consulta
+ * con el mismo endpoint de solicitudes.
  *
  * @param {string|number} id - ID de la academia.
  * @returns {Promise<any>}
  */
 export const getAcademyById = async (id) => {
-	return await api(`/admin/academies/${id}`);
+	return await api(`/admin/academy-requests/${id}`);
 };
 
 export default {

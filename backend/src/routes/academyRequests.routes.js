@@ -14,6 +14,14 @@ router.get(
   academyRequestController.getRequests
 );
 
+// Obtener una solicitud por id (cualquier estado)
+router.get(
+  "/:id",
+  authMiddleware,
+  requireRole("admin"),
+  academyRequestController.getRequestById
+);
+
 // Aprobar solicitud
 router.post(
   "/:id/approve",

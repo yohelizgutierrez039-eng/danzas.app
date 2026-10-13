@@ -6,11 +6,17 @@ import {
   rejectAcademyRequest,
   getAcademyById,
 } from "../services/academies.service";
+import {
+  normalizarListaSolicitudes,
+  normalizarRespuestaSolicitud,
+} from "../utils/solicitudAcademia";
 
 const useAcademies = () => {
   const [academies, setAcademies] = useState([]);
   const [academy, setAcademy] = useState(null);
-  const [loading, setLoading] = useState(false);
+  // Arranca en true: las pantallas cargan al montarse y no deben mostrar un
+  // estado vacio antes de que llegue la primera respuesta.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   /**
@@ -21,7 +27,7 @@ const useAcademies = () => {
       setLoading(true);
       setError("");
 
-      const data = await getAcademyRequests();
+      const data = normalizarListaSolicitudes(await getAcademyRequests());
 
       setAcademies(data);
       return data;
@@ -42,7 +48,7 @@ const useAcademies = () => {
       setLoading(true);
       setError("");
 
-      const data = await getAcademyRequestById(id);
+      const data = normalizarRespuestaSolicitud(await getAcademyRequestById(id));
 
       setAcademy(data);
       return data;
@@ -63,7 +69,7 @@ const useAcademies = () => {
       setLoading(true);
       setError("");
 
-      const data = await getAcademyById(id);
+      const data = normalizarRespuestaSolicitud(await getAcademyById(id));
 
       setAcademy(data);
       return data;
