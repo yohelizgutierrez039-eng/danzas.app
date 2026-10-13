@@ -92,10 +92,37 @@ Si no solicitaste esta acción, puedes ignorar este mensaje.`,
   }
 };
 
+/**
+ * Correo de recuperacion de contrasena. Mismo patron "a prueba de fallos" que
+ * enviarCorreoVerificacion: nunca lanza, para no revelar si el correo existe ni
+ * romper la solicitud por un fallo del proveedor. El enlace vence a los 30
+ * minutos (la vigencia la fija el token firmado en auth.service).
+ */
+const enviarCorreoRecuperacion = async (destinatario, link) => {
+  try {
+    return await enviarNotificacion({
+      destinatario,
+      asunto: "Recupera tu contraseña en Danzas.app",
+      cuerpo: `Hola,
+
+Recibimos una solicitud para restablecer la contraseña de tu cuenta en Danzas.app.
+
+Ingresa al siguiente enlace para elegir una nueva contraseña (vence en 30 minutos):
+
+${link || ""}
+
+Si no solicitaste este cambio, puedes ignorar este mensaje: tu contraseña seguirá siendo la misma.`,
+    });
+  } catch (error) {
+    console.error("[notificaciones] No se pudo enviar el correo:", error.message);
+  }
+};
+
 notificationEmitter.on("correo", manejarEventoCorreo);
 
 module.exports = {
   enviarCorreoVerificacion,
+  enviarCorreoRecuperacion,
   enviarNotificacion,
   manejarEventoCorreo,
 };

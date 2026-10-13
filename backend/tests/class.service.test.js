@@ -87,3 +87,56 @@ describe("crearClase (RF-006 / RF-008: solo instructores con academia aprobada)"
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// editarClase usa el schedule.service real (no espiado): comprueba que el
+// horario editado tambien se valida y que las horas ISO ya cruzan correctamente.
+// ---------------------------------------------------------------------------
+describe("editarClase (validacion de horario al editar)", () => {
+  const { editarClase } = require("../src/services/class.service");
+  const prisma = require("../src/config/prisma");
+  const INSTRUCTOR_ID = "instructor-1";
+  const hora = (hhmm) => new Date(`1970-01-01T${hhmm}:00.000Z`);
+  const claseExistente = {
+    id: "clase-1",
+    instructorId: INSTRUCTOR_ID,
+    horarios: [{ diaSemana: 1, horaInicio: hora("18:00"), horaFin: hora("19:00") }],
+  };
+
+  const stubs = (otrasClases = []) => {
+    vi.spyOn(classRepository, "findById").mockResolvedValue(claseExistente);
+    vi.spyOn(classRepository, "findByInstructor").mockResolvedValue(otrasClases);
+    vi.spyOn(prisma, "$transaction").mockImplementation(async (callback) => callback({}));
+    return vi.spyOn(classRepository, "update").mockResolvedValue({ id: "clase-1" });
+  };
+
+  it("fin <= inicio al editar: 400 INVALID_SCHEDULE y no se actualiza", async () => {
+    const actualizar = stubs();
+
+    await expect(
+      editarClase("clase-1", INSTRUCTOR_ID, {
+        horaInicio: "1970-01-01T20:00:00.000Z",
+        horaFin: "1970-01-01T19:00:00.000Z",
+      }),
+    ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_SCHEDULE" });
+    expect(actualizar).not.toHaveBeenCalled();
+  });
+
+  it("horas ISO que se cruzan con otra clase al editar: 409 SCHEDULE_CONFLICT", async () => {
+    const actualizar = stubs([
+      {
+        id: "clase-2",
+        horarios: [{ diaSemana: 2, horaInicio: hora("10:00"), horaFin: hora("11:00") }],
+      },
+    ]);
+
+    await expect(
+      editarClase("clase-1", INSTRUCTOR_ID, {
+        diaSemana: 2,
+        horaInicio: "1970-01-01T10:30:00.000Z",
+        horaFin: "1970-01-01T11:30:00.000Z",
+      }),
+    ).rejects.toMatchObject({ statusCode: 409, code: "SCHEDULE_CONFLICT" });
+    expect(actualizar).not.toHaveBeenCalled();
+  });
+});

@@ -343,7 +343,7 @@ El cuerpo del mensaje no se imprime: para revisarlo hay que leer
 | Inscripción cancelada | `DELETE /api/enrollments/:id` | Quien cancela (estudiante, o padre) | `Inscripción cancelada: <tipoBaile>` |
 | Clase cancelada por el instructor | `DELETE /api/classes/:id` | Un correo por cada inscripción activa (`pendiente_pago` o `confirmada`) | `Clase cancelada: <tipoBaile>` |
 | Solicitud de academia resuelta | `POST /api/admin/academy-requests/:id/approve` o `/reject` | Instructor solicitante | `Solicitud de academia aprobada` / `Solicitud de academia rechazada` |
-| Recuperación de contraseña | `POST /api/auth/forgot-password` (ver OBS-07) | Correo indicado | `Verifica tu cuenta en Danzas.app` |
+| Recuperación de contraseña | `POST /api/auth/forgot-password` (ver OBS-07) | Correo indicado | `Recupera tu contraseña en Danzas.app` (antes `Verifica tu cuenta en Danzas.app`; corregido en `fix/horarios-iso-solicitud-instructor`) |
 
 ### CP-S4-012 — RF-017 — Caso: cada evento de negocio emite su correo
 - **RF:** RF-017 · **Prioridad:** Alta · **Ejecución:** consola del backend, durante los casos anteriores
@@ -412,7 +412,7 @@ Una inscripción `pendiente_pago` conserva su cupo indefinidamente (ver OBS-08 e
 **OBS-06 — RF-013 / RF-018: el flujo del padre no es operable desde la UI (Alta para la demo).**
 La pantalla "Explorar clases" del padre usa clases de ejemplo con ids numéricos y el backend rechaza la inscripción (OBS-04 de `casos-prueba-sprint2-3.md`); además `PaymentCheckout.jsx` solo recupera la inscripción desde el historial cuando el rol no es `padre`, así que recargar la página de pago de un padre muestra "Inscripción no encontrada". No existe pantalla para que el padre cancele inscripciones de sus menores. Por API todo funciona.
 
-**OBS-07 — RF-017: no hay correo de confirmación de registro y la ruta de recuperación no está montada (Baja). La parte de rutas está CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`); el correo de confirmación de registro sigue pendiente.**
+**OBS-07 — RF-017: no hay correo de confirmación de registro y la ruta de recuperación no está montada (Baja). La parte de rutas está CORREGIDA (corregido en `fix/auth-clases-cuatro-bugs`); el correo de confirmación de registro sigue pendiente. El asunto/cuerpo de recuperación y el enlace fijo a `localhost:5173` quedaron corregidos en `fix/horarios-iso-solicitud-instructor` (asunto "Recupera tu contraseña en Danzas.app", enlace desde `FRONTEND_URL`).**
 `auth.service.js#registrar` no emite correo (el ERS RF-001 y RF-017 lo piden). `recuperarPassword` envía un correo con el asunto "Verifica tu cuenta en Danzas.app", pero `auth.routes.js` solo montaba `POST /register` y `POST /login` y las rutas de recuperación que llama el frontend no existían; ahora se montan `POST /forgot-password` y `POST /reset-password`.
 
 **OBS-08 — RF-013: el comprobante en pantalla usa la fecha actual del navegador (Baja).**
