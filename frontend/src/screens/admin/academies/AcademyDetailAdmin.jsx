@@ -1,69 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../../components/common/Loading/Loading";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
+import useAcademies from "../../../hooks/useAcademies";
+import { formatearFechaSolicitud } from "../../../utils/solicitudAcademia";
 import "./AcademyDetailAdmin.css";
 
 function AcademyDetailAdmin() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [academy, setAcademy] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadAcademy = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      /*
-       * Cuando esté disponible el endpoint del backend:
-       *
-       * const data = await api(`/admin/academies/${id}`);
-       * setAcademy(data);
-       */
-
-      // Datos temporales para visualizar la pantalla.
-      setAcademy({
-        id,
-        academyName: "Academia Ritmo Caribe",
-        instructorName: "Carlos Rodríguez",
-        email: "carlos@ritmocaribe.com",
-        phone: "300 123 4567",
-        city: "Barranquilla",
-        address: "Carrera 45 # 80-20",
-        description:
-          "Academia dedicada a la enseñanza de diferentes estilos de danza.",
-        danceTypes: ["Salsa", "Bachata", "Cumbia"],
-        modality: "Presencial",
-        approvedAt: "13/09/2026",
-        status: "approved",
-        totalClasses: 8,
-        activeStudents: 32,
-      });
-    } catch (err) {
-      setError(
-        err.message || "No fue posible cargar la información de la academia.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { academy, loading, error, fetchAcademy } = useAcademies();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
-    loadAcademy();
-  }, [id]);
+    fetchAcademy(id).catch(() => {});
+  }, [id, fetchAcademy]);
 
   if (loading) {
     return <Loading text="Cargando academia..." />;
   }
 
-  if (!academy) {
+  if (!academy || academy.status !== "aprobada") {
     return (
       <div className="academy-detail-admin">
-        <ErrorMessage message="No se encontró la academia." type="error" />
+        <ErrorMessage
+          message={
+            error ||
+            (academy
+              ? "La solicitud todavía no corresponde a una academia aprobada."
+              : "No se encontró la academia.")
+          }
+          type="error"
+        />
       </div>
     );
   }
@@ -90,20 +58,12 @@ function AcademyDetailAdmin() {
         <span className="academy-approved-status">✓ Aprobada</span>
       </div>
 
-      {error && (
-        <ErrorMessage
-          message={error}
-          type="error"
-          onClose={() => setError("")}
-        />
-      )}
-
       <div className="academy-detail-admin-grid">
         {/* Información general */}
         <section className="academy-detail-admin-card academy-detail-main-card">
           <div className="academy-detail-card-header">
             <div className="academy-detail-icon">
-              {academy.academyName.charAt(0)}
+              {academy.academyName.charAt(0).toUpperCase()}
             </div>
 
             <div>
@@ -122,31 +82,6 @@ function AcademyDetailAdmin() {
               <span>Ciudad</span>
               <strong>{academy.city}</strong>
             </div>
-
-            <div>
-              <span>Dirección</span>
-              <strong>{academy.address}</strong>
-            </div>
-
-            <div>
-              <span>Modalidad</span>
-              <strong>{academy.modality}</strong>
-            </div>
-          </div>
-
-          <div className="academy-detail-description">
-            <span>Descripción</span>
-            <p>{academy.description}</p>
-          </div>
-
-          <div className="academy-detail-dances">
-            <span>Tipos de danza</span>
-
-            <div className="academy-detail-tags">
-              {academy.danceTypes.map((dance) => (
-                <span key={dance}>{dance}</span>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -158,7 +93,7 @@ function AcademyDetailAdmin() {
 
           <div className="academy-detail-responsible">
             <div className="academy-detail-avatar">
-              {academy.instructorName.charAt(0)}
+              {academy.instructorName.charAt(0).toUpperCase()}
             </div>
 
             <div>
@@ -171,11 +106,6 @@ function AcademyDetailAdmin() {
             <div>
               <span>Correo electrónico</span>
               <strong>{academy.email}</strong>
-            </div>
-
-            <div>
-              <span>Teléfono</span>
-              <strong>{academy.phone}</strong>
             </div>
           </div>
         </section>
@@ -197,26 +127,7 @@ function AcademyDetailAdmin() {
 
           <div className="academy-detail-approved-date">
             <span>Fecha de aprobación</span>
-            <strong>{academy.approvedAt}</strong>
-          </div>
-        </section>
-
-        {/* Resumen */}
-        <section className="academy-detail-admin-card academy-detail-summary-card">
-          <div className="academy-detail-card-title">
-            <h2>Resumen</h2>
-          </div>
-
-          <div className="academy-detail-summary">
-            <div>
-              <strong>{academy.totalClasses}</strong>
-              <span>Clases publicadas</span>
-            </div>
-
-            <div>
-              <strong>{academy.activeStudents}</strong>
-              <span>Estudiantes activos</span>
-            </div>
+            <strong>{formatearFechaSolicitud(academy.reviewedAt)}</strong>
           </div>
         </section>
       </div>

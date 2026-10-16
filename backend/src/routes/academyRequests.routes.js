@@ -1,0 +1,41 @@
+const express = require("express");
+
+const router = express.Router();
+
+const authMiddleware = require("../middleware/auth.middleware");
+const requireRole = require("../middleware/roleGuard.middleware");
+const academyRequestController = require("../controllers/academyRequest.controller");
+
+// Obtener solicitudes de academia
+router.get(
+  "/",
+  authMiddleware,
+  requireRole("admin"),
+  academyRequestController.getRequests
+);
+
+// Obtener una solicitud por id (cualquier estado)
+router.get(
+  "/:id",
+  authMiddleware,
+  requireRole("admin"),
+  academyRequestController.getRequestById
+);
+
+// Aprobar solicitud
+router.post(
+  "/:id/approve",
+  authMiddleware,
+  requireRole("admin"),
+  academyRequestController.approveRequest
+);
+
+// Rechazar solicitud
+router.post(
+  "/:id/reject",
+  authMiddleware,
+  requireRole("admin"),
+  academyRequestController.rejectRequest
+);
+
+module.exports = router;

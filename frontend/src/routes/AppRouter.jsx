@@ -7,6 +7,8 @@ import PublicLayout from "../layouts/PublicLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import StudentLayout from "../layouts/StudentLayout";
 import ParentLayout from "../layouts/ParentLayout";
+import InstructorLayout from "../layouts/InstructorLayout";
+import AuthLayout from "../layouts/AuthLayout";
 
 // Público
 import Home from "../screens/public/Home";
@@ -24,18 +26,59 @@ import ForgotPassword from "../screens/auth/ForgotPassword";
 import ResetPassword from "../screens/auth/ResetPassword";
 
 // Admin
+import DashboardAdmin from "../screens/admin/DashboardAdmin";
 import AcademiesAdmin from "../screens/admin/academies/AcademiesAdmin";
 import AcademyReview from "../screens/admin/academies/AcademyReview";
 import AcademyDetailAdmin from "../screens/admin/academies/AcademyDetailAdmin";
 import ClassesAdmin from "../screens/admin/classes/ClassesAdmin";
 import ClassDetailAdmin from "../screens/admin/classes/ClassDetailAdmin";
+import Users from "../screens/admin/Users/Users";
+import UserDetail from "../screens/admin/Users/UserDetail";
+import UserForm from "../screens/admin/Users/UserForm";
+import UserHistory from "../screens/admin/Users/UserHistory";
+import SectionComingSoon from "../components/common/SectionComingSoon/SectionComingSoon";
+import COMING_SOON_SECTIONS from "./comingSoonSections";
 
 // Estudiante
+import DashboardStudent from "../screens/student/DashboardStudent";
 import ClassDetailStudent from "../screens/student/ClassDetailStudent";
 import EnrollmentProcess from "../screens/student/EnrollmentProcess";
+import MyEnrollments from "../screens/student/MyEnrollments";
+import PaymentCheckout from "../screens/student/PaymentCheckout";
 
 // Padre / acudiente
+import DashboardParent from "../screens/parent/DashboardParent";
 import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
+import Dependents from "../screens/parent/Dependents";
+import DependentForm from "../screens/parent/DependentForm";
+import MyEnrollmentsParent from "../screens/parent/MyEnrollmentsParent";
+
+// Instructor
+import DashboardInstructor from "../screens/instructor/DashboardInstructor";
+import MyClasses from "../screens/instructor/MyClasses";
+import ClassForm from "../screens/instructor/ClassForm";
+import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
+
+// Rutas provisorias de las secciones del menú que todavía no tienen pantalla
+// (ver comingSoonSections.js).
+const renderComingSoonRoutes = (role) => {
+  const { area, backTo, items } = COMING_SOON_SECTIONS[role];
+
+  return items.map((item) => (
+    <Route
+      key={item.path}
+      path={item.path}
+      element={
+        <SectionComingSoon
+          area={area}
+          backTo={backTo}
+          title={item.title}
+          description={item.description}
+        />
+      }
+    />
+  ));
+};
 
 function AppRouter() {
   const { isAuthenticated, user } = useAuth();
@@ -56,10 +99,12 @@ function AppRouter() {
         </Route>
 
         {/* ===== Autenticación (pantallas de página completa) ===== */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Register />} />
-        <Route path="/recuperar-password" element={<ForgotPassword />} />
-        <Route path="/restablecer-password" element={<ResetPassword />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Register />} />
+          <Route path="/recuperar-password" element={<ForgotPassword />} />
+          <Route path="/restablecer-password" element={<ResetPassword />} />
+        </Route>
 
         {/* ===== Administrador ===== */}
         <Route
@@ -72,6 +117,7 @@ function AppRouter() {
           }
         >
           <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<DashboardAdmin />} />
             <Route path="/admin/academias" element={<AcademiesAdmin />} />
             <Route
               path="/admin/academias/:id/revisar"
@@ -86,6 +132,14 @@ function AppRouter() {
               path="/admin/classes/:id"
               element={<ClassDetailAdmin />}
             />
+            <Route path="/admin/usuarios" element={<Users />} />
+            <Route path="/admin/usuarios/:id" element={<UserDetail />} />
+            <Route path="/admin/usuarios/:id/editar" element={<UserForm />} />
+            <Route
+              path="/admin/usuarios/:id/historial"
+              element={<UserHistory />}
+            />
+            {renderComingSoonRoutes("admin")}
           </Route>
         </Route>
 
@@ -100,6 +154,7 @@ function AppRouter() {
           }
         >
           <Route element={<StudentLayout />}>
+            <Route path="/estudiante" element={<DashboardStudent />} />
             <Route
               path="/estudiante/clases/:id"
               element={<ClassDetailStudent />}
@@ -108,6 +163,15 @@ function AppRouter() {
               path="/estudiante/clases/:id/inscribir"
               element={<EnrollmentProcess />}
             />
+            <Route
+              path="/estudiante/inscripciones"
+              element={<MyEnrollments />}
+            />
+            <Route
+              path="/estudiante/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
+            />
+            {renderComingSoonRoutes("student")}
           </Route>
         </Route>
 
@@ -122,7 +186,45 @@ function AppRouter() {
           }
         >
           <Route element={<ParentLayout />}>
+            <Route path="/padre" element={<DashboardParent />} />
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
+            <Route path="/padre/menores" element={<Dependents />} />
+            <Route path="/padre/menores/nuevo" element={<DependentForm />} />
+            <Route
+              path="/padre/inscripciones"
+              element={<MyEnrollmentsParent />}
+            />
+            <Route
+              path="/padre/inscripciones/:enrollmentId/pago"
+              element={<PaymentCheckout />}
+            />
+            {renderComingSoonRoutes("parent")}
+          </Route>
+        </Route>
+
+        {/* ===== Instructor ===== */}
+        <Route
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRole={userRole}
+              allowedRoles={["instructor"]}
+            />
+          }
+        >
+          <Route element={<InstructorLayout />}>
+            <Route path="/instructor" element={<DashboardInstructor />} />
+            <Route path="/instructor/clases" element={<MyClasses />} />
+            <Route path="/instructor/clases/nueva" element={<ClassForm />} />
+            <Route
+              path="/instructor/clases/:id/editar"
+              element={<ClassForm />}
+            />
+            <Route
+              path="/instructor/clases/:id"
+              element={<ClassDetailInstructor />}
+            />
+            {renderComingSoonRoutes("instructor")}
           </Route>
         </Route>
 

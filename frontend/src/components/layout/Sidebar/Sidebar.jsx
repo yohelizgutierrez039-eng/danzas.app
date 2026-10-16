@@ -20,7 +20,8 @@ function Sidebar({
 
     parent: [
       { label: "Dashboard", path: "/padre", icon: "⌂" },
-      { label: "Mis hijos", path: "/padre/hijos", icon: "♙" },
+      { label: "Explorar clases", path: "/padre/clases", icon: "⌕" },
+      { label: "Mis hijos", path: "/padre/menores", icon: "♙" },
       { label: "Inscripciones", path: "/padre/inscripciones", icon: "▣" },
       { label: "Asistencia", path: "/padre/asistencia", icon: "✓" },
       { label: "Pagos", path: "/padre/pagos", icon: "$" },
@@ -42,7 +43,7 @@ function Sidebar({
       { label: "Dashboard", path: "/admin", icon: "⌂" },
       { label: "Usuarios", path: "/admin/usuarios", icon: "♙" },
       { label: "Academias", path: "/admin/academias", icon: "⌂" },
-      { label: "Clases", path: "/admin/clases", icon: "▣" },
+      { label: "Clases", path: "/admin/classes", icon: "▣" },
       { label: "Pagos", path: "/admin/pagos", icon: "$" },
       { label: "Reportes", path: "/admin/reportes", icon: "▤" },
       { label: "Notificaciones", path: "/admin/notificaciones", icon: "♢" },
@@ -98,10 +99,11 @@ function Sidebar({
           MENÚ PRINCIPAL
         </span>
 
-        {currentMenu.map((item) => (
+        {currentMenu.map((item, index) => (
           <NavLink
             key={item.path}
             to={item.path}
+            end={index === 0}
             className={({ isActive }) =>
               `sidebar-link ${isActive ? "active" : ""}`
             }

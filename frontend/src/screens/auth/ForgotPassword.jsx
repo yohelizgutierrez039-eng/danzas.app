@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { recoverPassword } from "../../services/auth.service";
 import "./ForgotPassword.css";
 
 function ForgotPassword() {
@@ -30,30 +31,18 @@ function ForgotPassword() {
 
     setLoading(true);
 
-    /*
-      Posteriormente se conectará con el backend.
-
-      Endpoint sugerido según el flujo de autenticación:
-      POST /auth/forgot-password
-
-      Body:
-      {
-        email: emailValue
-      }
-    */
-
     try {
-      // Simulación temporal de la solicitud.
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await recoverPassword(emailValue);
 
       setSuccess(
         "Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña."
       );
 
       setEmail("");
-    } catch {
+    } catch (requestError) {
       setError(
-        "No fue posible procesar la solicitud. Intenta nuevamente."
+        requestError.message ||
+          "No fue posible procesar la solicitud. Intenta nuevamente."
       );
     } finally {
       setLoading(false);

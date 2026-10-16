@@ -1,0 +1,174 @@
+/* =========================================================
+   REGISTRAR MENOR - PADRE DE FAMILIA
+   ========================================================= */
+
+.dependent-form-page {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  min-height: 60vh;
+
+  padding: var(--space-6);
+
+  box-sizing: border-box;
+}
+
+.dependent-form-container {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.dependent-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-5);
+}
+
+.dependent-form-subtitle {
+  display: block;
+
+  margin-bottom: var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.dependent-form-header h1 {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-2xl);
+}
+
+.dependent-form-header p {
+  max-width: 560px;
+
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: var(--font-size-sm);
+}
+
+.back-button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  padding: var(--space-2) var(--space-4);
+
+  background: var(--color-bg);
+  color: var(--color-text-body);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.back-button:hover {
+  background: var(--color-bg-muted);
+}
+
+.dependent-form-error {
+  margin-bottom: var(--space-5);
+}
+
+/* =========================
+   FORM
+========================= */
+
+.dependent-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-5);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  padding: var(--space-5);
+
+  box-sizing: border-box;
+
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: var(--space-4);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: var(--space-3);
+}
+
+.cancel-button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  padding: var(--space-3) var(--space-5);
+
+  background: var(--color-bg);
+  color: var(--color-text-body);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.cancel-button:hover {
+  background: var(--color-bg-muted);
+}
+
+.cancel-button:disabled,
+.save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.save-button {
+  border: none;
+  border-radius: var(--radius-md);
+
+  padding: var(--space-3) var(--space-5);
+
+  background: var(--gradient-primary-diagonal);
+  color: var(--color-text-inverse);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.save-button:hover:not(:disabled) {
+  background: var(--gradient-primary-diagonal-hover);
+}
