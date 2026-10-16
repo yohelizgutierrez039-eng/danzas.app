@@ -1,6 +1,8 @@
 const usersRoutes = require("./routes/users.routes");
 const express = require("express");
 const cors = require("cors");
+const reportsRoutes = require("./routes/reports.routes");
+
 require("dotenv").config();
 
 const pool = require("./config/database");
@@ -47,7 +49,7 @@ app.use("/api/admin/academy-requests", academyRequestsRoutes);
 app.use("/api/admin/users", adminUsersRoutes);
 app.use("/api/classes", classesRoutes);
 app.use("/api/enrollments", enrollmentsRoutes);
-
+app.use("/api/reports", reportsRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
