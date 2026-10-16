@@ -106,6 +106,21 @@ const eliminar = async (id, client = prisma) => {
   });
 };
 
+const findDetalleById = async (id) => {
+  return prisma.clase.findUnique({
+    where: { id },
+    include: {
+      horarios: true,
+      instructor: {
+        select: {
+          id: true,
+          nombre: true,
+        },
+      },
+    },
+  });
+};
+
 module.exports = {
   searchClasses,
   create,
@@ -113,4 +128,5 @@ module.exports = {
   findByInstructor,
   update,
   delete: eliminar,
+  findDetalleById,
 };
