@@ -129,7 +129,29 @@ const cancelarClase = async (claseId, instructorId) => {
       resumen: resultado,
       afectadas: inscripcionesAfectadas,
     };
+    const obtenerClase = async (claseId) => {
+  const clase = await classRepository.findDetalleById(claseId);
+
+  if (!clase) {
+    throw new AppError(
+      "Clase no encontrada.",
+      404,
+      "CLASS_NOT_FOUND"
+    );
+  }
+
+  return clase;
+};
+
+const listarClasesDelInstructor = async (instructorId) => {
+  const clases = await classRepository.findByInstructor(instructorId);
+
+  return clases.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+};
   });
+
 
   notificarClaseCancelada(clase, afectadas);
 
