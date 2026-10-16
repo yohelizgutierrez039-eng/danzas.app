@@ -3,559 +3,315 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-
 import useClasses from "../../hooks/useClasses";
+
+import { DIAS_SEMANA, horaAISO, horaDesdeISO } from "../../utils/formatDate";
 
 import "./ClassForm.css";
 
-const initialForm = {
-  nombre: "",
-  tipo: "",
-  descripcion: "",
+const INITIAL_FORM = {
+  tipoBaile: "",
   ciudad: "",
-  modalidad: "Presencial",
-  direccion: "",
-  fechaInicio: "",
-  fechaFin: "",
-  horario: "",
-  duracion: "",
-  cupos: "",
+  diaSemana: "1",
+  inicio: "",
+  fin: "",
+  cupoMaximo: "",
   precio: "",
-  requisitos: "",
+};
+
+const obtenerError = (err) => {
+  const status = err?.status ?? err?.response?.status;
+  const data = err?.data ?? err?.response?.data;
+  const code = data?.code ?? data?.error ?? err?.code;
+
+  if (status === 409 && code === "SCHEDULE_CONFLICT") {
+    return "El horario se cruza con otra clase o queda a menos de 15 minutos de ella. Elige otro horario.";
+  }
+
+  if (status === 400 && code === "INVALID_SCHEDULE") {
+    return "La hora de fin debe ser posterior a la hora de inicio.";
+  }
+
+  if (status === 403 && code === "ACADEMY_NOT_APPROVED") {
+    return "Tu solicitud de academia todavía no ha sido aprobada. No puedes publicar clases por ahora.";
+  }
+
+  return (
+    data?.message ||
+    err?.message ||
+    "No se pudo guardar la clase. Inténtalo nuevamente."
+  );
 };
 
 function ClassForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const isEditing = Boolean(id);
-
   const { getById, create, update } = useClasses();
 
-  const [form, setForm] = useState(initialForm);
-  const [loading, setLoading] = useState(isEditing);
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [validationError, setValidationError] = useState("");
-  const [scheduleConflict, setScheduleConflict] = useState(null);
 
-  // Cargar la clase cuando estamos editando
   useEffect(() => {
-    if (!isEditing) {
-      return;
-    }
+    if (!id) return;
 
-    const loadClass = async () => {
+    let activo = true;
+
+    const cargarClase = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getById(id);
+        const response = await getById(id);
+        const clase = response?.data ?? response;
+        const horario = clase?.horarios?.[0];
+
+        if (!activo) return;
 
         setForm({
-          nombre: data?.name || "",
-          tipo: data?.dance_type || "",
-          descripcion: data?.description || "",
-          ciudad: data?.city || "",
-          modalidad: data?.modality || "Presencial",
-          direccion: data?.address || "",
-          fechaInicio: data?.start_date || "",
-          fechaFin: data?.end_date || "",
-          horario: data?.schedule || "",
-          duracion: data?.duration || "",
-          cupos: data?.capacity != null ? String(data.capacity) : "",
-          precio: data?.price != null ? String(data.price) : "",
-          requisitos: data?.requirements || "",
+          tipoBaile: clase?.tipoBaile ?? "",
+          ciudad: clase?.ciudad ?? "",
+          diaSemana:
+            horario?.diaSemana !== undefined
+              ? String(
+                  typeof horario.diaSemana === "number"
+                    ? horario.diaSemana
+                    : DIAS_SEMANA.findIndex(
+                        (dia) =>
+                          dia.toLowerCase() ===
+                          String(horario.diaSemana).toLowerCase(),
+                      ),
+                )
+              : "1",
+          inicio: horaDesdeISO(horario?.horaInicio) || "",
+          fin: horaDesdeISO(horario?.horaFin) || "",
+          cupoMaximo: String(clase?.cupoMaximo ?? ""),
+          precio: String(clase?.precio ?? ""),
         });
+
+        if (
+          horario?.diaSemana !== undefined &&
+          !DIAS_SEMANA.some(
+            (dia) =>
+              dia.toLowerCase() === String(horario.diaSemana).toLowerCase(),
+          ) &&
+          !Number.isInteger(horario.diaSemana)
+        ) {
+          setForm((prev) => ({ ...prev, diaSemana: "1" }));
+        }
       } catch (err) {
-        setError(err.message || "No se pudo cargar la clase.");
+        if (activo) {
+          setError(
+            err?.message || "No se pudo cargar la información de la clase.",
+          );
+        }
       } finally {
-        setLoading(false);
+        if (activo) setLoading(false);
       }
     };
 
-    loadClass();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isEditing]);
+    cargarClase();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+    return () => {
+      activo = false;
+    };
+  }, [id, getById]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
 
-    setValidationError("");
-    setScheduleConflict(null);
-  };
-
-  const validateForm = () => {
-    if (!form.nombre.trim()) {
-      return "El nombre de la clase es obligatorio.";
-    }
-
-    if (!form.tipo) {
-      return "Selecciona el tipo de danza.";
-    }
-
-    if (!form.descripcion.trim()) {
-      return "La descripción es obligatoria.";
-    }
-
-    if (!form.ciudad.trim()) {
-      return "La ciudad es obligatoria.";
-    }
-
-    if (!form.modalidad) {
-      return "Selecciona la modalidad.";
-    }
-
-    if (form.modalidad === "Presencial" && !form.direccion.trim()) {
-      return "La dirección es obligatoria para las clases presenciales.";
-    }
-
-    if (!form.fechaInicio) {
-      return "Selecciona la fecha de inicio.";
-    }
-
-    if (!form.fechaFin) {
-      return "Selecciona la fecha de finalización.";
-    }
-
-    if (new Date(form.fechaFin) < new Date(form.fechaInicio)) {
-      return "La fecha de finalización no puede ser anterior a la fecha de inicio.";
-    }
-
-    if (!form.horario.trim()) {
-      return "El horario es obligatorio.";
-    }
-
-    if (!form.duracion.trim()) {
-      return "La duración es obligatoria.";
-    }
-
-    if (!form.cupos || Number(form.cupos) <= 0) {
-      return "La cantidad de cupos debe ser mayor que 0.";
-    }
-
-    if (form.precio === "" || Number(form.precio) < 0) {
-      return "El precio no puede ser negativo.";
-    }
-
-    return "";
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
     setError("");
-    setValidationError("");
-    setScheduleConflict(null);
+  };
 
-    const validation = validateForm();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
 
-    if (validation) {
-      setValidationError(validation);
+    if (form.fin <= form.inicio) {
+      setError("La hora de fin debe ser posterior a la hora de inicio.");
       return;
     }
 
-    setSaving(true);
+    const payload = {
+      tipoBaile: form.tipoBaile.trim(),
+      ciudad: form.ciudad.trim(),
+      modalidad: "presencial",
+      cupoMaximo: Number(form.cupoMaximo),
+      precio: Number(form.precio),
+      diaSemana: Number(form.diaSemana),
+      horaInicio: horaAISO(form.inicio),
+      horaFin: horaAISO(form.fin),
+    };
 
     try {
-      const classData = {
-        name: form.nombre.trim(),
-        dance_type: form.tipo,
-        description: form.descripcion.trim(),
-        city: form.ciudad.trim(),
-        modality: form.modalidad,
-        address:
-          form.modalidad === "Presencial" ? form.direccion.trim() : null,
-        start_date: form.fechaInicio,
-        end_date: form.fechaFin,
-        schedule: form.horario.trim(),
-        duration: form.duracion.trim(),
-        capacity: Number(form.cupos),
-        price: Number(form.precio),
-        requirements: form.requisitos.trim(),
-      };
+      setSaving(true);
 
-      if (isEditing) {
-        await update(id, classData);
+      if (id) {
+        await update(id, payload);
       } else {
-        await create(classData);
+        await create(payload);
       }
 
       navigate("/instructor/clases");
     } catch (err) {
-      /*
-       * El backend utiliza 409 + SCHEDULE_CONFLICT
-       * cuando el instructor ya tiene otra clase
-       * en el mismo horario.
-       */
-      if (
-        err?.status === 409 &&
-        err?.data?.error?.code === "SCHEDULE_CONFLICT"
-      ) {
-        setScheduleConflict(
-          err.data.error.conflicting_class || err.data.error.class || null,
-        );
-
-        setError("Este horario se cruza con otra de tus clases.");
-
-        return;
-      }
-
-      setError(
-        err?.message || "No se pudo guardar la clase. Inténtalo nuevamente.",
-      );
+      setError(obtenerError(err));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => {
-    navigate("/instructor/clases");
-  };
-
   if (loading) {
-    return (
-      <div className="class-form-page">
-        <Loading />
-      </div>
-    );
+    return <Loading text="Cargando información de la clase..." />;
   }
 
   return (
     <div className="class-form-page">
       <div className="class-form-container">
-        {/* Encabezado */}
-        <div className="class-form-header">
-          <div>
-            <span className="class-form-subtitle">
-              {isEditing ? "Editar clase" : "Nueva clase"}
-            </span>
+        <h1>{id ? "Editar clase" : "Crear nueva clase"}</h1>
 
-            <h1>
-              {isEditing
-                ? "Editar información de la clase"
-                : "Crear una nueva clase"}
-            </h1>
+        <p>Completa los datos de tu clase presencial y define el horario.</p>
 
-            <p>
-              Completa la información para que los estudiantes puedan conocer
-              y encontrar tu clase.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="class-form-back"
-            onClick={handleCancel}
-          >
-            ← Volver
-          </button>
-        </div>
-
-        {/* Error general */}
         {error && (
-          <div className="class-form-error">
+          <div className="class-form-error" role="alert">
             <ErrorMessage message={error} />
           </div>
         )}
 
-        {/* Conflicto de horario */}
-        {scheduleConflict && (
-          <div className="schedule-conflict">
-            <h3>⚠️ Conflicto de horario</h3>
-
-            <p>
-              Ya existe una clase programada en un horario que se cruza con
-              esta clase.
-            </p>
-
-            <div className="conflict-info">
-              {scheduleConflict.name && (
-                <strong>{scheduleConflict.name}</strong>
-              )}
-
-              {scheduleConflict.schedule && (
-                <span>Horario: {scheduleConflict.schedule}</span>
-              )}
-
-              {scheduleConflict.city && (
-                <span>Ciudad: {scheduleConflict.city}</span>
-              )}
-            </div>
-
-            <p className="conflict-help">
-              Cambia la fecha o el horario antes de volver a guardar.
-            </p>
+        <form onSubmit={handleSubmit} className="class-form">
+          <div className="class-form-group">
+            <label htmlFor="tipoBaile">Tipo de baile</label>
+            <input
+              id="tipoBaile"
+              name="tipoBaile"
+              type="text"
+              value={form.tipoBaile}
+              onChange={handleChange}
+              maxLength={80}
+              required
+            />
           </div>
-        )}
 
-        {/* Formulario */}
-        <form className="class-form" onSubmit={handleSubmit}>
-          {/* Información básica */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Información básica</h2>
-              <p>Datos principales de la clase.</p>
-            </div>
+          <div className="class-form-group">
+            <label htmlFor="ciudad">Ciudad</label>
+            <input
+              id="ciudad"
+              name="ciudad"
+              type="text"
+              value={form.ciudad}
+              onChange={handleChange}
+              maxLength={100}
+              required
+            />
+          </div>
 
-            <div className="form-grid">
-              <div className="form-group form-group-full">
-                <label htmlFor="nombre">Nombre de la clase *</label>
+          <div className="class-form-group">
+            <label htmlFor="modalidad">Modalidad</label>
+            <input
+              id="modalidad"
+              name="modalidad"
+              type="text"
+              value="Presencial"
+              disabled
+            />
+          </div>
 
-                <input
-                  id="nombre"
-                  name="nombre"
-                  type="text"
-                  value={form.nombre}
-                  onChange={handleChange}
-                  placeholder="Ej. Salsa Básica"
-                />
-              </div>
+          <div className="class-form-group">
+            <label htmlFor="diaSemana">Día de la semana</label>
+            <select
+              id="diaSemana"
+              name="diaSemana"
+              value={form.diaSemana}
+              onChange={handleChange}
+              required
+            >
+              {DIAS_SEMANA.map((dia, index) => (
+                <option key={dia} value={index}>
+                  {dia}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div className="form-group">
-                <label htmlFor="tipo">Tipo de danza *</label>
-
-                <select
-                  id="tipo"
-                  name="tipo"
-                  value={form.tipo}
-                  onChange={handleChange}
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Salsa">Salsa</option>
-                  <option value="Bachata">Bachata</option>
-                  <option value="Merengue">Merengue</option>
-                  <option value="Urbana">Danza urbana</option>
-                  <option value="Folclórica">Danza folclórica</option>
-                  <option value="Contemporánea">Danza contemporánea</option>
-                  <option value="Ballet">Ballet</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="ciudad">Ciudad *</label>
-
-                <input
-                  id="ciudad"
-                  name="ciudad"
-                  type="text"
-                  value={form.ciudad}
-                  onChange={handleChange}
-                  placeholder="Ej. Guamal"
-                />
-              </div>
-
-              <div className="form-group form-group-full">
-                <label htmlFor="descripcion">Descripción *</label>
-
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  rows="5"
-                  value={form.descripcion}
-                  onChange={handleChange}
-                  placeholder="Describe de qué trata la clase..."
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Modalidad */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Modalidad y ubicación</h2>
-              <p>Indica cómo y dónde se realizará la clase.</p>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="modalidad">Modalidad *</label>
-
-                <select
-                  id="modalidad"
-                  name="modalidad"
-                  value={form.modalidad}
-                  onChange={handleChange}
-                >
-                  <option value="Presencial">Presencial</option>
-                  <option value="Virtual">Virtual</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="direccion">
-                  Dirección
-                  {form.modalidad === "Presencial" && " *"}
-                </label>
-
-                <input
-                  id="direccion"
-                  name="direccion"
-                  type="text"
-                  value={form.direccion}
-                  onChange={handleChange}
-                  placeholder={
-                    form.modalidad === "Presencial"
-                      ? "Ej. Calle 10 # 5-20"
-                      : "No aplica para modalidad virtual"
-                  }
-                  disabled={form.modalidad === "Virtual"}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Fecha y horario */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Fecha y horario</h2>
-              <p>Define cuándo se realizará la clase.</p>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="fechaInicio">Fecha de inicio *</label>
-
-                <input
-                  id="fechaInicio"
-                  name="fechaInicio"
-                  type="date"
-                  value={form.fechaInicio}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="fechaFin">Fecha de finalización *</label>
-
-                <input
-                  id="fechaFin"
-                  name="fechaFin"
-                  type="date"
-                  value={form.fechaFin}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="horario">Horario *</label>
-
-                <input
-                  id="horario"
-                  name="horario"
-                  type="text"
-                  value={form.horario}
-                  onChange={handleChange}
-                  placeholder="Ej. Lunes y miércoles - 5:00 PM"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="duracion">Duración *</label>
-
-                <input
-                  id="duracion"
-                  name="duracion"
-                  type="text"
-                  value={form.duracion}
-                  onChange={handleChange}
-                  placeholder="Ej. 1 hora"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Cupos y precio */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Cupos y precio</h2>
-              <p>Configura la capacidad y el valor de la clase.</p>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="cupos">Número de cupos *</label>
-
-                <input
-                  id="cupos"
-                  name="cupos"
-                  type="number"
-                  min="1"
-                  value={form.cupos}
-                  onChange={handleChange}
-                  placeholder="Ej. 20"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="precio">Precio *</label>
-
-                <div className="price-input">
-                  <span>$</span>
-
-                  <input
-                    id="precio"
-                    name="precio"
-                    type="number"
-                    min="0"
-                    value={form.precio}
-                    onChange={handleChange}
-                    placeholder="Ej. 50000"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Requisitos */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Requisitos</h2>
-              <p>Información adicional para los estudiantes.</p>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="requisitos">Requisitos de la clase</label>
-
-              <textarea
-                id="requisitos"
-                name="requisitos"
-                rows="4"
-                value={form.requisitos}
+          <div className="class-form-row">
+            <div className="class-form-group">
+              <label htmlFor="inicio">Hora de inicio</label>
+              <input
+                id="inicio"
+                name="inicio"
+                type="time"
+                value={form.inicio}
                 onChange={handleChange}
-                placeholder="Ej. Ropa cómoda, zapatos adecuados..."
+                required
               />
             </div>
-          </section>
 
-          {/* Error de validación */}
-          {validationError && (
-            <div className="validation-error">⚠️ {validationError}</div>
-          )}
+            <div className="class-form-group">
+              <label htmlFor="fin">Hora de fin</label>
+              <input
+                id="fin"
+                name="fin"
+                type="time"
+                value={form.fin}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-          {/* Botones */}
-          <div className="form-actions">
+          <div className="class-form-group">
+            <label htmlFor="cupoMaximo">Cupo máximo de estudiantes</label>
+            <input
+              id="cupoMaximo"
+              name="cupoMaximo"
+              type="number"
+              min="1"
+              step="1"
+              value={form.cupoMaximo}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="class-form-group">
+            <label htmlFor="precio">Precio en pesos colombianos (COP)</label>
+            <input
+              id="precio"
+              name="precio"
+              type="number"
+              min="0"
+              step="1"
+              value={form.precio}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="class-form-actions">
             <button
               type="button"
-              className="btn-cancel"
-              onClick={handleCancel}
+              className="class-form-cancel"
+              onClick={() => navigate("/instructor/clases")}
               disabled={saving}
             >
               Cancelar
             </button>
 
-            <button type="submit" className="btn-save" disabled={saving}>
+            <button
+              type="submit"
+              className="class-form-submit"
+              disabled={saving}
+            >
               {saving
                 ? "Guardando..."
-                : isEditing
+                : id
                   ? "Guardar cambios"
-                  : "Crear clase"}
+                  : "Publicar clase"}
             </button>
           </div>
         </form>
