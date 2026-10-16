@@ -5,6 +5,8 @@ const dependentRepository = require("../repositories/dependent.repository");
 const userRepository = require("../repositories/user.repository");
 const { proximaSesion } = require("../utils/classSchedule.util");
 const { AppError } = require("../middleware/errorHandler");
+const emitirCorreo = require("../events/emitirCorreo");
+const plantillas = require("../utils/emailTemplates");
 
 const ERRORES_DE_CREACION = {
   CLASE_NO_ENCONTRADA: ["Clase no encontrada.", 404, "CLASS_NOT_FOUND"],
@@ -117,6 +119,40 @@ const obtenerHistorial = async (solicitante, objetivoId) => {
   throw new AppError("No tenés permiso para ver este historial.", 403, "FORBIDDEN");
 };
 
+/**
+ * RF-017: avisa por correo a quien cancelo (el estudiante, o el padre si la
+ * inscripcion es de un menor) el resultado y el reembolso. Se ejecuta despues del
+ * commit, sin esperarse, y nunca lanza.
+ */
+const notificarInscripcionCancelada = async (inscripcion, { reembolsado, habiaPagoReembolsable }) => {
+  try {
+    const usuario = await userRepository.findById(inscripcion.usuarioId);
+
+    emitirCorreo(() => {
+      if (!usuario || !usuario.correo) {
+        return null;
+      }
+
+      return {
+        destinatario: usuario.correo,
+        ...plantillas.inscripcionCancelada({
+          nombre: usuario.nombre,
+          clase: inscripcion.clase,
+          reembolsado,
+          monto: inscripcion.pago?.monto,
+          habiaPagoReembolsable,
+          nombreMenor: inscripcion.menor?.nombre,
+        }),
+      };
+    });
+  } catch (error) {
+    console.error(
+      "[notificaciones] No se pudo preparar el correo de la cancelación:",
+      error.message,
+    );
+  }
+};
+
 const HORAS_MINIMAS_PARA_REEMBOLSO = 2;
 const MS_POR_HORA = 60 * 60 * 1000;
 
@@ -184,6 +220,11 @@ const cancelarInscripcion = async (inscripcionId, solicitante, ahora = new Date(
         tx,
       );
     }
+  });
+
+  notificarInscripcionCancelada(inscripcion, {
+    reembolsado,
+    habiaPagoReembolsable: tienePagoReembolsable,
   });
 
   return {

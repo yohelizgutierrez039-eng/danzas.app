@@ -9,6 +9,15 @@ const getRequests = async (req, res, next) => {
   }
 };
 
+const getRequestById = async (req, res, next) => {
+  try {
+    const request = await academyRequestService.obtenerSolicitud(req.params.id);
+    return res.status(200).json({ request });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const approveRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -33,6 +42,7 @@ const rejectRequest = async (req, res, next) => {
 
 module.exports = {
   getRequests,
+  getRequestById,
   approveRequest,
   rejectRequest,
 };

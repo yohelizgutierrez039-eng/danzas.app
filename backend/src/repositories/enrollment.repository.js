@@ -143,6 +143,22 @@ const incrementarCupoDisponible = async (claseId, client = prisma) => {
 };
 
 /**
+ * Inscripciones activas de una clase con los datos que necesita el aviso de
+ * cancelacion (RF-017): correo del dueno, nombre del menor y pago. Solo expone
+ * campos publicos del usuario. Debe leerse ANTES de cancelarPorClaseDeInstructor.
+ */
+const findActivasPorClase = async (claseId, client = prisma) => {
+  return await client.inscripcion.findMany({
+    where: { claseId, estado: { in: ESTADOS_ACTIVOS } },
+    include: {
+      usuario: { select: { id: true, nombre: true, correo: true } },
+      menor: { select: { nombre: true } },
+      pago: true,
+    },
+  });
+};
+
+/**
  * RF-009: cuando el instructor cancela la clase, todas las inscripciones
  * activas se cancelan (`canceladoPor: instructor`) y los pagos aprobados se
  * reembolsan por completo. Debe ejecutarse dentro de la misma transaccion que
@@ -177,6 +193,7 @@ module.exports = {
   ESTADOS_ACTIVOS,
   cancelarPorClaseDeInstructor,
   bloquearClase,
+  findActivasPorClase,
   crearConDecrementoDeCupo,
   findById,
   findByUsuario,

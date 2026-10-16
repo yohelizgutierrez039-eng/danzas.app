@@ -36,6 +36,8 @@ import Users from "../screens/admin/Users/Users";
 import UserDetail from "../screens/admin/Users/UserDetail";
 import UserForm from "../screens/admin/Users/UserForm";
 import UserHistory from "../screens/admin/Users/UserHistory";
+import SectionComingSoon from "../components/common/SectionComingSoon/SectionComingSoon";
+import COMING_SOON_SECTIONS from "./comingSoonSections";
 
 // Estudiante
 import DashboardStudent from "../screens/student/DashboardStudent";
@@ -56,6 +58,27 @@ import DashboardInstructor from "../screens/instructor/DashboardInstructor";
 import MyClasses from "../screens/instructor/MyClasses";
 import ClassForm from "../screens/instructor/ClassForm";
 import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
+
+// Rutas provisorias de las secciones del menú que todavía no tienen pantalla
+// (ver comingSoonSections.js).
+const renderComingSoonRoutes = (role) => {
+  const { area, backTo, items } = COMING_SOON_SECTIONS[role];
+
+  return items.map((item) => (
+    <Route
+      key={item.path}
+      path={item.path}
+      element={
+        <SectionComingSoon
+          area={area}
+          backTo={backTo}
+          title={item.title}
+          description={item.description}
+        />
+      }
+    />
+  ));
+};
 
 function AppRouter() {
   const { isAuthenticated, user } = useAuth();
@@ -116,6 +139,7 @@ function AppRouter() {
               path="/admin/usuarios/:id/historial"
               element={<UserHistory />}
             />
+            {renderComingSoonRoutes("admin")}
           </Route>
         </Route>
 
@@ -147,6 +171,7 @@ function AppRouter() {
               path="/estudiante/inscripciones/:enrollmentId/pago"
               element={<PaymentCheckout />}
             />
+            {renderComingSoonRoutes("student")}
           </Route>
         </Route>
 
@@ -173,6 +198,7 @@ function AppRouter() {
               path="/padre/inscripciones/:enrollmentId/pago"
               element={<PaymentCheckout />}
             />
+            {renderComingSoonRoutes("parent")}
           </Route>
         </Route>
 
@@ -198,6 +224,7 @@ function AppRouter() {
               path="/instructor/clases/:id"
               element={<ClassDetailInstructor />}
             />
+            {renderComingSoonRoutes("instructor")}
           </Route>
         </Route>
 

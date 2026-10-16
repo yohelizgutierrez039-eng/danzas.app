@@ -1,11 +1,47 @@
 const prisma = require("../config/prisma");
 const enrollmentRepository = require("../repositories/enrollment.repository");
 const paymentRepository = require("../repositories/payment.repository");
+const userRepository = require("../repositories/user.repository");
 const { paymentProvider } = require("./payment/paymentProvider");
 const { AppError } = require("../middleware/errorHandler");
+const emitirCorreo = require("../events/emitirCorreo");
+const plantillas = require("../utils/emailTemplates");
 
 const estadoYaCambio = () =>
   new AppError("Esta inscripción ya no está pendiente de pago.", 409, "INVALID_ENROLLMENT_STATE");
+
+/**
+ * RF-017: avisa por correo al dueno de la inscripcion (el estudiante, o el padre
+ * que inscribio al menor) el resultado del pago. Se ejecuta despues del commit,
+ * sin esperarse, y nunca lanza: un correo fallido no afecta al pago.
+ */
+const notificarResultadoPago = async (inscripcion, pago, aprobado) => {
+  try {
+    const usuario = await userRepository.findById(inscripcion.usuarioId);
+
+    emitirCorreo(() => {
+      if (!usuario || !usuario.correo) {
+        return null;
+      }
+
+      const datos = {
+        nombre: usuario.nombre,
+        clase: inscripcion.clase,
+        monto: pago.monto,
+        referencia: pago.referenciaPasarela,
+        fecha: pago.procesadoEn || new Date(),
+        nombreMenor: inscripcion.menor ? inscripcion.menor.nombre : null,
+      };
+
+      return {
+        destinatario: usuario.correo,
+        ...(aprobado ? plantillas.pagoAprobado(datos) : plantillas.pagoRechazado(datos)),
+      };
+    });
+  } catch (error) {
+    console.error("[notificaciones] No se pudo preparar el correo del pago:", error.message);
+  }
+};
 
 /**
  * RF-013: simula el pago de una inscripción `pendiente_pago`.
@@ -71,6 +107,8 @@ const simularPago = async (inscripcionId, solicitante, { simularRechazo = false 
       tx,
     );
   });
+
+  notificarResultadoPago(inscripcion, pago, aprobado);
 
   return {
     paymentStatus: pago.estado,
