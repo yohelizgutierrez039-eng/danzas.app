@@ -3,6 +3,21 @@ const classService = require("../services/class.service");
 const searchClasses = async (req, res) => {
   try {
     const { tipoBaile, ciudad } = req.query;
+    const searchClasses = async (req, res, next) => {
+  try {
+    const tipoBaile = req.query.tipoBaile ?? req.query.tipo;
+    const { ciudad } = req.query;
+
+    const clases = await classService.searchClasses({
+      tipoBaile,
+      ciudad,
+    });
+
+    return res.status(200).json(clases);
+  } catch (error) {
+    return next(error);
+  }
+};
 
     const classes = await classService.searchClasses({
       tipoBaile,
@@ -56,6 +71,7 @@ const cancelClass = async (req, res, next) => {
     next(error);
   }
 };
+
 
 module.exports = {
   searchClasses,
