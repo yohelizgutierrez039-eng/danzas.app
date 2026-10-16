@@ -44,12 +44,20 @@ export const deleteClass = async (id) => {
 export const getMyClasses = async () => {
   return await api("/classes/my-classes");
 };
-
 export default {
   searchClasses,
   getClassById,
-  createClass,
-  updateClass,
-  deleteClass,
-  getMyClasses,
+  getAttendance,
+  registerAttendance,
+};
+
+const getAttendance = async (classId, fecha) => {
+  return await api.get(`/classes/${classId}/attendance?fecha=${fecha}`);
+};
+
+const registerAttendance = async (classId, { fechaSesion, registros }) => {
+  return await api.post(
+    `/classes/${classId}/attendance`,
+    JSON.stringify({ fechaSesion, registros }),
+  );
 };
