@@ -1,297 +1,241 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import EmptyState from "../../components/common/EmptyState/EmptyState";
-import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
-
 import useClasses from "../../hooks/useClasses";
+
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 
 import "./MyClasses.css";
 
+const obtenerClases = (response) => {
+  const data = response?.data ?? response;
+  return Array.isArray(data) ? data : (data?.clases ?? data?.classes ?? []);
+};
+
+const obtenerEstado = (estado) => {
+  const estados = {
+    activa: "Activa",
+    cancelada: "Cancelada",
+    finalizada: "Finalizada",
+  };
+
+  return estados[String(estado ?? "").toLowerCase()] ?? estado ?? "Sin estado";
+};
+
 function MyClasses() {
   const navigate = useNavigate();
+  const { getMine, remove } = useClasses();
 
-  const { classes, loading, error, getMine, remove, clearError } =
-    useClasses();
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [cancelandoId, setCancelandoId] = useState(null);
 
-  const [classToCancel, setClassToCancel] = useState(null);
-  const [cancelling, setCancelling] = useState(false);
-  const [cancelError, setCancelError] = useState("");
-
-  useEffect(() => {
-    getMine();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      maximumFractionDigits: 0,
-    }).format(Number(price) || 0);
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "published":
-        return "Publicada";
-      case "draft":
-        return "Borrador";
-      case "inactive":
-        return "Inactiva";
-      default:
-        return "Sin estado";
-    }
-  };
-
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "published":
-        return "status-published";
-      case "draft":
-        return "status-draft";
-      case "inactive":
-        return "status-inactive";
-      default:
-        return "";
-    }
-  };
-
-  const totalStudents = classes.reduce(
-    (total, item) => total + Number(item.enrolled_count || 0),
-    0,
-  );
-
-  const publishedClasses = classes.filter(
-    (item) => item.status === "published",
-  ).length;
-
-  const handleRequestCancel = (danceClass) => {
-    setCancelError("");
-    setClassToCancel(danceClass);
-  };
-
-  const handleConfirmCancel = async () => {
-    if (!classToCancel) return;
-
+  const loadClasses = useCallback(async () => {
     try {
-      setCancelling(true);
-      setCancelError("");
+      setLoading(true);
+      setError("");
 
-      await remove(classToCancel.id);
-
-      setClassToCancel(null);
+      const response = await getMine();
+      setClasses(obtenerClases(response));
     } catch (err) {
-      setCancelError(
-        err?.message || "No se pudo cancelar la clase. Inténtalo nuevamente.",
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "No se pudieron cargar tus clases.",
       );
     } finally {
-      setCancelling(false);
+      setLoading(false);
+    }
+  }, [getMine]);
+
+  useEffect(() => {
+    loadClasses();
+  }, [loadClasses]);
+
+  const handleCancelClass = async (clase) => {
+    const estado = String(clase.estado ?? "").toLowerCase();
+
+    if (estado !== "activa") return;
+
+    const confirmar = window.confirm(
+      `¿Estás segura de que deseas cancelar la clase de ${clase.tipoBaile} en ${clase.ciudad}?`,
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setCancelandoId(clase.id);
+      setError("");
+
+      await remove(clase.id);
+      await loadClasses();
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "No se pudo cancelar la clase.",
+      );
+    } finally {
+      setCancelandoId(null);
     }
   };
 
-  if (loading && classes.length === 0) {
-    return <Loading text="Cargando tus clases..." fullScreen />;
+  if (loading) {
+    return <Loading text="Cargando tus clases..." />;
   }
 
   return (
-    <div className="my-classes">
+    <div className="my-classes-page">
       <div className="my-classes-header">
         <div>
-          <span className="page-badge">Instructor</span>
-
+          <span className="my-classes-eyebrow">GESTIÓN DE CLASES</span>
           <h1>Mis clases</h1>
-
-          <p>
-            Administra las clases que has creado y consulta la información de
-            tus estudiantes.
-          </p>
+          <p>Consulta y administra tus clases en Danzas.app.</p>
         </div>
 
         <button
           type="button"
-          className="new-class-button"
+          className="my-classes-create-button"
           onClick={() => navigate("/instructor/clases/nueva")}
         >
-          + Nueva clase
+          <span>+</span> Nueva clase
         </button>
       </div>
 
       {error && (
-        <ErrorMessage
-          message={error.message || "No fue posible cargar tus clases."}
-          onClose={clearError}
-        />
+        <div role="alert" className="my-classes-error">
+          <ErrorMessage message={error} />
+        </div>
       )}
 
-      <div className="classes-summary">
-        <div className="summary-card">
-          <div className="summary-icon">📚</div>
+      {classes.length === 0 ? (
+        <div className="my-classes-empty">
+          <h2>Todavía no tienes clases</h2>
+          <p>
+            Crea tu primera clase para que los estudiantes puedan encontrarla.
+          </p>
 
-          <div>
-            <strong>{classes.length}</strong>
-            <span>Total de clases</span>
-          </div>
+          <button
+            type="button"
+            className="my-classes-create-button"
+            onClick={() => navigate("/instructor/clases/nueva")}
+          >
+            Crear mi primera clase
+          </button>
         </div>
+      ) : (
+        <div className="my-classes-grid">
+          {classes.map((clase) => {
+            const activa =
+              String(clase.estado ?? "").toLowerCase() === "activa";
 
-        <div className="summary-card">
-          <div className="summary-icon">✓</div>
+            const cupoMaximo = Number(clase.cupoMaximo) || 0;
+            const cupoDisponible = Number(clase.cupoDisponible) || 0;
+            const inscritos = Math.max(0, cupoMaximo - cupoDisponible);
 
-          <div>
-            <strong>{publishedClasses}</strong>
-            <span>Clases publicadas</span>
-          </div>
-        </div>
+            const horarios = Array.isArray(clase.horarios)
+              ? clase.horarios
+              : [];
 
-        <div className="summary-card">
-          <div className="summary-icon">👥</div>
+            return (
+              <article className="my-classes-card" key={clase.id}>
+                <div className="my-classes-card-header">
+                  <div>
+                    <h2>{clase.tipoBaile}</h2>
+                    <p>{clase.ciudad}</p>
+                  </div>
 
-          <div>
-            <strong>{totalStudents}</strong>
-            <span>Estudiantes inscritos</span>
-          </div>
-        </div>
-      </div>
+                  <span
+                    className={`my-classes-status ${
+                      activa ? "is-active" : "is-inactive"
+                    }`}
+                  >
+                    {obtenerEstado(clase.estado)}
+                  </span>
+                </div>
 
-      <section className="classes-section">
-        <div className="section-title">
-          <div>
-            <h2>Clases creadas</h2>
-            <p>Consulta, edita y administra tus clases.</p>
-          </div>
-        </div>
+                <div className="my-classes-details">
+                  <p>
+                    <strong>Modalidad:</strong>{" "}
+                    {clase.modalidad === "presencial"
+                      ? "Presencial"
+                      : clase.modalidad}
+                  </p>
 
-        {classes.length === 0 ? (
-          <EmptyState
-            icon="💃"
-            title="No tienes clases todavía"
-            description="Crea tu primera clase para comenzar a ofrecer tus clases de danza."
-            actionText="Crear nueva clase"
-            onAction={() => navigate("/instructor/clases/nueva")}
-          />
-        ) : (
-          <div className="classes-table-container">
-            <table className="classes-table">
-              <thead>
-                <tr>
-                  <th>Clase</th>
-                  <th>Tipo</th>
-                  <th>Modalidad</th>
-                  <th>Horario</th>
-                  <th>Estudiantes</th>
-                  <th>Precio</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+                  <div>
+                    <strong>Horario:</strong>
 
-              <tbody>
-                {classes.map((danceClass) => (
-                  <tr key={danceClass.id}>
-                    <td>
-                      <div className="class-name-cell">
-                        <strong>{danceClass.name}</strong>
+                    {horarios.length > 0 ? (
+                      <ul className="my-classes-schedules">
+                        {horarios.map((horario, index) => (
+                          <li key={`${clase.id}-horario-${index}`}>
+                            {formatearHorario(horario) ||
+                              "Horario no disponible"}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>Horario no disponible</p>
+                    )}
+                  </div>
 
-                        <small>{danceClass.city}</small>
-                      </div>
-                    </td>
+                  <p>
+                    <strong>Precio:</strong> {formatearPrecio(clase.precio)}
+                  </p>
 
-                    <td>{danceClass.dance_type}</td>
+                  <p>
+                    <strong>Estudiantes inscritos:</strong> {inscritos} de{" "}
+                    {cupoMaximo}
+                  </p>
 
-                    <td>
-                      <span className="modality-badge">
-                        {danceClass.modality}
-                      </span>
-                    </td>
+                  <p>
+                    <strong>Cupos disponibles:</strong> {cupoDisponible}
+                  </p>
+                </div>
 
-                    <td>
-                      <div className="schedule-cell">
-                        <strong>{danceClass.schedule}</strong>
+                <div className="my-classes-card-actions">
+                  <button
+                    type="button"
+                    className="my-classes-view-button"
+                    onClick={() => navigate(`/instructor/clases/${clase.id}`)}
+                  >
+                    Ver detalles
+                  </button>
 
-                        <span>{danceClass.duration}</span>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="students-cell">
-                        <strong>{danceClass.enrolled_count || 0}</strong>
-                        <span>/ {danceClass.capacity}</span>
-                      </div>
-                    </td>
-
-                    <td>
-                      <strong className="price">
-                        {formatPrice(danceClass.price)}
-                      </strong>
-                    </td>
-
-                    <td>
-                      <span
-                        className={`status-badge ${getStatusClass(
-                          danceClass.status,
-                        )}`}
+                  {activa && (
+                    <>
+                      <button
+                        type="button"
+                        className="my-classes-edit-button"
+                        onClick={() =>
+                          navigate(`/instructor/clases/${clase.id}/editar`)
+                        }
                       >
-                        {getStatusText(danceClass.status)}
-                      </span>
-                    </td>
+                        Editar
+                      </button>
 
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/instructor/clases/${danceClass.id}`)
-                          }
-                        >
-                          Ver
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(
-                              `/instructor/clases/${danceClass.id}/editar`,
-                            )
-                          }
-                        >
-                          Editar
-                        </button>
-
-                        <button
-                          type="button"
-                          className="action-button-danger"
-                          onClick={() => handleRequestCancel(danceClass)}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      <ConfirmDialog
-        isOpen={Boolean(classToCancel)}
-        title="Cancelar clase"
-        message={
-          cancelError ||
-          `¿Estás seguro de que deseas cancelar "${
-            classToCancel?.name || ""
-          }"? Esta acción no se puede deshacer.`
-        }
-        confirmText="Sí, cancelar"
-        cancelText="Volver"
-        variant="danger"
-        loading={cancelling}
-        onConfirm={handleConfirmCancel}
-        onCancel={() => setClassToCancel(null)}
-      />
+                      <button
+                        type="button"
+                        className="my-classes-cancel-button"
+                        disabled={cancelandoId === clase.id}
+                        onClick={() => handleCancelClass(clase)}
+                      >
+                        {cancelandoId === clase.id
+                          ? "Cancelando..."
+                          : "Cancelar clase"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
