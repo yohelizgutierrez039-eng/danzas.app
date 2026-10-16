@@ -9,6 +9,36 @@ const registrarVarias = async (claseId, fechaSesion, registros) => {
       claseId,
     },
     select: { id: true },
+    const findByMenor = async (menorId) => {
+  return await prisma.asistencia.findMany({
+    where: {
+      inscripcion: {
+        menorId,
+      },
+    },
+    include: {
+      inscripcion: {
+        select: {
+          clase: {
+            select: {
+              id: true,
+              tipoBaile: true,
+              ciudad: true,
+              instructor: {
+                select: {
+                  nombre: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      fechaSesion: "desc",
+    },
+  });
+};
   });
 
   const idsValidos = new Set(inscripcionesDeLaClase.map((inscripcion) => inscripcion.id));
