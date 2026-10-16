@@ -9,6 +9,9 @@ const authRoutes = require("./routes/auth.routes");
 const academyRequestsRoutes = require("./routes/academyRequests.routes");
 const adminUsersRoutes = require("./routes/adminUsers.routes");
 const classesRoutes = require("./routes/classes.routes");
+const enrollmentsRoutes = require("./routes/enrollments.routes");
+// Registra el listener del evento "correo" (RF-017) aunque ninguna ruta lo importe.
+require("./services/email.service");
 
 const app = express();
 
@@ -43,6 +46,7 @@ app.use("/api/users", usersRoutes);
 app.use("/api/admin/academy-requests", academyRequestsRoutes);
 app.use("/api/admin/users", adminUsersRoutes);
 app.use("/api/classes", classesRoutes);
+app.use("/api/enrollments", enrollmentsRoutes);
 
 app.use(errorHandler);
 

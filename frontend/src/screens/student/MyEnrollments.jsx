@@ -4,7 +4,11 @@ import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import useAuth from "../../hooks/useAuth";
-import { getEnrollmentHistory } from "../../services/enrollments.service";
+import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
+import {
+  cancelEnrollment,
+  getEnrollmentHistory,
+} from "../../services/enrollments.service";
 import "./MyEnrollments.css";
 
 const STATUS_LABELS = {
@@ -27,6 +31,11 @@ function MyEnrollments() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(Boolean(userId));
   const [error, setError] = useState("");
+
+  // RF-018: cancelacion con aviso de reembolso.
+  const [enrollmentToCancel, setEnrollmentToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelNotice, setCancelNotice] = useState("");
 
   useEffect(() => {
     if (!userId) {
@@ -100,6 +109,46 @@ function MyEnrollments() {
     return `${attended} de ${attendances.length} sesiones`;
   };
 
+  const getEnrollmentStatus = (enrollment) =>
+    enrollment.estado || enrollment.status;
+
+  // DELETE /enrollments/:id -> { cancelada, reembolsado }
+  const handleConfirmCancel = async () => {
+    if (!enrollmentToCancel) {
+      return;
+    }
+
+    const enrollmentId = enrollmentToCancel.id || enrollmentToCancel.enrollment_id;
+
+    try {
+      setCancelling(true);
+      setError("");
+      setCancelNotice("");
+
+      const result = await cancelEnrollment(enrollmentId);
+
+      setEnrollments((current) =>
+        current.map((item) =>
+          (item.id || item.enrollment_id) === enrollmentId
+            ? { ...item, estado: "cancelada", status: "cancelada" }
+            : item,
+        ),
+      );
+
+      setCancelNotice(
+        result?.reembolsado
+          ? "Tu inscripción fue cancelada y el pago será reembolsado."
+          : "Tu inscripción fue cancelada. No aplica reembolso porque faltaban menos de 2 horas para la clase.",
+      );
+      setEnrollmentToCancel(null);
+    } catch (err) {
+      setError(err.message || "No fue posible cancelar la inscripción.");
+      setEnrollmentToCancel(null);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   if (!userId) {
     return (
       <div className="my-enrollments">
@@ -150,6 +199,15 @@ function MyEnrollments() {
         />
       )}
 
+      {cancelNotice && (
+        <ErrorMessage
+          title="Inscripción cancelada"
+          message={cancelNotice}
+          type="success"
+          onClose={() => setCancelNotice("")}
+        />
+      )}
+
       {enrollments.length === 0 ? (
         <EmptyState
           title="No tienes inscripciones"
@@ -192,10 +250,52 @@ function MyEnrollments() {
                   <strong>{getAttendanceLabel(enrollment)}</strong>
                 </div>
               </div>
+
+              {getEnrollmentStatus(enrollment) === "pendiente_pago" && (
+                <div className="enrollment-actions">
+                  <button
+                    type="button"
+                    className="enrollment-pay-button"
+                    onClick={() =>
+                      navigate(
+                        `/estudiante/inscripciones/${enrollment.id || enrollment.enrollment_id}/pago`,
+                      )
+                    }
+                  >
+                    Completar pago
+                  </button>
+                </div>
+              )}
+
+              {getEnrollmentStatus(enrollment) === "confirmada" && (
+                <div className="enrollment-actions">
+                  <button
+                    type="button"
+                    className="enrollment-cancel-button"
+                    onClick={() => setEnrollmentToCancel(enrollment)}
+                  >
+                    Cancelar inscripción
+                  </button>
+                </div>
+              )}
             </article>
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(enrollmentToCancel)}
+        title="Cancelar inscripción"
+        message={`¿Seguro que quieres cancelar tu inscripción en "${
+          enrollmentToCancel ? getClassName(enrollmentToCancel) : ""
+        }"? Si faltan 2 horas o más para la próxima sesión, tu pago será reembolsado. Si falta menos tiempo, no se realizará el reembolso.`}
+        confirmText="Sí, cancelar"
+        cancelText="Mantener inscripción"
+        variant="danger"
+        loading={cancelling}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => !cancelling && setEnrollmentToCancel(null)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Loading from "../../../components/common/Loading/Loading";
 import EmptyState from "../../../components/common/EmptyState/EmptyState";
 import ErrorMessage from "../../../components/common/ErrorMessage/ErrorMessage";
 import useAcademies from "../../../hooks/useAcademies";
+import { ETIQUETAS_ESTADO_SOLICITUD } from "../../../utils/solicitudAcademia";
 import "./AcademiesAdmin.css";
 
 function AcademiesAdmin() {
@@ -13,7 +14,7 @@ function AcademiesAdmin() {
     useAcademies();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount, not a cascading update
+     
     fetchAcademyRequests().catch(() => {});
   }, [fetchAcademyRequests]);
 
@@ -50,10 +51,12 @@ function AcademiesAdmin() {
       )}
 
       {academies.length === 0 ? (
-        <EmptyState
-          title="No hay solicitudes pendientes"
-          description="Actualmente no existen solicitudes de academias para revisar."
-        />
+        !error && (
+          <EmptyState
+            title="No hay solicitudes pendientes"
+            description="Actualmente no existen solicitudes de academias para revisar."
+          />
+        )
       ) : (
         <div className="academies-admin-table-container">
           <table className="academies-admin-table">
@@ -62,8 +65,6 @@ function AcademiesAdmin() {
                 <th>Academia</th>
                 <th>Instructor</th>
                 <th>Ciudad</th>
-                <th>Tipos de danza</th>
-                <th>Fecha</th>
                 <th>Estado</th>
                 <th>Acción</th>
               </tr>
@@ -75,7 +76,7 @@ function AcademiesAdmin() {
                   <td>
                     <div className="academy-name">
                       <div className="academy-icon">
-                        {request.academyName.charAt(0)}
+                        {request.academyName.charAt(0).toUpperCase()}
                       </div>
 
                       <div>
@@ -90,17 +91,9 @@ function AcademiesAdmin() {
                   <td>{request.city}</td>
 
                   <td>
-                    <div className="dance-tags">
-                      {request.danceTypes.map((dance) => (
-                        <span key={dance}>{dance}</span>
-                      ))}
-                    </div>
-                  </td>
-
-                  <td>{request.submittedAt}</td>
-
-                  <td>
-                    <span className="status-pending">Pendiente</span>
+                    <span className="status-pending">
+                      {ETIQUETAS_ESTADO_SOLICITUD[request.status] ?? request.status}
+                    </span>
                   </td>
 
                   <td>

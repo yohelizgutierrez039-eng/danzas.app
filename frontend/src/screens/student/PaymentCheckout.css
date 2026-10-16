@@ -1,0 +1,111 @@
+/* =========================================================
+   CHECKOUT DE PAGO SIMULADO
+   (clases prefijadas con "checkout-" para no chocar con
+   PaymentCard.css ni EnrollmentProcess.css)
+   ========================================================= */
+
+.checkout-page {
+  min-height: 100vh;
+  padding: var(--space-6);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--color-bg-muted);
+}
+
+.checkout-card {
+  width: 100%;
+  max-width: 650px;
+  padding: var(--space-6);
+  box-sizing: border-box;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.checkout-card h1 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.checkout-card h2 {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-primary);
+}
+
+.checkout-description {
+  margin: 0 0 var(--space-5);
+  color: var(--color-text-secondary);
+}
+
+.checkout-box {
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.checkout-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.checkout-row:last-child {
+  border-bottom: none;
+}
+
+.checkout-row span {
+  color: var(--color-text-secondary);
+}
+
+.checkout-row strong {
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+.checkout-success,
+.checkout-rejected {
+  text-align: center;
+}
+
+.checkout-success .checkout-box {
+  text-align: left;
+}
+
+.checkout-success-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.checkout-error {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+}
+
+@media (max-width: 640px) {
+  .checkout-page {
+    padding: var(--space-4);
+  }
+
+  .checkout-card {
+    padding: var(--space-5);
+  }
+}
