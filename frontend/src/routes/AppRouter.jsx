@@ -58,6 +58,9 @@ import DashboardInstructor from "../screens/instructor/DashboardInstructor";
 import MyClasses from "../screens/instructor/MyClasses";
 import ClassForm from "../screens/instructor/ClassForm";
 import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
+import ReportsAdmin from "../screens/admin/reports/ReportsAdmin";
+import PaymentsInstructor from "../screens/instructor/PaymentsInstructor";
+import AttendanceReport from "../screens/parent/AttendanceReport";
 
 // Rutas provisorias de las secciones del menú que todavía no tienen pantalla
 // (ver comingSoonSections.js).
@@ -128,13 +131,11 @@ function AppRouter() {
               element={<AcademyDetailAdmin />}
             />
             <Route path="/admin/classes" element={<ClassesAdmin />} />
-            <Route
-              path="/admin/classes/:id"
-              element={<ClassDetailAdmin />}
-            />
+            <Route path="/admin/classes/:id" element={<ClassDetailAdmin />} />
             <Route path="/admin/usuarios" element={<Users />} />
             <Route path="/admin/usuarios/:id" element={<UserDetail />} />
             <Route path="/admin/usuarios/:id/editar" element={<UserForm />} />
+            <Route path="/admin/reportes" element={<ReportsAdmin />} />
             <Route
               path="/admin/usuarios/:id/historial"
               element={<UserHistory />}
@@ -190,6 +191,7 @@ function AppRouter() {
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
             <Route path="/padre/menores" element={<Dependents />} />
             <Route path="/padre/menores/nuevo" element={<DependentForm />} />
+            <Route path="/padre/asistencia" element={<AttendanceReport />} />
             <Route
               path="/padre/inscripciones"
               element={<MyEnrollmentsParent />}
@@ -239,6 +241,7 @@ function AppRouter() {
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/instructor/pagos" element={<PaymentsInstructor />} />
       </Routes>
     </BrowserRouter>
   );

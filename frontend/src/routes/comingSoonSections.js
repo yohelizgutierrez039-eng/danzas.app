@@ -15,17 +15,7 @@ const COMING_SOON_SECTIONS = {
     area: "Administración",
     backTo: "/admin",
     items: [
-      {
-        path: "/admin/pagos",
-        title: "Pagos",
-        description: "Aquí podrás consultar los pagos recibidos en la plataforma.",
-      },
-      {
-        path: "/admin/reportes",
-        title: "Reportes",
-        description:
-          "Aquí podrás generar reportes de pagos filtrados por fecha, academia o instructor.",
-      },
+      {},
       {
         path: "/admin/notificaciones",
         title: "Notificaciones",
@@ -73,12 +63,6 @@ const COMING_SOON_SECTIONS = {
     backTo: "/padre",
     items: [
       {
-        path: "/padre/asistencia",
-        title: "Asistencia",
-        description:
-          "Aquí podrás consultar la asistencia de tus hijos a las clases en las que están inscritos.",
-      },
-      {
         path: "/padre/pagos",
         title: "Pagos",
         description:
@@ -115,7 +99,8 @@ const COMING_SOON_SECTIONS = {
       {
         path: "/instructor/pagos",
         title: "Pagos",
-        description: "Aquí podrás consultar los pagos recibidos por tus clases.",
+        description:
+          "Aquí podrás consultar los pagos recibidos por tus clases.",
       },
       {
         path: "/instructor/reportes",
