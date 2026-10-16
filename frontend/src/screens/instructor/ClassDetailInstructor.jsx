@@ -19,28 +19,38 @@ const getToday = () => {
   return `${year}-${month}-${day}`;
 };
 
-const getEnrollmentId = (item) =>
-  item.inscripcionId ??
-  item.inscripcion_id ??
-  item.enrollmentId ??
-  item.enrollment_id ??
-  item.inscripcion?.id ??
-  item.enrollment?.id ??
-  item.id;
+const unwrapResponse = (response) => response?.data ?? response;
 
-const getStudentName = (item) => {
-  const student = item.estudiante || item.student || item.alumno || item;
+const getEnrollmentId = (alumno) =>
+  alumno.inscripcionId ??
+  alumno.inscripcion_id ??
+  alumno.enrollmentId ??
+  alumno.enrollment_id;
 
-  return (
-    student.nombreCompleto ||
-    student.nombre_completo ||
-    student.name ||
-    student.nombre ||
-    "Estudiante"
-  );
+const getStudentName = (alumno) =>
+  alumno.nombreCompleto ||
+  alumno.nombre_completo ||
+  alumno.nombre ||
+  alumno.name ||
+  alumno.estudiante?.nombre ||
+  alumno.student?.name ||
+  "Estudiante";
+
+const formatTime = (value) => {
+  if (!value) return "No disponible";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Bogota",
+  });
 };
-
-const getResponseData = (response) => response?.data ?? response;
 
 function ClassDetailInstructor() {
   const { id } = useParams();
@@ -54,13 +64,15 @@ function ClassDetailInstructor() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  const [sessionDate, setSessionDate] = useState(getToday());
+  const [fecha, setFecha] = useState(getToday());
+  const [alumnos, setAlumnos] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [attendanceSaved, setAttendanceSaved] = useState(false);
   const [attendanceError, setAttendanceError] = useState("");
 
+  // Cargar los datos reales de la clase.
   useEffect(() => {
     let active = true;
 
@@ -72,7 +84,7 @@ function ClassDetailInstructor() {
         const response = await getById(id);
 
         if (active) {
-          setClassData(getResponseData(response));
+          setClassData(unwrapResponse(response));
         }
       } catch (err) {
         if (active) {
@@ -94,66 +106,44 @@ function ClassDetailInstructor() {
     };
   }, [id]);
 
-  const students = useMemo(() => {
-    const list =
-      classData?.students ||
-      classData?.enrolled_students ||
-      classData?.enrollments ||
-      classData?.inscripciones ||
-      [];
-
-    return Array.isArray(list) ? list : [];
-  }, [classData]);
-
-  // Carga la asistencia registrada para la fecha seleccionada.
+  // Consultar alumnos y asistencia para la fecha seleccionada.
   useEffect(() => {
     let active = true;
 
     const loadAttendance = async () => {
-      if (!id || !sessionDate || !classData) {
-        return;
-      }
-
-      if (students.length === 0) {
-        setAttendance({});
-        setAttendanceError("");
-        return;
-      }
+      if (!id || !fecha) return;
 
       try {
         setLoadingAttendance(true);
         setAttendanceError("");
         setAttendanceSaved(false);
+        setAlumnos([]);
+        setAttendance({});
 
-        const response = await classesService.getAttendance(id, sessionDate);
+        const response = await classesService.getAttendance(id, fecha);
+        const data = unwrapResponse(response);
 
-        const data = getResponseData(response);
-        const records = Array.isArray(data)
-          ? data
-          : data?.registros || data?.attendance || data?.asistencias || [];
+        const lista = Array.isArray(data?.alumnos) ? data.alumnos : [];
 
         const nextAttendance = {};
 
-        records.forEach((record) => {
-          const enrollmentId =
-            record.inscripcionId ??
-            record.inscripcion_id ??
-            record.enrollmentId ??
-            record.enrollment_id;
+        lista.forEach((alumno) => {
+          const enrollmentId = getEnrollmentId(alumno);
 
-          if (enrollmentId != null) {
-            nextAttendance[enrollmentId] = Boolean(
-              record.asistio ?? record.attended,
-            );
+          if (enrollmentId == null) return;
+
+          // null significa que aún no se había registrado asistencia.
+          if (alumno.asistio !== null && alumno.asistio !== undefined) {
+            nextAttendance[enrollmentId] = Boolean(alumno.asistio);
           }
         });
 
         if (active) {
+          setAlumnos(lista);
           setAttendance(nextAttendance);
         }
       } catch (err) {
         if (active) {
-          setAttendance({});
           setAttendanceError(
             err?.message || "No se pudo cargar la asistencia de esta sesión.",
           );
@@ -170,7 +160,7 @@ function ClassDetailInstructor() {
     return () => {
       active = false;
     };
-  }, [id, sessionDate, classData, students]);
+  }, [id, fecha]);
 
   const handleCancelClass = async () => {
     try {
@@ -178,7 +168,6 @@ function ClassDetailInstructor() {
       setError("");
 
       await remove(id);
-
       navigate("/instructor/clases");
     } catch (err) {
       setError(err?.message || "No se pudo cancelar la clase.");
@@ -201,29 +190,28 @@ function ClassDetailInstructor() {
 
     setAttendance((previous) => ({
       ...previous,
-      [enrollmentId]: !previous[enrollmentId],
+      [enrollmentId]: !Boolean(previous[enrollmentId]),
     }));
   };
 
+  // Guardar la asistencia en el backend, sin setTimeout simulado.
   const handleSaveAttendance = async () => {
-    const records = students
-      .map((student) => {
-        const enrollmentId = getEnrollmentId(student);
+    const registros = alumnos
+      .map((alumno) => {
+        const inscripcionId = getEnrollmentId(alumno);
 
-        if (enrollmentId == null) {
-          return null;
-        }
+        if (inscripcionId == null) return null;
 
         return {
-          inscripcionId: enrollmentId,
-          asistio: Boolean(attendance[enrollmentId]),
+          inscripcionId,
+          asistio: Boolean(attendance[inscripcionId]),
         };
       })
       .filter(Boolean);
 
-    if (records.length === 0) {
+    if (registros.length === 0) {
       setAttendanceError(
-        "No se encontraron identificadores de inscripción para guardar la asistencia.",
+        "No hay alumnos con una inscripción válida para registrar.",
       );
       return;
     }
@@ -234,30 +222,40 @@ function ClassDetailInstructor() {
       setAttendanceSaved(false);
 
       await classesService.registerAttendance(id, {
-        fechaSesion: sessionDate,
-        registros: records,
+        fechaSesion: fecha,
+        registros,
       });
 
       setAttendanceSaved(true);
     } catch (err) {
-      setAttendanceError(err?.message || "No se pudo guardar la asistencia.");
+      setAttendanceError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "No se pudo guardar la asistencia.",
+      );
     } finally {
       setSavingAttendance(false);
     }
   };
 
   const getStatusLabel = (status) => {
-    switch (status) {
-      case "published":
-        return "Publicada";
-      case "draft":
-        return "Borrador";
-      case "inactive":
-        return "Inactiva";
-      default:
-        return status || "Sin estado";
-    }
+    const labels = {
+      publicada: "Publicada",
+      publicado: "Publicado",
+      borrador: "Borrador",
+      inactiva: "Inactiva",
+      inactive: "Inactiva",
+      published: "Publicada",
+      draft: "Borrador",
+    };
+
+    return labels[status] || status || "Sin estado";
   };
+
+  const horarios = useMemo(
+    () => (Array.isArray(classData?.horarios) ? classData.horarios : []),
+    [classData],
+  );
 
   if (loading) {
     return (
@@ -283,10 +281,12 @@ function ClassDetailInstructor() {
     );
   }
 
-  const capacity = Number(classData.capacity || 0);
-  const enrolled = Number(classData.enrolled_count ?? students.length ?? 0);
-  const availablePlaces = capacity - enrolled;
+  const capacity = Number(classData.cupoMaximo || 0);
+  const availablePlaces = Number(classData.cupoDisponible || 0);
+  const enrolled = Math.max(0, capacity - availablePlaces);
   const occupancy = capacity > 0 ? Math.round((enrolled / capacity) * 100) : 0;
+
+  const price = Number(classData.precio || 0);
 
   return (
     <div className="class-detail-instructor-page">
@@ -299,19 +299,19 @@ function ClassDetailInstructor() {
 
             <div className="title-row">
               <div>
-                <h1>{classData.name}</h1>
+                <h1>
+                  {classData.nombre || classData.name || classData.tipoBaile}
+                </h1>
 
                 <div className="title-meta">
-                  <span>{classData.dance_type}</span>
+                  <span>{classData.tipoBaile}</span>
                   <span>•</span>
-                  <span>{classData.city}</span>
-                  <span>•</span>
-                  <span>{classData.modality}</span>
+                  <span>{classData.ciudad}</span>
                 </div>
               </div>
 
-              <span className={`status-badge status-${classData.status}`}>
-                {getStatusLabel(classData.status)}
+              <span className={`status-badge status-${classData.estado}`}>
+                {getStatusLabel(classData.estado)}
               </span>
             </div>
           </div>
@@ -371,9 +371,7 @@ function ClassDetailInstructor() {
           <div className="summary-card">
             <span className="summary-icon">💰</span>
             <div>
-              <strong>
-                ${Number(classData.price || 0).toLocaleString("es-CO")}
-              </strong>
+              <strong>${price.toLocaleString("es-CO")}</strong>
               <span>Precio</span>
             </div>
           </div>
@@ -387,59 +385,67 @@ function ClassDetailInstructor() {
 
             <div className="info-content">
               <div className="info-item">
-                <span className="info-label">Descripción</span>
-                <p>{classData.description}</p>
+                <span className="info-label">Tipo de danza</span>
+                <span>{classData.tipoBaile || "No disponible"}</span>
               </div>
 
               <div className="info-item">
-                <span className="info-label">Tipo de danza</span>
-                <span>{classData.dance_type}</span>
+                <span className="info-label">Ciudad</span>
+                <span>{classData.ciudad || "No disponible"}</span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Descripción</span>
+                <p>
+                  {classData.descripcion ||
+                    classData.description ||
+                    "Sin descripción."}
+                </p>
               </div>
 
               <div className="info-item">
                 <span className="info-label">Modalidad</span>
-                <span>{classData.modality}</span>
+                <span>
+                  {classData.modalidad || classData.modality || "No disponible"}
+                </span>
               </div>
 
-              {classData.modality === "Presencial" && (
+              {(classData.modalidad || classData.modality) === "Presencial" && (
                 <div className="info-item">
                   <span className="info-label">Dirección</span>
-                  <span>{classData.address}</span>
+                  <span>
+                    {classData.direccion ||
+                      classData.address ||
+                      "No disponible"}
+                  </span>
                 </div>
               )}
-
-              <div className="info-item">
-                <span className="info-label">Ciudad</span>
-                <span>{classData.city}</span>
-              </div>
             </div>
           </section>
 
           <section className="detail-card">
             <div className="card-header">
-              <h2>Fecha y horario</h2>
+              <h2>Horarios</h2>
             </div>
 
             <div className="info-content">
-              <div className="info-item">
-                <span className="info-label">Fecha de inicio</span>
-                <span>{classData.start_date}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Fecha de finalización</span>
-                <span>{classData.end_date}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Horario</span>
-                <span>{classData.schedule}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Duración</span>
-                <span>{classData.duration}</span>
-              </div>
+              {horarios.length === 0 ? (
+                <p>No hay horarios disponibles.</p>
+              ) : (
+                horarios.map((horario, index) => (
+                  <div className="info-item" key={horario.id || index}>
+                    <span className="info-label">
+                      {horario.diaSemana ||
+                        horario.dia ||
+                        `Horario ${index + 1}`}
+                    </span>
+                    <span>
+                      {formatTime(horario.horaInicio)} –{" "}
+                      {formatTime(horario.horaFin)}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </section>
 
@@ -450,7 +456,8 @@ function ClassDetailInstructor() {
 
             <div className="card-body">
               <p>
-                {classData.requirements ||
+                {classData.requisitos ||
+                  classData.requirements ||
                   "No se especificaron requisitos para esta clase."}
               </p>
             </div>
@@ -465,15 +472,13 @@ function ClassDetailInstructor() {
             </div>
 
             <div className="info-item">
-              <label htmlFor="attendance-session-date">
-                Fecha de la sesión
-              </label>
+              <label htmlFor="attendance-date">Fecha de la sesión</label>
               <input
-                id="attendance-session-date"
+                id="attendance-date"
                 type="date"
-                value={sessionDate}
+                value={fecha}
                 onChange={(event) => {
-                  setSessionDate(event.target.value);
+                  setFecha(event.target.value);
                   setAttendanceSaved(false);
                 }}
               />
@@ -490,24 +495,22 @@ function ClassDetailInstructor() {
 
             {loadingAttendance ? (
               <Loading />
-            ) : students.length === 0 ? (
+            ) : alumnos.length === 0 ? (
               <p className="attendance-empty">
-                Todavía no hay estudiantes inscritos en esta clase.
+                No hay alumnos inscritos para mostrar en esta consulta.
               </p>
             ) : (
               <>
                 <ul className="attendance-list">
-                  {students.map((student, index) => {
-                    const enrollmentId = getEnrollmentId(student);
-                    const studentName = getStudentName(student);
-                    const key =
-                      enrollmentId ??
-                      student.estudiante?.id ??
-                      student.student?.id ??
-                      index;
+                  {alumnos.map((alumno, index) => {
+                    const enrollmentId = getEnrollmentId(alumno);
+                    const studentName = getStudentName(alumno);
 
                     return (
-                      <li key={key} className="attendance-item">
+                      <li
+                        key={enrollmentId ?? index}
+                        className="attendance-item"
+                      >
                         <label>
                           <input
                             type="checkbox"
@@ -529,11 +532,7 @@ function ClassDetailInstructor() {
                   type="button"
                   className="btn-primary"
                   onClick={handleSaveAttendance}
-                  disabled={
-                    savingAttendance ||
-                    loadingAttendance ||
-                    Boolean(attendanceError)
-                  }
+                  disabled={savingAttendance || loadingAttendance}
                 >
                   {savingAttendance ? "Guardando..." : "Guardar asistencia"}
                 </button>
@@ -562,7 +561,7 @@ function ClassDetailInstructor() {
       <ConfirmDialog
         isOpen={showCancelDialog}
         title="Cancelar clase"
-        message={`¿Estás seguro de que deseas cancelar "${classData.name}"? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que deseas cancelar "${classData.nombre || classData.name || classData.tipoBaile}"? Esta acción no se puede deshacer.`}
         confirmText="Sí, cancelar"
         cancelText="Volver"
         variant="danger"
