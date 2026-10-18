@@ -36,6 +36,7 @@ import Users from "../screens/admin/Users/Users";
 import UserDetail from "../screens/admin/Users/UserDetail";
 import UserForm from "../screens/admin/Users/UserForm";
 import UserHistory from "../screens/admin/Users/UserHistory";
+import ReportsAdmin from "../screens/admin/reports/ReportsAdmin";
 import SectionComingSoon from "../components/common/SectionComingSoon/SectionComingSoon";
 import COMING_SOON_SECTIONS from "./comingSoonSections";
 
@@ -52,12 +53,14 @@ import ExploreClassesParent from "../screens/parent/ExploreClassesParent";
 import Dependents from "../screens/parent/Dependents";
 import DependentForm from "../screens/parent/DependentForm";
 import MyEnrollmentsParent from "../screens/parent/MyEnrollmentsParent";
+import AttendanceReport from "../screens/parent/AttendanceReport";
 
 // Instructor
 import DashboardInstructor from "../screens/instructor/DashboardInstructor";
 import MyClasses from "../screens/instructor/MyClasses";
 import ClassForm from "../screens/instructor/ClassForm";
 import ClassDetailInstructor from "../screens/instructor/ClassDetailInstructor";
+import PaymentsInstructor from "../screens/instructor/PaymentsInstructor";
 
 // Rutas provisorias de las secciones del menú que todavía no tienen pantalla
 // (ver comingSoonSections.js).
@@ -139,6 +142,7 @@ function AppRouter() {
               path="/admin/usuarios/:id/historial"
               element={<UserHistory />}
             />
+            <Route path="/admin/reportes" element={<ReportsAdmin />} />
             {renderComingSoonRoutes("admin")}
           </Route>
         </Route>
@@ -198,6 +202,7 @@ function AppRouter() {
               path="/padre/inscripciones/:enrollmentId/pago"
               element={<PaymentCheckout />}
             />
+            <Route path="/padre/asistencia" element={<AttendanceReport />} />
             {renderComingSoonRoutes("parent")}
           </Route>
         </Route>
@@ -224,6 +229,7 @@ function AppRouter() {
               path="/instructor/clases/:id"
               element={<ClassDetailInstructor />}
             />
+            <Route path="/instructor/pagos" element={<PaymentsInstructor />} />
             {renderComingSoonRoutes("instructor")}
           </Route>
         </Route>
