@@ -36,7 +36,10 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 1h
-      # Service URI de Aiven + argumentos de Prisma (ver docs/despliegue.md, sección TLS).
+      # Service URI de Aiven CON ssl-mode=REQUIRED reemplazado por sslaccept: Prisma ignora
+      # ssl-mode y la conexión quedaría sin cifrar. Forma:
+      #   mysql://avnadmin:<clave>@<host>:<puerto>/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5
+      # (ver docs/despliegue.md, sección TLS; que Aiven la acepte está por confirmar: usar db:check).
       - key: DATABASE_URL
         sync: false
       # URL pública del frontend en Vercel, sin "/" final. Se usa en el enlace del correo

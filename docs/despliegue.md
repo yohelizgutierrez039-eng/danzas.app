@@ -116,13 +116,13 @@ Nunca despliegues sin haber probado la URL antes: es mucho más fácil depurar T
    **Git Bash:**
 
    ```bash
-   DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5' npm run db:check
+   DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5' npm run db:check
    ```
 
    **PowerShell:**
 
    ```powershell
-   $env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5'
+   $env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5'
    npm run db:check
    Remove-Item Env:DATABASE_URL   # limpia la variable de esta sesión
    ```
@@ -135,24 +135,39 @@ Nunca despliegues sin haber probado la URL antes: es mucho más fácil depurar T
    ✅ La conexión va cifrada (TLS): <nombre del cifrado>
    ```
 
-   El script **nunca imprime usuario ni contraseña**. Sale con código 0 si todo va bien y 1 si falla (con una lista de causas probables).
+   Si en cambio ves `⚠️ La conexión NO va cifrada`, la URL no activó TLS (ver la sección siguiente). El script **nunca imprime usuario ni contraseña** (si no puede separar con seguridad las partes de la URL, no imprime nada de ella). Sale con código 0 si conecta y 1 si falla (con una lista de causas probables). Ojo: el código 0 **no garantiza** que haya TLS; lee la línea de cifrado.
 
-#### TLS: qué URL usar (por confirmar)
+#### TLS: qué URL usar
 
-La documentación de Aiven que revisamos **no dice** si TLS es obligatorio ni cómo debe pasar Prisma el certificado de la CA. Por eso se prueba en este orden y se queda con la primera opción que funcione:
+> **Atención: la Service URI de Aiven NO se puede usar tal cual.** Trae un parámetro `ssl-mode=REQUIRED`, pero **Prisma lo ignora**: la conexión queda **sin cifrar**, exactamente igual que una URL sin parámetros. Hay que **reemplazarlo** por `sslaccept=...`. Una URL "simple" no cifra.
 
-| Orden | Qué probar | Cuándo pasar a la siguiente |
+Esto se verificó con `npm run db:check` contra un MySQL local con TLS:
+
+| URL probada | Resultado |
+| --- | --- |
+| Sin parámetros | Conecta, **sin cifrar** |
+| `ssl-mode=REQUIRED` | Prisma lo ignora: conecta, **sin cifrar** (igual que sin parámetros) |
+| `sslaccept=accept_invalid_certs` | Conecta **cifrada** (TLS) |
+| `sslaccept=strict` sin `sslcert` | **Falla** al conectar |
+| `connection_limit=5` junto a cualquiera de las anteriores | Se acepta sin errores |
+
+Por eso **no hay que asumir** que `accept_invalid_certs` esté activo por defecto: para que haya TLS hay que escribir `sslaccept=accept_invalid_certs` de forma explícita.
+
+**Opciones, en este orden:**
+
+| Orden | URL (parte final) | Qué hace |
 | --- | --- | --- |
-| 1 | La **Service URI tal cual se copió** de la consola (normalmente trae un parámetro `ssl-mode`) | Si Prisma rechaza un parámetro `ssl-mode` desconocido |
-| 2 | Quitar `ssl-mode` y usar `?sslaccept=accept_invalid_certs` (es el valor por defecto de Prisma: **cifra pero no valida** el certificado) | Solo si necesitas validar el certificado |
-| 3 | Validación estricta: descargar el certificado de la CA desde la consola de Aiven y usar `?sslaccept=strict&sslcert=<ruta-al-archivo>` | — |
+| 1 (principal) | `?sslaccept=accept_invalid_certs&connection_limit=5` | **Cifra la conexión pero no valida el certificado** del servidor |
+| 2 (estricta) | `?sslaccept=strict&sslcert=<ruta-al-CA>&connection_limit=5` | Cifra y valida con el certificado de la CA de Aiven |
 
-Detalles de la opción 3:
+- La opción 1 está **verificada contra un MySQL local**. Con Aiven, que la acepte está **por confirmar**: `db:check` lo dirá (debe mostrar `✅ La conexión va cifrada (TLS)`).
+- Si `db:check` dice que la conexión **NO va cifrada**, la URL todavía tiene `ssl-mode` o le falta `sslaccept`.
+- Opción 2: descarga el certificado de la CA desde la consola de Aiven. La CA es pública, pero **no la subas al repositorio** salvo que el equipo lo decida. En Render haría falta una ruta que exista en el servidor, así que cómo entregar el archivo está **por confirmar**.
+- Para este proyecto académico, la opción 1 (cifrado sin validar el certificado) es un compromiso razonable; la opción 2 es la ideal.
 
-- La CA es pública, pero **no la subas al repositorio** salvo que el equipo lo decida. En Render habría que dar una ruta que exista en el servidor, lo que obliga a decidir cómo se entrega el archivo (por confirmar).
-- Para este proyecto académico, la opción 2 (cifrado sin validar el certificado) es un compromiso razonable; la opción 3 es la ideal.
+Cómo armar la URL desde la Service URI: copia la URI, **borra** `ssl-mode=REQUIRED` y deja `?sslaccept=accept_invalid_certs&connection_limit=5`.
 
-Argumentos de URL de Prisma documentados: `sslcert`, `sslidentity`, `sslaccept` (por defecto `accept_invalid_certs`) y `connect_timeout`. Referencia: <https://www.prisma.io/docs/orm/overview/databases/mysql>
+Argumentos de URL de Prisma documentados: `sslcert`, `sslidentity`, `sslaccept` y `connect_timeout`. Referencia: <https://www.prisma.io/docs/orm/overview/databases/mysql>
 
 #### `connection_limit` (recomendado)
 
@@ -168,14 +183,14 @@ Con la URL que ya probaste en el paso 2:
 
 ```bash
 cd backend
-DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5' npx prisma db push
+DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5' npx prisma db push
 ```
 
 **PowerShell:**
 
 ```powershell
 cd backend
-$env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5'
+$env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5'
 npx prisma db push
 Remove-Item Env:DATABASE_URL
 ```
@@ -201,6 +216,8 @@ Elige la región **más cercana a la del servicio de Aiven** (paso 1). La regió
    | `FRONTEND_URL` | Valor provisional `http://localhost:5173` (se corrige en el paso 6) |
    | `RESEND_API_KEY` | Tu clave de Resend, o déjala vacía si no usarás correos |
    | `EMAIL_FROM` | Remitente verificado en Resend, o vacío |
+
+   Si Render no acepta un valor vacío, escribe cualquier texto: el correo solo se envía si ambas variables están definidas bien, y una clave inválida solo produce un error registrado en el log (el usuario no ve ningún error).
 
 4. Crea el Blueprint y espera el primer despliegue.
 
@@ -288,21 +305,64 @@ Cuentas de horas: un servicio encendido 24/7 son ~744 h al mes y el plan incluye
 
 Ese endpoint consulta la base, así que, **suponemos** que también cuenta como actividad para que Aiven no apague el servicio por inactividad. **Esto no está confirmado (por confirmar).** Revisa la consola de Aiven periódicamente.
 
-### Paso 8. Crear el administrador (y política del seed)
+### Paso 8. Datos de prueba (opcional) y administrador real
 
 El registro público solo permite `estudiante`, `padre` e `instructor`. **No existe forma de crear un admin por la API**, por eso existe `create:admin`.
 
-#### Opción recomendada: `create:admin` (cuenta real)
+> **ORDEN OBLIGATORIO: primero el seed (si lo vas a usar) y DESPUÉS `create:admin`.**
+>
+> `backend/prisma/seed.js` ejecuta `usuario.deleteMany()` sin ninguna protección: **borra TODOS los usuarios, incluido el administrador real**. Si corres el seed **después** de `create:admin`, el admin real desaparece.
+>
+> ```text
+> 8.1 seed (solo UAT, solo base vacía)   -->   8.2 create:admin   -->   8.3 retirar cuentas del seed
+> ```
+>
+> Si no necesitas las cuentas de prueba, salta directamente a 8.2.
 
-Define `ADMIN_EMAIL` y `ADMIN_PASSWORD` (mínimo 10 caracteres) solo para el comando. El script es idempotente: si el correo ya es de un admin, cambia su contraseña. Se niega a convertir en admin a un usuario existente con otro rol. Nunca imprime la contraseña. `ADMIN_NOMBRE` es opcional.
+#### 8.1 Datos de prueba con el seed (opcional: solo UAT y solo en una base vacía)
 
-Primero un ensayo (no escribe nada):
+Los casos de `docs/qa/casos-prueba-sprint5.md` usan las cuentas del seed. Si quieres ejecutarlos contra el despliegue:
 
 **Git Bash:**
 
 ```bash
 cd backend
-DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5' \
+DATABASE_URL='<tu URL de Aiven>' npx prisma db seed
+```
+
+**PowerShell:**
+
+```powershell
+cd backend
+$env:DATABASE_URL='<tu URL de Aiven>'
+npx prisma db seed
+Remove-Item Env:DATABASE_URL
+```
+
+> **PELIGRO.** El seed **BORRA todas las filas** (`deleteMany` en todas las tablas) y crea 7 cuentas con la contraseña conocida **`Prueba1234`**, incluido el admin `admin@danzas.app`.
+>
+> - Úsalo **solo en una base vacía** y solo durante el UAT.
+> - **Nunca** en una base con datos reales: los destruye.
+> - **Nunca después de `create:admin`**: borra al admin real.
+> - Antes de abrir el sistema a usuarios reales hay que **eliminar o inutilizar esas cuentas**, sobre todo la de admin (ver 8.3).
+
+#### 8.2 Crear el administrador real con `create:admin`
+
+Reglas del script:
+
+- Lee `ADMIN_EMAIL` y `ADMIN_PASSWORD` (mínimo 10 caracteres); `ADMIN_NOMBRE` es opcional.
+- Es idempotente: si el correo ya es de un admin, cambia su contraseña. Se niega a convertir en admin a un usuario existente con otro rol.
+- Nunca imprime la contraseña.
+- **Antes de escribir, imprime la base de destino** (`host:puerto` y nombre de la base, nunca usuario ni contraseña). **Léela**: si olvidas definir `DATABASE_URL` en el shell, el script cae a `backend/.env` (que puede ser tu base local) y crearía el admin en el lugar equivocado.
+- Define `ADMIN_EMAIL` y `ADMIN_PASSWORD` **solo como variables del shell para el comando**, no en un archivo `.env`: `dotenv` corta los valores sin comillas en el primer `#`, y una clave con `#` quedaría truncada.
+
+Primero un ensayo con `--dry-run` (no escribe nada). La forma prevista es `npm run create:admin -- --dry-run`; el `--` es necesario para que npm entregue el flag al script (si npm igual se lo traga, el script también lo detecta por `npm_config_dry_run`).
+
+**Git Bash:**
+
+```bash
+cd backend
+DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5' \
 ADMIN_EMAIL='admin@tu-dominio.com' ADMIN_PASSWORD='una-clave-larga-y-unica' \
 npm run create:admin -- --dry-run
 ```
@@ -311,40 +371,25 @@ npm run create:admin -- --dry-run
 
 ```powershell
 cd backend
-$env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?ssl-mode=REQUIRED&connection_limit=5'
+$env:DATABASE_URL='mysql://avnadmin:TU_CLAVE@TU_HOST:TU_PUERTO/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5'
 $env:ADMIN_EMAIL='admin@tu-dominio.com'
 $env:ADMIN_PASSWORD='una-clave-larga-y-unica'
 npm run create:admin -- --dry-run
 ```
 
-Si el resultado es el esperado, repite el comando **sin** `-- --dry-run`. En PowerShell, al terminar limpia las variables:
+Si la línea `Base de destino:` apunta a Aiven y el resultado es el esperado, repite el comando **sin** `-- --dry-run`. En PowerShell, al terminar limpia las variables:
 
 ```powershell
 Remove-Item Env:DATABASE_URL, Env:ADMIN_EMAIL, Env:ADMIN_PASSWORD
 ```
 
-#### Datos de prueba con el seed (solo UAT, solo base vacía)
+#### 8.3 Retirar las cuentas del seed antes de la entrega
 
-Los casos de `docs/qa/casos-prueba-sprint5.md` usan las cuentas del seed. Para ejecutarlos contra el despliegue:
+1. Confirma que tu admin real existe (8.2) y que con él puedes iniciar sesión.
+2. Con ese admin, suspende las cuentas del seed desde el panel de usuarios. Una cuenta suspendida no puede iniciar sesión. Que el panel permita suspender las 7 cuentas está **por confirmar**.
+3. Alternativa drástica: dejar la base vacía y volver a crear solo el admin real con 8.2. Es una acción destructiva; coordínala con el equipo. **No** uses el seed para "limpiar": recrea las 7 cuentas.
 
-```bash
-cd backend
-DATABASE_URL='<tu URL de Aiven>' npx prisma db seed
-```
-
-> **PELIGRO.** `backend/prisma/seed.js` **BORRA todas las filas** (`deleteMany` en todas las tablas) y crea 7 cuentas con la contraseña conocida **`Prueba1234`**, incluido el admin `admin@danzas.app`.
->
-> - Úsalo **solo en una base vacía** y solo durante el UAT.
-> - **Nunca** en una base con datos reales: los destruye.
-> - Antes de abrir el sistema a usuarios reales hay que **eliminar o inutilizar esas cuentas**, sobre todo la de admin.
-
-Cómo retirar las cuentas del seed antes de la entrega:
-
-1. Crea tu admin real con `create:admin` (con un correo distinto del del seed).
-2. Inicia sesión con ese admin y suspende las cuentas del seed desde el panel de usuarios. Una cuenta suspendida no puede iniciar sesión. Que el panel permita suspender las 7 cuentas está **por confirmar**.
-3. Alternativa drástica: dejar la base vacía y volver a crear solo el admin real. Es una acción destructiva; coordínala con el equipo.
-
-Atajo: si ya existe `admin@danzas.app` del seed, `create:admin` con ese correo le cambia la contraseña (porque ya es admin), pero la cuenta sigue con un correo conocido. Es mejor un admin nuevo.
+Atajo no recomendado: si ya existe `admin@danzas.app` del seed, `create:admin` con ese correo le cambia la contraseña (porque ya es admin), pero la cuenta sigue con un correo conocido. Es mejor un admin nuevo.
 
 ---
 
@@ -356,7 +401,7 @@ Ninguna variable sensible va en el código ni en el repositorio: todas se define
 
 | Variable | Dónde se define | Ejemplo | Secreto |
 | --- | --- | --- | --- |
-| `DATABASE_URL` | Render (`sync: false`) | `mysql://avnadmin:***@<host>:<puerto>/defaultdb?ssl-mode=REQUIRED&connection_limit=5` | **Sí** |
+| `DATABASE_URL` | Render (`sync: false`) | `mysql://avnadmin:***@<host>:<puerto>/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5` | **Sí** |
 | `JWT_SECRET` | Render (se genera sola) | valor aleatorio | **Sí** |
 | `JWT_EXPIRES_IN` | `render.yaml` | `1h` (formato de `jsonwebtoken`: `30m`, `1h`, `7d`) | No |
 | `NODE_ENV` | `render.yaml` | `production` (ignora `simularRechazo` en el pago simulado) | No |
@@ -434,7 +479,8 @@ Los casos de `docs/qa/casos-prueba-sprint5.md` se pueden ejecutar contra las URL
 | Aiven aparece apagado | Inactividad | Enciéndelo desde la consola de Aiven y espera a que esté "Running" |
 | `P1001: Can't reach database server` | Host/puerto mal copiados o servicio apagado | Revisa Overview de Aiven; enciende el servicio |
 | `P1000` / "Access denied" | Usuario o contraseña incorrectos | Vuelve a copiar la URI. Si la contraseña tiene `@ : / # ?`, codifícalos (por ejemplo `@` = `%40`) |
-| `P1011` o errores de TLS/certificado | Prisma no acepta la URL TLS tal cual | Aplica las opciones del paso 2 **en orden** (URI tal cual, luego `sslaccept=accept_invalid_certs`, luego `strict` con `sslcert`) |
+| `db:check` dice "NO va cifrada" | La URL conserva `ssl-mode=REQUIRED` (Prisma lo ignora) o no tiene `sslaccept` | Reemplaza `ssl-mode=...` por `sslaccept=accept_invalid_certs` (paso 2) |
+| `P1011` o errores de TLS/certificado | Parámetros TLS incorrectos | Usa `sslaccept=accept_invalid_certs`; para validar el certificado, `sslaccept=strict&sslcert=<ruta-al-CA>` (`strict` sin `sslcert` falla) |
 | Timeout al conectar | Servicio despertando o red lenta | Reintenta; agrega `&connect_timeout=30` a la URL |
 | Página en blanco o 404 al recargar `/admin/reportes` | Falta `frontend/vercel.json` en la rama desplegada | Confirma que está en la rama de Vercel y redespliega |
 | Error de CORS en el navegador | Normalmente es otro error disfrazado (la API cayó o `VITE_API_URL` es incorrecta). El CORS actual es abierto | Revisa la pestaña Network: la URL llamada debe ser la de Render con `/api` |
@@ -450,10 +496,10 @@ Los casos de `docs/qa/casos-prueba-sprint5.md` se pueden ejecutar contra las URL
 
 - **No subir secretos al repositorio:** ni `.env`, ni URLs con contraseña, ni claves de Resend. Los `.env.example` solo llevan valores de ejemplo. Si un secreto se subió por error, **rótalo** (no basta con borrar el commit).
 - **Rotar `JWT_SECRET` invalida todas las sesiones activas.** Hazlo si se filtró; avisa al equipo antes.
-- **El seed borra datos y crea cuentas conocidas** (`Prueba1234`). Nunca sobre datos reales; las cuentas del seed, en especial `admin@danzas.app`, deben eliminarse o inutilizarse antes de abrir a usuarios reales (paso 8).
+- **El seed borra datos y crea cuentas conocidas** (`Prueba1234`). Nunca sobre datos reales, y nunca después de `create:admin` (borra al admin real); las cuentas del seed, en especial `admin@danzas.app`, deben eliminarse o inutilizarse antes de abrir a usuarios reales (paso 8).
 - **`ADMIN_PASSWORD`:** usa una clave larga y única; defínela solo para el comando y no la dejes en el historial ni en archivos.
 - **CORS abierto (limitación conocida):** el backend usa `cors()` sin restricciones, así que cualquier sitio puede llamar a la API desde un navegador. Mejora futura: limitar el origen a `FRONTEND_URL`.
-- **TLS:** con `sslaccept=accept_invalid_certs` la conexión va cifrada pero no se valida el certificado de Aiven. Es aceptable para el proyecto académico; para producción real conviene la validación estricta.
+- **TLS:** una URL sin `sslaccept` (o con `ssl-mode`, que Prisma ignora) **no cifra** la conexión. Con `sslaccept=accept_invalid_certs` va cifrada pero no se valida el certificado de Aiven (verificado contra un MySQL local; con Aiven por confirmar). Es aceptable para el proyecto académico; para producción real conviene `sslaccept=strict` con `sslcert`.
 - **`NODE_ENV=production`** desactiva `simularRechazo` en el pago simulado: no lo quites.
 
 ---
