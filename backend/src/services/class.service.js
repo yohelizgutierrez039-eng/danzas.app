@@ -39,6 +39,24 @@ const searchClasses = async ({ tipoBaile, ciudad }) => {
   });
 };
 
+// RF-011: detalle público de una clase (horarios + instructor).
+const obtenerClase = async (claseId) => {
+  const clase = await classRepository.findDetalleById(claseId);
+
+  if (!clase) {
+    throw new AppError("Clase no encontrada.", 404, "CLASS_NOT_FOUND");
+  }
+
+  return clase;
+};
+
+// RF-008: clases del instructor autenticado, con sus horarios.
+// Nota: Clase no tiene fecha de creación, así que no hay forma de ordenar "más recientes
+// primero" sin una migración; se devuelve el orden natural de la consulta.
+const listarClasesDelInstructor = async (instructorId) => {
+  return await classRepository.findByInstructor(instructorId);
+};
+
 /**
  * RF-006 / RF-008: un instructor no puede publicar clases hasta que el administrador
  * apruebe su solicitud de academia (o de instructor independiente). Una solicitud
@@ -138,6 +156,8 @@ const cancelarClase = async (claseId, instructorId) => {
 
 module.exports = {
   searchClasses,
+  obtenerClase,
+  listarClasesDelInstructor,
   crearClase,
   editarClase,
   cancelarClase,

@@ -47,6 +47,18 @@ const findById = async (id) => {
   });
 };
 
+// RF-011: detalle público de una clase, con horarios y el nombre de su instructor.
+// No reemplaza a findById, que usan inscripciones, pagos y asistencia.
+const findDetalleById = async (id) => {
+  return await prisma.clase.findUnique({
+    where: { id },
+    include: {
+      horarios: true,
+      instructor: { select: { id: true, nombre: true } },
+    },
+  });
+};
+
 const findByInstructor = async (instructorId, { estado } = {}, client = prisma) => {
   return await client.clase.findMany({
     where: {
@@ -110,6 +122,7 @@ module.exports = {
   searchClasses,
   create,
   findById,
+  findDetalleById,
   findByInstructor,
   update,
   delete: eliminar,
