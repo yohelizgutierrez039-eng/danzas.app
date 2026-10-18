@@ -115,7 +115,49 @@ const editarClase = async (claseId, instructorId, datosNuevos) => {
 
   await scheduleService.hayConflictoDeHorario(instructorId, nuevoHorario, claseId);
 
-  return await classRepository.update(claseId, datosNuevos);
+  // cupoDisponible nunca se acepta del cliente: lo deriva el service de cupoMaximo.
+  const { cupoDisponible: _descartado, ...datos } = datosNuevos;
+
+  if (datos.cupoMaximo === undefined) {
+    return await classRepository.update(claseId, datos);
+  }
+
+  return await actualizarConNuevoCupo(claseId, datos);
+};
+
+/**
+ * RF-008 / RF-009: inscritos = cupoMaximo - cupoDisponible. Al cambiar cupoMaximo se
+ * recalcula cupoDisponible para no desfasar ese conteo, y no se permite bajarlo por
+ * debajo de los inscritos. Se bloquea la fila de la clase (igual que inscribir) y se
+ * relee dentro de la transacción, así una inscripción concurrente no se pierde.
+ */
+const actualizarConNuevoCupo = async (claseId, datos) => {
+  const nuevoCupo = datos.cupoMaximo;
+
+  if (!Number.isInteger(nuevoCupo) || nuevoCupo < 1) {
+    throw new AppError("El cupo máximo debe ser un número entero mayor a 0.", 400, "INVALID_CAPACITY");
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    await enrollmentRepository.bloquearClase(claseId, tx);
+
+    const actual = await classRepository.findById(claseId, tx);
+    const inscritos = actual.cupoMaximo - actual.cupoDisponible;
+
+    if (nuevoCupo < inscritos) {
+      throw new AppError(
+        `No puedes bajar el cupo a ${nuevoCupo}: la clase ya tiene ${inscritos} inscritos.`,
+        400,
+        "INVALID_CAPACITY",
+      );
+    }
+
+    return await classRepository.update(
+      claseId,
+      { ...datos, cupoDisponible: nuevoCupo - inscritos },
+      tx,
+    );
+  });
 };
 
 const cancelarClase = async (claseId, instructorId) => {
