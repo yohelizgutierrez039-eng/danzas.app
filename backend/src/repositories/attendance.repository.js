@@ -34,7 +34,30 @@ const findByClaseYFecha = async (claseId, fechaSesion) => {
   });
 };
 
+// RF-016: asistencias de un menor, la mas reciente primero.
+const findByMenor = async (menorId) => {
+  return await prisma.asistencia.findMany({
+    where: { inscripcion: { menorId } },
+    include: {
+      inscripcion: {
+        select: {
+          clase: {
+            select: {
+              id: true,
+              tipoBaile: true,
+              ciudad: true,
+              instructor: { select: { nombre: true } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { fechaSesion: "desc" },
+  });
+};
+
 module.exports = {
   registrarVarias,
   findByClaseYFecha,
+  findByMenor,
 };
