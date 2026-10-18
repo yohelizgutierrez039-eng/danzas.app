@@ -24,6 +24,13 @@ const authMiddleware = async (req, res, next) => {
     return next(new AppError("Token inválido o expirado.", 401, "UNAUTHORIZED"));
   }
 
+  // Solo valen los tokens de sesión { id, rol } que emite el login. Otros tokens firmados
+  // con el mismo secreto (p. ej. el de recuperación de contraseña, que trae `tipo`) no
+  // deben autenticar: como el rol se lee de la BD, quedarían como el usuario real.
+  if (payload.tipo || !payload.rol) {
+    return next(new AppError("Token inválido o expirado.", 401, "UNAUTHORIZED"));
+  }
+
   let usuario;
 
   try {

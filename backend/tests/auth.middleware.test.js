@@ -87,6 +87,70 @@ describe("authMiddleware (RF-007: rechazar el token de usuarios suspendidos)", (
     expect(buscar).not.toHaveBeenCalled();
   });
 
+  // Solo se aceptan tokens de sesion { id, rol }. El token de recuperacion de contrasena
+  // ({ id, tipo }) esta firmado con el mismo secreto y no debe autenticar nada.
+  it("token de recuperacion de contrasena: 401 UNAUTHORIZED y no consulta la base de datos", async () => {
+    vi.spyOn(jwtUtil, "verifyToken").mockReturnValue({ id: "user-1", tipo: "recuperacion_password" });
+    const buscar = vi.spyOn(userRepository, "findById").mockResolvedValue({ id: "user-1", rol: "admin", estado: "activo" });
+    const req = reqConToken();
+    const next = vi.fn();
+
+    await authMiddleware(req, {}, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0][0]).toBeInstanceOf(AppError);
+    expect(next.mock.calls[0][0]).toMatchObject({ statusCode: 401, code: "UNAUTHORIZED" });
+    expect(buscar).not.toHaveBeenCalled();
+    expect(req.user).toBeUndefined();
+  });
+
+  it("cualquier token con tipo es rechazado, aunque traiga rol", async () => {
+    vi.spyOn(jwtUtil, "verifyToken").mockReturnValue({ id: "user-1", rol: "admin", tipo: "otro" });
+    const buscar = vi.spyOn(userRepository, "findById");
+    const next = vi.fn();
+
+    await authMiddleware(reqConToken(), {}, next);
+
+    expect(next.mock.calls[0][0]).toMatchObject({ statusCode: 401, code: "UNAUTHORIZED" });
+    expect(buscar).not.toHaveBeenCalled();
+  });
+
+  it("token sin rol: 401 UNAUTHORIZED y no consulta la base de datos", async () => {
+    vi.spyOn(jwtUtil, "verifyToken").mockReturnValue({ id: "user-1" });
+    const buscar = vi.spyOn(userRepository, "findById");
+    const next = vi.fn();
+
+    await authMiddleware(reqConToken(), {}, next);
+
+    expect(next.mock.calls[0][0]).toMatchObject({ statusCode: 401, code: "UNAUTHORIZED" });
+    expect(buscar).not.toHaveBeenCalled();
+  });
+
+  // Con firma real (sin espiar verifyToken): los tokens que emite auth.service.
+  it("firma real: el token de login { id, rol } pasa y el de recuperacion { id, tipo } no", async () => {
+    vi.stubEnv("JWT_SECRET", "secreto-de-prueba");
+    vi.stubEnv("JWT_EXPIRES_IN", "1h");
+
+    try {
+      vi.spyOn(userRepository, "findById").mockResolvedValue({ id: "user-1", rol: "padre", estado: "activo" });
+
+      const sesion = reqConToken(jwtUtil.signToken({ id: "user-1", rol: "padre" }));
+      const recuperacion = reqConToken(jwtUtil.signToken({ id: "user-1", tipo: "recuperacion_password" }, "30m"));
+      const nextSesion = vi.fn();
+      const nextRecuperacion = vi.fn();
+
+      await authMiddleware(sesion, {}, nextSesion);
+      await authMiddleware(recuperacion, {}, nextRecuperacion);
+
+      expect(nextSesion).toHaveBeenCalledWith();
+      expect(sesion.user).toEqual({ id: "user-1", rol: "padre" });
+      expect(nextRecuperacion.mock.calls[0][0]).toMatchObject({ statusCode: 401, code: "UNAUTHORIZED" });
+      expect(recuperacion.user).toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it.each([
     ["sin cabecera Authorization", {}],
     ["esquema distinto de Bearer", { authorization: "Basic abc" }],
