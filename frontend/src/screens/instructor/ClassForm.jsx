@@ -5,23 +5,33 @@ import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 
 import useClasses from "../../hooks/useClasses";
+import {
+  DIAS_SEMANA,
+  horaAISO,
+  horaDesdeISO,
+} from "../../utils/formatDate";
 
 import "./ClassForm.css";
 
 const initialForm = {
-  nombre: "",
-  tipo: "",
-  descripcion: "",
+  tipoBaile: "",
   ciudad: "",
-  modalidad: "Presencial",
-  direccion: "",
-  fechaInicio: "",
-  fechaFin: "",
-  horario: "",
-  duracion: "",
-  cupos: "",
+  diaSemana: "",
+  horaInicio: "",
+  horaFin: "",
+  cupoMaximo: "",
   precio: "",
-  requisitos: "",
+};
+
+/*
+ * Mensajes según el código de error del backend. Para
+ * ACADEMY_NOT_APPROVED se usa el mensaje del backend, que
+ * distingue entre solicitud pendiente, rechazada o inexistente.
+ */
+const ERROR_MESSAGES = {
+  SCHEDULE_CONFLICT:
+    "Este horario se cruza con otra de tus clases o queda a menos de 15 minutos de una.",
+  INVALID_SCHEDULE: "La hora de fin debe ser posterior a la hora de inicio.",
 };
 
 function ClassForm() {
@@ -37,7 +47,6 @@ function ClassForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [validationError, setValidationError] = useState("");
-  const [scheduleConflict, setScheduleConflict] = useState(null);
 
   // Cargar la clase cuando estamos editando
   useEffect(() => {
@@ -51,21 +60,16 @@ function ClassForm() {
         setError("");
 
         const data = await getById(id);
+        const horario = data?.horarios?.[0];
 
         setForm({
-          nombre: data?.name || "",
-          tipo: data?.dance_type || "",
-          descripcion: data?.description || "",
-          ciudad: data?.city || "",
-          modalidad: data?.modality || "Presencial",
-          direccion: data?.address || "",
-          fechaInicio: data?.start_date || "",
-          fechaFin: data?.end_date || "",
-          horario: data?.schedule || "",
-          duracion: data?.duration || "",
-          cupos: data?.capacity != null ? String(data.capacity) : "",
-          precio: data?.price != null ? String(data.price) : "",
-          requisitos: data?.requirements || "",
+          tipoBaile: data?.tipoBaile || "",
+          ciudad: data?.ciudad || "",
+          diaSemana: horario ? String(horario.diaSemana) : "",
+          horaInicio: horaDesdeISO(horario?.horaInicio),
+          horaFin: horaDesdeISO(horario?.horaFin),
+          cupoMaximo: data?.cupoMaximo != null ? String(data.cupoMaximo) : "",
+          precio: data?.precio != null ? String(Number(data.precio)) : "",
         });
       } catch (err) {
         setError(err.message || "No se pudo cargar la clase.");
@@ -75,8 +79,7 @@ function ClassForm() {
     };
 
     loadClass();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isEditing]);
+  }, [id, isEditing, getById]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,56 +90,37 @@ function ClassForm() {
     }));
 
     setValidationError("");
-    setScheduleConflict(null);
   };
 
   const validateForm = () => {
-    if (!form.nombre.trim()) {
-      return "El nombre de la clase es obligatorio.";
-    }
-
-    if (!form.tipo) {
-      return "Selecciona el tipo de danza.";
-    }
-
-    if (!form.descripcion.trim()) {
-      return "La descripción es obligatoria.";
+    if (!form.tipoBaile.trim()) {
+      return "El tipo de baile es obligatorio.";
     }
 
     if (!form.ciudad.trim()) {
       return "La ciudad es obligatoria.";
     }
 
-    if (!form.modalidad) {
-      return "Selecciona la modalidad.";
+    if (form.diaSemana === "") {
+      return "Selecciona el día de la semana.";
     }
 
-    if (form.modalidad === "Presencial" && !form.direccion.trim()) {
-      return "La dirección es obligatoria para las clases presenciales.";
+    if (!form.horaInicio) {
+      return "Selecciona la hora de inicio.";
     }
 
-    if (!form.fechaInicio) {
-      return "Selecciona la fecha de inicio.";
+    if (!form.horaFin) {
+      return "Selecciona la hora de fin.";
     }
 
-    if (!form.fechaFin) {
-      return "Selecciona la fecha de finalización.";
+    if (form.horaFin <= form.horaInicio) {
+      return "La hora de fin debe ser posterior a la hora de inicio.";
     }
 
-    if (new Date(form.fechaFin) < new Date(form.fechaInicio)) {
-      return "La fecha de finalización no puede ser anterior a la fecha de inicio.";
-    }
+    const cupoMaximo = Number(form.cupoMaximo);
 
-    if (!form.horario.trim()) {
-      return "El horario es obligatorio.";
-    }
-
-    if (!form.duracion.trim()) {
-      return "La duración es obligatoria.";
-    }
-
-    if (!form.cupos || Number(form.cupos) <= 0) {
-      return "La cantidad de cupos debe ser mayor que 0.";
+    if (!Number.isInteger(cupoMaximo) || cupoMaximo <= 0) {
+      return "El cupo máximo debe ser un número entero mayor que 0.";
     }
 
     if (form.precio === "" || Number(form.precio) < 0) {
@@ -151,7 +135,6 @@ function ClassForm() {
 
     setError("");
     setValidationError("");
-    setScheduleConflict(null);
 
     const validation = validateForm();
 
@@ -164,20 +147,14 @@ function ClassForm() {
 
     try {
       const classData = {
-        name: form.nombre.trim(),
-        dance_type: form.tipo,
-        description: form.descripcion.trim(),
-        city: form.ciudad.trim(),
-        modality: form.modalidad,
-        address:
-          form.modalidad === "Presencial" ? form.direccion.trim() : null,
-        start_date: form.fechaInicio,
-        end_date: form.fechaFin,
-        schedule: form.horario.trim(),
-        duration: form.duracion.trim(),
-        capacity: Number(form.cupos),
-        price: Number(form.precio),
-        requirements: form.requisitos.trim(),
+        tipoBaile: form.tipoBaile.trim(),
+        ciudad: form.ciudad.trim(),
+        modalidad: "presencial",
+        cupoMaximo: Number(form.cupoMaximo),
+        precio: Number(form.precio),
+        diaSemana: Number(form.diaSemana),
+        horaInicio: horaAISO(form.horaInicio),
+        horaFin: horaAISO(form.horaFin),
       };
 
       if (isEditing) {
@@ -188,26 +165,12 @@ function ClassForm() {
 
       navigate("/instructor/clases");
     } catch (err) {
-      /*
-       * El backend utiliza 409 + SCHEDULE_CONFLICT
-       * cuando el instructor ya tiene otra clase
-       * en el mismo horario.
-       */
-      if (
-        err?.status === 409 &&
-        err?.data?.error?.code === "SCHEDULE_CONFLICT"
-      ) {
-        setScheduleConflict(
-          err.data.error.conflicting_class || err.data.error.class || null,
-        );
-
-        setError("Este horario se cruza con otra de tus clases.");
-
-        return;
-      }
+      const code = err?.data?.error?.code;
 
       setError(
-        err?.message || "No se pudo guardar la clase. Inténtalo nuevamente.",
+        ERROR_MESSAGES[code] ||
+          err?.message ||
+          "No se pudo guardar la clase. Inténtalo nuevamente.",
       );
     } finally {
       setSaving(false);
@@ -264,78 +227,27 @@ function ClassForm() {
           </div>
         )}
 
-        {/* Conflicto de horario */}
-        {scheduleConflict && (
-          <div className="schedule-conflict">
-            <h3>⚠️ Conflicto de horario</h3>
-
-            <p>
-              Ya existe una clase programada en un horario que se cruza con
-              esta clase.
-            </p>
-
-            <div className="conflict-info">
-              {scheduleConflict.name && (
-                <strong>{scheduleConflict.name}</strong>
-              )}
-
-              {scheduleConflict.schedule && (
-                <span>Horario: {scheduleConflict.schedule}</span>
-              )}
-
-              {scheduleConflict.city && (
-                <span>Ciudad: {scheduleConflict.city}</span>
-              )}
-            </div>
-
-            <p className="conflict-help">
-              Cambia la fecha o el horario antes de volver a guardar.
-            </p>
-          </div>
-        )}
-
         {/* Formulario */}
         <form className="class-form" onSubmit={handleSubmit}>
           {/* Información básica */}
           <section className="form-section">
             <div className="section-title">
               <h2>Información básica</h2>
-              <p>Datos principales de la clase.</p>
+              <p>Datos principales de la clase. Las clases son presenciales.</p>
             </div>
 
             <div className="form-grid">
-              <div className="form-group form-group-full">
-                <label htmlFor="nombre">Nombre de la clase *</label>
+              <div className="form-group">
+                <label htmlFor="tipoBaile">Tipo de baile *</label>
 
                 <input
-                  id="nombre"
-                  name="nombre"
+                  id="tipoBaile"
+                  name="tipoBaile"
                   type="text"
-                  value={form.nombre}
+                  value={form.tipoBaile}
                   onChange={handleChange}
-                  placeholder="Ej. Salsa Básica"
+                  placeholder="Ej. Salsa"
                 />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tipo">Tipo de danza *</label>
-
-                <select
-                  id="tipo"
-                  name="tipo"
-                  value={form.tipo}
-                  onChange={handleChange}
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Salsa">Salsa</option>
-                  <option value="Bachata">Bachata</option>
-                  <option value="Merengue">Merengue</option>
-                  <option value="Urbana">Danza urbana</option>
-                  <option value="Folclórica">Danza folclórica</option>
-                  <option value="Contemporánea">Danza contemporánea</option>
-                  <option value="Ballet">Ballet</option>
-                  <option value="Otro">Otro</option>
-                </select>
               </div>
 
               <div className="form-group">
@@ -347,125 +259,60 @@ function ClassForm() {
                   type="text"
                   value={form.ciudad}
                   onChange={handleChange}
-                  placeholder="Ej. Guamal"
-                />
-              </div>
-
-              <div className="form-group form-group-full">
-                <label htmlFor="descripcion">Descripción *</label>
-
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  rows="5"
-                  value={form.descripcion}
-                  onChange={handleChange}
-                  placeholder="Describe de qué trata la clase..."
+                  placeholder="Ej. Barranquilla"
                 />
               </div>
             </div>
           </section>
 
-          {/* Modalidad */}
+          {/* Horario */}
           <section className="form-section">
             <div className="section-title">
-              <h2>Modalidad y ubicación</h2>
-              <p>Indica cómo y dónde se realizará la clase.</p>
+              <h2>Horario</h2>
+              <p>Define el día y la hora en que se realizará la clase.</p>
             </div>
 
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="modalidad">Modalidad *</label>
+                <label htmlFor="diaSemana">Día de la semana *</label>
 
                 <select
-                  id="modalidad"
-                  name="modalidad"
-                  value={form.modalidad}
+                  id="diaSemana"
+                  name="diaSemana"
+                  value={form.diaSemana}
                   onChange={handleChange}
                 >
-                  <option value="Presencial">Presencial</option>
-                  <option value="Virtual">Virtual</option>
+                  <option value="">Selecciona un día</option>
+
+                  {DIAS_SEMANA.map((dia, index) => (
+                    <option key={dia} value={index}>
+                      {dia}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="direccion">
-                  Dirección
-                  {form.modalidad === "Presencial" && " *"}
-                </label>
+                <label htmlFor="horaInicio">Hora de inicio *</label>
 
                 <input
-                  id="direccion"
-                  name="direccion"
-                  type="text"
-                  value={form.direccion}
-                  onChange={handleChange}
-                  placeholder={
-                    form.modalidad === "Presencial"
-                      ? "Ej. Calle 10 # 5-20"
-                      : "No aplica para modalidad virtual"
-                  }
-                  disabled={form.modalidad === "Virtual"}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Fecha y horario */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Fecha y horario</h2>
-              <p>Define cuándo se realizará la clase.</p>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="fechaInicio">Fecha de inicio *</label>
-
-                <input
-                  id="fechaInicio"
-                  name="fechaInicio"
-                  type="date"
-                  value={form.fechaInicio}
+                  id="horaInicio"
+                  name="horaInicio"
+                  type="time"
+                  value={form.horaInicio}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="fechaFin">Fecha de finalización *</label>
+                <label htmlFor="horaFin">Hora de fin *</label>
 
                 <input
-                  id="fechaFin"
-                  name="fechaFin"
-                  type="date"
-                  value={form.fechaFin}
+                  id="horaFin"
+                  name="horaFin"
+                  type="time"
+                  value={form.horaFin}
                   onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="horario">Horario *</label>
-
-                <input
-                  id="horario"
-                  name="horario"
-                  type="text"
-                  value={form.horario}
-                  onChange={handleChange}
-                  placeholder="Ej. Lunes y miércoles - 5:00 PM"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="duracion">Duración *</label>
-
-                <input
-                  id="duracion"
-                  name="duracion"
-                  type="text"
-                  value={form.duracion}
-                  onChange={handleChange}
-                  placeholder="Ej. 1 hora"
                 />
               </div>
             </div>
@@ -480,14 +327,14 @@ function ClassForm() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="cupos">Número de cupos *</label>
+                <label htmlFor="cupoMaximo">Cupo máximo *</label>
 
                 <input
-                  id="cupos"
-                  name="cupos"
+                  id="cupoMaximo"
+                  name="cupoMaximo"
                   type="number"
                   min="1"
-                  value={form.cupos}
+                  value={form.cupoMaximo}
                   onChange={handleChange}
                   placeholder="Ej. 20"
                 />
@@ -510,27 +357,6 @@ function ClassForm() {
                   />
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* Requisitos */}
-          <section className="form-section">
-            <div className="section-title">
-              <h2>Requisitos</h2>
-              <p>Información adicional para los estudiantes.</p>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="requisitos">Requisitos de la clase</label>
-
-              <textarea
-                id="requisitos"
-                name="requisitos"
-                rows="4"
-                value={form.requisitos}
-                onChange={handleChange}
-                placeholder="Ej. Ropa cómoda, zapatos adecuados..."
-              />
             </div>
           </section>
 
