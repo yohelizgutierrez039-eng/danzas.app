@@ -85,16 +85,6 @@
   font-size: var(--font-size-2xl);
 }
 
-.student-class-heading p {
-  max-width: 640px;
-
-  margin: 0;
-
-  color: var(--color-text-secondary);
-
-  font-size: var(--font-size-sm);
-}
-
 .student-class-status {
   flex-shrink: 0;
 
@@ -197,26 +187,18 @@
   font-size: var(--font-size-sm);
 }
 
-.student-info-grid p {
-  margin: var(--space-1) 0 0;
-
-  color: var(--color-text-secondary);
-
-  font-size: var(--font-size-xs);
-}
-
 /* =========================
-   ACADEMY
+   INSTRUCTOR
 ========================= */
 
-.student-academy-info {
+.student-instructor-info {
   display: flex;
   align-items: center;
 
   gap: var(--space-3);
 }
 
-.student-academy-icon {
+.student-instructor-icon {
   width: 48px;
   height: 48px;
 
@@ -235,7 +217,7 @@
   font-weight: var(--font-weight-bold);
 }
 
-.student-academy-info strong {
+.student-instructor-info strong {
   display: block;
 
   color: var(--color-text-primary);
@@ -243,23 +225,10 @@
   font-size: var(--font-size-base);
 }
 
-.student-academy-info span {
+.student-instructor-info span {
   color: var(--color-text-secondary);
 
   font-size: var(--font-size-xs);
-}
-
-/* =========================
-   REQUIREMENTS
-========================= */
-
-.student-requirements {
-  margin: 0;
-
-  color: var(--color-text-secondary);
-
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
 }
 
 /* =========================
