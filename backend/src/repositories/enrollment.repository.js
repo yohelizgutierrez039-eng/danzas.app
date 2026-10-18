@@ -159,6 +159,21 @@ const findActivasPorClase = async (claseId, client = prisma) => {
 };
 
 /**
+ * RF-010: alumnos con inscripción confirmada en una clase, para tomar asistencia.
+ * Incluye el menor (si la inscripción es de un hijo) y solo expone id y nombre.
+ */
+const findAlumnosConfirmados = async (claseId) => {
+  return await prisma.inscripcion.findMany({
+    where: { claseId, estado: "confirmada" },
+    include: {
+      usuario: { select: { id: true, nombre: true } },
+      menor: { select: { id: true, nombre: true } },
+    },
+    orderBy: { creadoEn: "asc" },
+  });
+};
+
+/**
  * RF-009: cuando el instructor cancela la clase, todas las inscripciones
  * activas se cancelan (`canceladoPor: instructor`) y los pagos aprobados se
  * reembolsan por completo. Debe ejecutarse dentro de la misma transaccion que
@@ -194,6 +209,7 @@ module.exports = {
   cancelarPorClaseDeInstructor,
   bloquearClase,
   findActivasPorClase,
+  findAlumnosConfirmados,
   crearConDecrementoDeCupo,
   findById,
   findByUsuario,

@@ -20,6 +20,12 @@ router.put("/:id", authMiddleware, requireRole("instructor"), classController.up
 router.delete("/:id", authMiddleware, requireRole("instructor"), classController.cancelClass);
 
 // Asistencia - RF-010
+router.get(
+  "/:id/attendance",
+  authMiddleware,
+  requireRole("instructor"),
+  attendanceController.getAttendance,
+);
 router.post(
   "/:id/attendance",
   authMiddleware,
