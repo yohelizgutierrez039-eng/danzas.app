@@ -4,6 +4,8 @@ import Select from "../../components/common/Select/Select";
 import Loading from "../../components/common/Loading/Loading";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import { searchClasses } from "../../services/classes.service";
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 import "./ExploreClasses.css";
 
 function ExploreClasses() {
@@ -88,14 +90,17 @@ function ExploreClasses() {
   ];
 
   /*
-    El backend filtra por ciudad en el propio query.
+    El backend filtra por tipo y ciudad en el propio query.
     El texto de búsqueda y la modalidad se refinan acá
-    porque el endpoint de búsqueda no los soporta.
+    porque el endpoint de búsqueda no los soporta. Solo se
+    muestran las clases activas.
   */
   const filteredClasses = useMemo(() => {
     const searchValue = search.toLowerCase().trim();
 
     return classes.filter((danceClass) => {
+      const isActive = danceClass.estado === "activa";
+
       const matchesSearch =
         !searchValue ||
         danceClass.tipoBaile?.toLowerCase().includes(searchValue) ||
@@ -107,7 +112,7 @@ function ExploreClasses() {
       const matchesModality =
         !modality || danceClass.modalidad === modality;
 
-      return matchesSearch && matchesDanceType && matchesModality;
+      return isActive && matchesSearch && matchesDanceType && matchesModality;
     });
   }, [classes, search, danceType, modality]);
 
@@ -130,20 +135,6 @@ function ExploreClasses() {
 
   const handleRegister = () => {
     navigate("/registro");
-  };
-
-  const formatPrice = (precio) => {
-    const value = Number(precio);
-
-    if (Number.isNaN(value)) {
-      return "Precio por confirmar";
-    }
-
-    return value.toLocaleString("es-CO", {
-      style: "currency",
-      currency: "COP",
-      maximumFractionDigits: 0,
-    });
   };
 
   if (loading) {
@@ -257,7 +248,7 @@ function ExploreClasses() {
             <EmptyState
               icon="⚠"
               title="No pudimos cargar las clases"
-              message={error}
+              description={error}
             />
           )}
 
@@ -290,13 +281,25 @@ function ExploreClasses() {
                           <strong>{danceClass.ciudad}</strong>
                         </div>
                       </div>
+
+                      <div>
+                        <span>📅</span>
+                        <div>
+                          <small>Horario</small>
+                          {danceClass.horarios.map((horario) => (
+                            <strong key={horario.id}>
+                              {formatearHorario(horario)}
+                            </strong>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="explore-class-footer">
                       <div className="explore-class-price">
                         <small>Precio</small>
 
-                        <strong>{formatPrice(danceClass.precio)}</strong>
+                        <strong>{formatearPrecio(danceClass.precio)}</strong>
                       </div>
 
                       <div className="explore-class-slots">
@@ -325,15 +328,9 @@ function ExploreClasses() {
             <EmptyState
               icon="⌕"
               title="No encontramos clases"
-              message="Intenta cambiar los filtros o realizar otra búsqueda."
-              action={
-                hasFilters
-                  ? {
-                      label: "Limpiar filtros",
-                      onClick: handleClearFilters,
-                    }
-                  : undefined
-              }
+              description="Intenta cambiar los filtros o realizar otra búsqueda."
+              actionText={hasFilters ? "Limpiar filtros" : ""}
+              onAction={handleClearFilters}
             />
           )}
         </section>
