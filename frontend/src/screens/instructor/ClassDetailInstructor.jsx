@@ -344,6 +344,7 @@ function ClassDetailInstructor() {
                 type="date"
                 value={fecha}
                 onChange={handleChangeFecha}
+                disabled={savingAttendance}
               />
             </div>
 
