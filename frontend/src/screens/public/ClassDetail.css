@@ -153,17 +153,6 @@
   font-weight: 700;
 }
 
-.class-detail-hero-info p {
-  max-width: 700px;
-
-  margin: 0;
-
-  color: var(--color-accent-bg);
-
-  font-size: 10px;
-  line-height: 1.65;
-}
-
 /* =========================
    MAIN GRID
 ========================= */
@@ -420,20 +409,6 @@
 }
 
 /* =========================
-   SECONDARY GRID
-========================= */
-
-.class-detail-secondary-grid {
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 17px;
-
-  margin-bottom: 17px;
-}
-
-/* =========================
    PROFILE
 ========================= */
 
@@ -482,112 +457,12 @@
   font-size: 8px;
 }
 
-.class-detail-profile-info small {
-  color: var(--color-text-muted-accent);
-
-  font-size: 8px;
-}
-
 /* =========================
-   ACADEMY
+   INSTRUCTOR
 ========================= */
 
-.class-detail-academy {
-  display: flex;
-  flex-direction: column;
-
-  gap: 6px;
-}
-
-.class-detail-academy strong {
-  color: var(--color-text-heading);
-
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.class-detail-academy span {
-  color: var(--color-text-muted-accent);
-
-  font-size: 8px;
-}
-
-.class-detail-academy button {
-  align-self: flex-start;
-
-  margin-top: 6px;
-  padding: 7px 0;
-
-  border: none;
-  background: transparent;
-
-  color: var(--color-accent);
-
-  font-size: 8px;
-  font-weight: 800;
-
-  cursor: pointer;
-}
-
-.class-detail-academy button:hover {
-  color: var(--color-accent-dark);
-  text-decoration: underline;
-}
-
-/* =========================
-   REQUIREMENTS
-========================= */
-
-.class-detail-requirements {
+.class-detail-instructor {
   margin-bottom: 17px;
-}
-
-.class-detail-requirements-list {
-  display: flex;
-  flex-direction: column;
-
-  gap: 8px;
-}
-
-.class-detail-requirement {
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  padding: 10px 12px;
-
-  border-radius: var(--radius-sm);
-
-  background: var(--color-accent-bg);
-}
-
-.class-detail-requirement > span {
-  width: 21px;
-  height: 21px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: var(--color-accent-bg);
-  color: var(--color-accent);
-
-  font-size: 8px;
-  font-weight: 800;
-}
-
-.class-detail-requirement p {
-  margin: 0;
-
-  color: var(--color-text-muted-accent);
-
-  font-size: 8px;
-  line-height: 1.4;
 }
 
 /* =========================
@@ -799,10 +674,6 @@
     font-size: 38px;
   }
 
-  .class-detail-secondary-grid {
-    grid-template-columns: 1fr;
-  }
-
   .class-detail-notice {
     align-items: flex-start;
 
@@ -839,10 +710,6 @@
 
   .class-detail-hero-info h1 {
     font-size: 23px;
-  }
-
-  .class-detail-hero-info p {
-    font-size: 9px;
   }
 
   /* Information */
