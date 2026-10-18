@@ -7,6 +7,11 @@ const searchClasses = async ({ tipoBaile, ciudad }) => {
       ciudad,
       estado: "activa",
     },
+    // Las pantallas de exploración muestran horarios e instructor de cada clase.
+    include: {
+      horarios: true,
+      instructor: { select: { id: true, nombre: true } },
+    },
   });
 };
 
