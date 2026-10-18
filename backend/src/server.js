@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const pool = require("./config/database");
+const prisma = require("./config/prisma");
 const { errorHandler } = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 const academyRequestsRoutes = require("./routes/academyRequests.routes");
@@ -27,11 +27,14 @@ app.get("/", (req, res) => {
 
 app.get("/api/prueba-db", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT 1 AS resultado");
+    // Se usa Prisma (y no un pool aparte) para probar exactamente la misma
+    // conexión y los mismos argumentos de la URL (ssl, connection_limit) que el resto de la API.
+    const filas = await prisma.$queryRaw`SELECT 1 AS resultado`;
 
     res.json({
       mensaje: "Conexión con MySQL correcta",
-      datos: rows,
+      // MySQL devuelve el entero como BigInt y JSON.stringify no lo soporta.
+      datos: filas.map((fila) => ({ resultado: Number(fila.resultado) })),
     });
   } catch (error) {
     console.error(error);
