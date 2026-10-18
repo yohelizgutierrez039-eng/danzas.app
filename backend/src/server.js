@@ -10,6 +10,7 @@ const academyRequestsRoutes = require("./routes/academyRequests.routes");
 const adminUsersRoutes = require("./routes/adminUsers.routes");
 const classesRoutes = require("./routes/classes.routes");
 const enrollmentsRoutes = require("./routes/enrollments.routes");
+const reportsRoutes = require("./routes/reports.routes");
 // Registra el listener del evento "correo" (RF-017) aunque ninguna ruta lo importe.
 require("./services/email.service");
 
@@ -47,6 +48,7 @@ app.use("/api/admin/academy-requests", academyRequestsRoutes);
 app.use("/api/admin/users", adminUsersRoutes);
 app.use("/api/classes", classesRoutes);
 app.use("/api/enrollments", enrollmentsRoutes);
+app.use("/api/reports", reportsRoutes);
 
 app.use(errorHandler);
 
