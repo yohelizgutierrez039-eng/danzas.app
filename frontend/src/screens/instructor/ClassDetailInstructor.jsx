@@ -1,11 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
+import ClassStatusBadge from "../../components/classes/ClassStatusBadge";
 
 import useClasses from "../../hooks/useClasses";
+import {
+  getAttendance,
+  registerAttendance,
+} from "../../services/classes.service";
+import { fechaDeHoy, formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 
 import "./ClassDetailInstructor.css";
 
@@ -21,12 +28,15 @@ function ClassDetailInstructor() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  // Asistencia: se mantiene en estado local porque todavía no existe
-  // un endpoint de asistencia expuesto por el hook ni por classes.service.js.
-  // TODO: falta backend RF-010
-  const [attendance, setAttendance] = useState({});
+  // Asistencia de la sesión de una fecha (YYYY-MM-DD).
+  // Cada alumno llega como { inscripcionId, nombre, esMenor, asistio },
+  // donde asistio es null si todavía no se registró.
+  const [fecha, setFecha] = useState(fechaDeHoy);
+  const [alumnos, setAlumnos] = useState([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [attendanceSaved, setAttendanceSaved] = useState(false);
+  const [attendanceError, setAttendanceError] = useState("");
 
   useEffect(() => {
     const loadClass = async () => {
@@ -47,21 +57,42 @@ function ClassDetailInstructor() {
     };
 
     loadClass();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, getById]);
 
-  // La lista de estudiantes inscritos, si el backend la incluye en el
-  // detalle de la clase. Mientras no exista un endpoint dedicado, se
-  // toma de forma defensiva desde distintas formas posibles de respuesta.
-  const students = useMemo(() => {
-    const list =
-      classData?.students ||
-      classData?.enrolled_students ||
-      classData?.enrollments ||
-      [];
+  useEffect(() => {
+    let isActive = true;
 
-    return Array.isArray(list) ? list : [];
-  }, [classData]);
+    const loadAttendance = async () => {
+      setLoadingAttendance(true);
+      setAttendanceError("");
+      setAttendanceSaved(false);
+
+      try {
+        const result = await getAttendance(id, fecha);
+
+        if (isActive) {
+          setAlumnos(result.alumnos);
+        }
+      } catch (err) {
+        if (isActive) {
+          setAlumnos([]);
+          setAttendanceError(
+            err?.message || "No se pudo cargar la asistencia de la clase.",
+          );
+        }
+      } finally {
+        if (isActive) {
+          setLoadingAttendance(false);
+        }
+      }
+    };
+
+    loadAttendance();
+
+    return () => {
+      isActive = false;
+    };
+  }, [id, fecha]);
 
   const handleCancelClass = async () => {
     try {
@@ -86,37 +117,43 @@ function ClassDetailInstructor() {
     navigate("/instructor/clases");
   };
 
-  const toggleAttendance = (studentId) => {
+  const handleChangeFecha = (e) => {
+    if (e.target.value) {
+      setFecha(e.target.value);
+    }
+  };
+
+  const toggleAttendance = (inscripcionId) => {
     setAttendanceSaved(false);
 
-    setAttendance((prev) => ({
-      ...prev,
-      [studentId]: !prev[studentId],
-    }));
+    setAlumnos((prev) =>
+      prev.map((alumno) =>
+        alumno.inscripcionId === inscripcionId
+          ? { ...alumno, asistio: !alumno.asistio }
+          : alumno,
+      ),
+    );
   };
 
   const handleSaveAttendance = async () => {
-    // TODO: falta backend RF-010 — todavía no hay un endpoint para
-    // registrar la asistencia. Por ahora solo se guarda localmente
-    // para que la interfaz sea funcional y no falle.
-    setSavingAttendance(true);
+    try {
+      setSavingAttendance(true);
+      setAttendanceError("");
+      setAttendanceSaved(false);
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
+      await registerAttendance(id, {
+        fechaSesion: fecha,
+        registros: alumnos.map((alumno) => ({
+          inscripcionId: alumno.inscripcionId,
+          asistio: alumno.asistio === true,
+        })),
+      });
 
-    setSavingAttendance(false);
-    setAttendanceSaved(true);
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case "published":
-        return "Publicada";
-      case "draft":
-        return "Borrador";
-      case "inactive":
-        return "Inactiva";
-      default:
-        return status || "Sin estado";
+      setAttendanceSaved(true);
+    } catch (err) {
+      setAttendanceError(err?.message || "No se pudo guardar la asistencia.");
+    } finally {
+      setSavingAttendance(false);
     }
   };
 
@@ -144,9 +181,12 @@ function ClassDetailInstructor() {
     );
   }
 
-  const capacity = Number(classData.capacity || 0);
-  const enrolled = Number(classData.enrolled_count || students.length || 0);
-  const availablePlaces = capacity - enrolled;
+  const isClassActive = classData.estado === "activa";
+  const modalidad =
+    classData.modalidad === "virtual" ? "Virtual" : "Presencial";
+  const capacity = classData.cupoMaximo;
+  const availablePlaces = classData.cupoDisponible;
+  const enrolled = capacity - availablePlaces;
   const occupancy = capacity > 0 ? Math.round((enrolled / capacity) * 100) : 0;
 
   return (
@@ -165,40 +205,38 @@ function ClassDetailInstructor() {
 
             <div className="title-row">
               <div>
-                <h1>{classData.name}</h1>
+                <h1>Clase de {classData.tipoBaile}</h1>
 
                 <div className="title-meta">
-                  <span>{classData.dance_type}</span>
+                  <span>{classData.ciudad}</span>
                   <span>•</span>
-                  <span>{classData.city}</span>
-                  <span>•</span>
-                  <span>{classData.modality}</span>
+                  <span>{modalidad}</span>
                 </div>
               </div>
 
-              <span className={`status-badge status-${classData.status}`}>
-                {getStatusLabel(classData.status)}
-              </span>
+              <ClassStatusBadge estado={classData.estado} />
             </div>
           </div>
 
-          <div className="detail-actions">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={handleEdit}
-            >
-              ✏️ Editar
-            </button>
+          {isClassActive && (
+            <div className="detail-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleEdit}
+              >
+                ✏️ Editar
+              </button>
 
-            <button
-              type="button"
-              className="btn-danger"
-              onClick={() => setShowCancelDialog(true)}
-            >
-              🗑️ Cancelar clase
-            </button>
-          </div>
+              <button
+                type="button"
+                className="btn-danger"
+                onClick={() => setShowCancelDialog(true)}
+              >
+                🗑️ Cancelar clase
+              </button>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -242,9 +280,7 @@ function ClassDetailInstructor() {
             <span className="summary-icon">💰</span>
 
             <div>
-              <strong>
-                ${Number(classData.price || 0).toLocaleString("es-CO")}
-              </strong>
+              <strong>{formatearPrecio(classData.precio)}</strong>
               <span>Precio</span>
             </div>
           </div>
@@ -260,30 +296,18 @@ function ClassDetailInstructor() {
 
             <div className="info-content">
               <div className="info-item">
-                <span className="info-label">Descripción</span>
-                <p>{classData.description}</p>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Tipo de danza</span>
-                <span>{classData.dance_type}</span>
+                <span className="info-label">Tipo de baile</span>
+                <span>{classData.tipoBaile}</span>
               </div>
 
               <div className="info-item">
                 <span className="info-label">Modalidad</span>
-                <span>{classData.modality}</span>
+                <span>{modalidad}</span>
               </div>
-
-              {classData.modality === "Presencial" && (
-                <div className="info-item">
-                  <span className="info-label">Dirección</span>
-                  <span>{classData.address}</span>
-                </div>
-              )}
 
               <div className="info-item">
                 <span className="info-label">Ciudad</span>
-                <span>{classData.city}</span>
+                <span>{classData.ciudad}</span>
               </div>
             </div>
           </section>
@@ -291,43 +315,15 @@ function ClassDetailInstructor() {
           {/* Horarios */}
           <section className="detail-card">
             <div className="card-header">
-              <h2>Fecha y horario</h2>
+              <h2>Horario</h2>
             </div>
 
             <div className="info-content">
-              <div className="info-item">
-                <span className="info-label">Fecha de inicio</span>
-                <span>{classData.start_date}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Fecha de finalización</span>
-                <span>{classData.end_date}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Horario</span>
-                <span>{classData.schedule}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Duración</span>
-                <span>{classData.duration}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Requisitos */}
-          <section className="detail-card">
-            <div className="card-header">
-              <h2>Requisitos</h2>
-            </div>
-
-            <div className="card-body">
-              <p>
-                {classData.requirements ||
-                  "No se especificaron requisitos para esta clase."}
-              </p>
+              {classData.horarios.map((horario) => (
+                <div className="info-item" key={horario.id}>
+                  <span>{formatearHorario(horario)}</span>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -340,32 +336,54 @@ function ClassDetailInstructor() {
               </div>
             </div>
 
-            {students.length === 0 ? (
+            <div className="attendance-date">
+              <label htmlFor="fecha-asistencia">Fecha de la sesión</label>
+
+              <input
+                id="fecha-asistencia"
+                type="date"
+                value={fecha}
+                onChange={handleChangeFecha}
+              />
+            </div>
+
+            {attendanceError && (
+              <ErrorMessage
+                message={attendanceError}
+                onClose={() => setAttendanceError("")}
+              />
+            )}
+
+            {loadingAttendance && <Loading text="Cargando alumnos..." />}
+
+            {!loadingAttendance && !attendanceError && alumnos.length === 0 && (
               <p className="attendance-empty">
                 Todavía no hay estudiantes inscritos en esta clase.
               </p>
-            ) : (
+            )}
+
+            {!loadingAttendance && alumnos.length > 0 && (
               <>
                 <ul className="attendance-list">
-                  {students.map((student) => {
-                    const studentId = student.id || student.student_id;
-                    const studentName =
-                      student.name || student.nombre || "Estudiante";
+                  {alumnos.map((alumno) => (
+                    <li key={alumno.inscripcionId} className="attendance-item">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={alumno.asistio === true}
+                          onChange={() =>
+                            toggleAttendance(alumno.inscripcionId)
+                          }
+                        />
 
-                    return (
-                      <li key={studentId} className="attendance-item">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(attendance[studentId])}
-                            onChange={() => toggleAttendance(studentId)}
-                          />
+                        <span>{alumno.nombre}</span>
 
-                          <span>{studentName}</span>
-                        </label>
-                      </li>
-                    );
-                  })}
+                        {alumno.esMenor && (
+                          <small className="attendance-minor">Menor</small>
+                        )}
+                      </label>
+                    </li>
+                  ))}
                 </ul>
 
                 <button
@@ -379,8 +397,7 @@ function ClassDetailInstructor() {
 
                 {attendanceSaved && (
                   <p className="attendance-saved-note">
-                    Asistencia guardada localmente. La conexión con el
-                    backend todavía está pendiente (RF-010).
+                    Asistencia guardada correctamente.
                   </p>
                 )}
               </>
@@ -398,9 +415,11 @@ function ClassDetailInstructor() {
             Volver a mis clases
           </button>
 
-          <button type="button" className="btn-primary" onClick={handleEdit}>
-            Editar clase
-          </button>
+          {isClassActive && (
+            <button type="button" className="btn-primary" onClick={handleEdit}>
+              Editar clase
+            </button>
+          )}
         </div>
       </div>
 
@@ -408,7 +427,7 @@ function ClassDetailInstructor() {
       <ConfirmDialog
         isOpen={showCancelDialog}
         title="Cancelar clase"
-        message={`¿Estás seguro de que deseas cancelar "${classData.name}"? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que deseas cancelar la clase de ${classData.tipoBaile}? Esta acción no se puede deshacer.`}
         confirmText="Sí, cancelar"
         cancelText="Volver"
         variant="danger"
