@@ -49,11 +49,41 @@ const normalizarFecha = (valor) => {
 // errores de punto flotante (0.1 + 0.2).
 const redondear = (monto) => Math.round(monto * 100) / 100;
 
+// El reporte expone solo lo que muestran las pantallas: nada de correos, referencia
+// de la pasarela ni columnas internas.
+const proyectarPago = (pago, monto) => {
+  const { inscripcion } = pago;
+
+  return {
+    id: pago.id,
+    inscripcionId: pago.inscripcionId,
+    monto,
+    estado: pago.estado,
+    reembolsado: pago.reembolsado,
+    motivoReembolso: pago.motivoReembolso,
+    procesadoEn: pago.procesadoEn,
+    inscripcion: {
+      id: inscripcion.id,
+      claseId: inscripcion.claseId,
+      estado: inscripcion.estado,
+      clase: {
+        id: inscripcion.clase.id,
+        tipoBaile: inscripcion.clase.tipoBaile,
+        instructor: { id: inscripcion.clase.instructor.id, nombre: inscripcion.clase.instructor.nombre },
+      },
+      usuario: { id: inscripcion.usuario.id, nombre: inscripcion.usuario.nombre },
+      menor: inscripcion.menor ? { id: inscripcion.menor.id, nombre: inscripcion.menor.nombre } : null,
+    },
+  };
+};
+
 /**
  * RF-015: reporte de pagos recibidos. El administrador filtra libremente; el
  * instructor solo ve los pagos de sus propias clases.
  * `totalRecibido` suma los pagos aprobados y `totalReembolsado` los aprobados que
  * luego se reembolsaron (el reembolso no cambia el estado del pago).
+ * Limitacion conocida: `marcarComoReembolsado` sobrescribe `procesadoEn`, asi que un
+ * pago reembolsado cae en el rango de fechas del reembolso y no en el del cobro.
  */
 const reportePagos = async (usuario, filtros = {}) => {
   const desde = normalizarFecha(filtros.desde);
@@ -91,7 +121,7 @@ const reportePagos = async (usuario, filtros = {}) => {
       }
     }
 
-    return { ...pago, monto };
+    return proyectarPago(pago, monto);
   });
 
   totalRecibido = redondear(totalRecibido);

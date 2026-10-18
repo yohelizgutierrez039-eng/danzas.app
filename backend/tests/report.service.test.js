@@ -15,14 +15,25 @@ const instructor = { id: "instructor-1", rol: "instructor" };
 const padre = { id: "padre-1", rol: "padre" };
 
 // Prisma entrega las columnas DECIMAL como Prisma.Decimal, no como number.
+// Incluye columnas internas y sensibles que el reporte no debe exponer.
 const crearPago = (monto, sobrescribir = {}) => ({
   id: `pago-${monto}`,
+  inscripcionId: "insc-1",
   monto: new Prisma.Decimal(monto),
   estado: "aprobado",
+  esSimulado: true,
   reembolsado: false,
   motivoReembolso: null,
+  referenciaPasarela: "SIM-1A2B3C4D5E",
   procesadoEn: new Date("2026-10-05T15:00:00.000Z"),
   inscripcion: {
+    id: "insc-1",
+    claseId: "clase-1",
+    usuarioId: "estudiante-1",
+    menorId: null,
+    estado: "confirmada",
+    canceladoPor: null,
+    creadoEn: new Date("2026-10-01T10:00:00.000Z"),
     clase: { id: "clase-1", tipoBaile: "Salsa", instructor: { id: "instructor-1", nombre: "Carlos" } },
     usuario: { id: "estudiante-1", nombre: "Ana", correo: "ana@example.com" },
     menor: null,
@@ -155,6 +166,48 @@ describe("reportePagos", () => {
         reembolsado: false,
         inscripcion: { clase: { tipoBaile: "Salsa" } },
       });
+    });
+
+    it("expone solo los campos necesarios del pago, sin datos sensibles ni internos", async () => {
+      paymentRepository.buscarParaReporte.mockResolvedValue([
+        crearPago("50000.00", { reembolsado: true, motivoReembolso: "cancelacion_instructor" }),
+      ]);
+
+      const { pagos } = await reportePagos(admin, {});
+
+      expect(pagos[0]).toEqual({
+        id: "pago-50000.00",
+        inscripcionId: "insc-1",
+        monto: 50000,
+        estado: "aprobado",
+        reembolsado: true,
+        motivoReembolso: "cancelacion_instructor",
+        procesadoEn: new Date("2026-10-05T15:00:00.000Z"),
+        inscripcion: {
+          id: "insc-1",
+          claseId: "clase-1",
+          estado: "confirmada",
+          clase: { id: "clase-1", tipoBaile: "Salsa", instructor: { id: "instructor-1", nombre: "Carlos" } },
+          usuario: { id: "estudiante-1", nombre: "Ana" },
+          menor: null,
+        },
+      });
+
+      const serializado = JSON.stringify(pagos);
+      ["correo", "ana@example.com", "referenciaPasarela", "esSimulado", "usuarioId", "menorId", "canceladoPor", "creadoEn"].forEach(
+        (sensible) => expect(serializado, sensible).not.toContain(sensible),
+      );
+    });
+
+    it("incluye el menor cuando el pago es de una inscripcion de un menor", async () => {
+      const base = crearPago("50000.00");
+      paymentRepository.buscarParaReporte.mockResolvedValue([
+        { ...base, inscripcion: { ...base.inscripcion, menor: { id: "menor-1", nombre: "Mateo", fechaNacimiento: "x" } } },
+      ]);
+
+      const { pagos } = await reportePagos(admin, {});
+
+      expect(pagos[0].inscripcion.menor).toEqual({ id: "menor-1", nombre: "Mateo" });
     });
 
     it("no acumula errores de punto flotante al sumar centavos", async () => {

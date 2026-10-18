@@ -34,8 +34,9 @@ const inicioDelDia = (fecha) => new Date(`${fecha}T00:00:00.000-05:00`);
 const finDelDia = (fecha) => new Date(`${fecha}T23:59:59.999-05:00`);
 
 // Solo los pagos aprobados cuentan como recibidos; un reembolso no cambia el estado
-// del pago, solo marca `reembolsado`. `procesadoEn` se actualiza al reembolsar, asi que
-// el rango de fechas toma el ultimo movimiento del pago (cobro o reembolso).
+// del pago, solo marca `reembolsado`. Limitacion conocida: `marcarComoReembolsado`
+// sobrescribe `procesadoEn`, asi que un pago reembolsado cae en el rango de fechas del
+// reembolso y no en el del cobro.
 const buscarParaReporte = async ({ desde, hasta, instructorId, academia }) => {
   const where = { estado: "aprobado" };
 
@@ -69,7 +70,7 @@ const buscarParaReporte = async ({ desde, hasta, instructorId, academia }) => {
               instructor: { select: { id: true, nombre: true } },
             },
           },
-          usuario: { select: { id: true, nombre: true, correo: true } },
+          usuario: { select: { id: true, nombre: true } },
           menor: { select: { id: true, nombre: true } },
         },
       },

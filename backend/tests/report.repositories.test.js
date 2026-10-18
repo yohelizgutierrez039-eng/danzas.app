@@ -27,7 +27,7 @@ describe("paymentRepository.buscarParaReporte", () => {
     const { include } = prisma.pago.findMany.mock.calls[0][0];
     const { clase, usuario, menor } = include.inscripcion.include;
     expect(clase.select).toMatchObject({ id: true, tipoBaile: true, instructor: { select: { id: true, nombre: true } } });
-    expect(usuario.select).toEqual({ id: true, nombre: true, correo: true });
+    expect(usuario.select).toEqual({ id: true, nombre: true });
     expect(menor.select).toEqual({ id: true, nombre: true });
   });
 
