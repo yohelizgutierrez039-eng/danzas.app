@@ -149,7 +149,8 @@ function ClassForm() {
       const classData = {
         tipoBaile: form.tipoBaile.trim(),
         ciudad: form.ciudad.trim(),
-        modalidad: "presencial",
+        // Al editar no se envía la modalidad para conservar la que ya tiene la clase.
+        ...(!isEditing && { modalidad: "presencial" }),
         cupoMaximo: Number(form.cupoMaximo),
         precio: Number(form.precio),
         diaSemana: Number(form.diaSemana),
