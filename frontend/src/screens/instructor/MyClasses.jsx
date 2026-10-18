@@ -5,8 +5,11 @@ import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
 import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
+import ClassStatusBadge from "../../components/classes/ClassStatusBadge";
 
 import useClasses from "../../hooks/useClasses";
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 
 import "./MyClasses.css";
 
@@ -25,48 +28,15 @@ function MyClasses() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      maximumFractionDigits: 0,
-    }).format(Number(price) || 0);
-  };
+  const getEnrolled = (danceClass) =>
+    danceClass.cupoMaximo - danceClass.cupoDisponible;
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "published":
-        return "Publicada";
-      case "draft":
-        return "Borrador";
-      case "inactive":
-        return "Inactiva";
-      default:
-        return "Sin estado";
-    }
-  };
+  const activeClasses = classes.filter((item) => item.estado === "activa");
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "published":
-        return "status-published";
-      case "draft":
-        return "status-draft";
-      case "inactive":
-        return "status-inactive";
-      default:
-        return "";
-    }
-  };
-
-  const totalStudents = classes.reduce(
-    (total, item) => total + Number(item.enrolled_count || 0),
+  const totalStudents = activeClasses.reduce(
+    (total, item) => total + getEnrolled(item),
     0,
   );
-
-  const publishedClasses = classes.filter(
-    (item) => item.status === "published",
-  ).length;
 
   const handleRequestCancel = (danceClass) => {
     setCancelError("");
@@ -140,8 +110,8 @@ function MyClasses() {
           <div className="summary-icon">✓</div>
 
           <div>
-            <strong>{publishedClasses}</strong>
-            <span>Clases publicadas</span>
+            <strong>{activeClasses.length}</strong>
+            <span>Clases activas</span>
           </div>
         </div>
 
@@ -177,7 +147,6 @@ function MyClasses() {
               <thead>
                 <tr>
                   <th>Clase</th>
-                  <th>Tipo</th>
                   <th>Modalidad</th>
                   <th>Horario</th>
                   <th>Estudiantes</th>
@@ -192,49 +161,45 @@ function MyClasses() {
                   <tr key={danceClass.id}>
                     <td>
                       <div className="class-name-cell">
-                        <strong>{danceClass.name}</strong>
+                        <strong>{danceClass.tipoBaile}</strong>
 
-                        <small>{danceClass.city}</small>
+                        <small>{danceClass.ciudad}</small>
                       </div>
                     </td>
 
-                    <td>{danceClass.dance_type}</td>
-
                     <td>
                       <span className="modality-badge">
-                        {danceClass.modality}
+                        {danceClass.modalidad === "virtual"
+                          ? "Virtual"
+                          : "Presencial"}
                       </span>
                     </td>
 
                     <td>
                       <div className="schedule-cell">
-                        <strong>{danceClass.schedule}</strong>
-
-                        <span>{danceClass.duration}</span>
+                        {danceClass.horarios.map((horario) => (
+                          <strong key={horario.id}>
+                            {formatearHorario(horario)}
+                          </strong>
+                        ))}
                       </div>
                     </td>
 
                     <td>
                       <div className="students-cell">
-                        <strong>{danceClass.enrolled_count || 0}</strong>
-                        <span>/ {danceClass.capacity}</span>
+                        <strong>{getEnrolled(danceClass)}</strong>
+                        <span>/ {danceClass.cupoMaximo}</span>
                       </div>
                     </td>
 
                     <td>
                       <strong className="price">
-                        {formatPrice(danceClass.price)}
+                        {formatearPrecio(danceClass.precio)}
                       </strong>
                     </td>
 
                     <td>
-                      <span
-                        className={`status-badge ${getStatusClass(
-                          danceClass.status,
-                        )}`}
-                      >
-                        {getStatusText(danceClass.status)}
-                      </span>
+                      <ClassStatusBadge estado={danceClass.estado} />
                     </td>
 
                     <td>
@@ -248,24 +213,28 @@ function MyClasses() {
                           Ver
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(
-                              `/instructor/clases/${danceClass.id}/editar`,
-                            )
-                          }
-                        >
-                          Editar
-                        </button>
+                        {danceClass.estado === "activa" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/instructor/clases/${danceClass.id}/editar`,
+                                )
+                              }
+                            >
+                              Editar
+                            </button>
 
-                        <button
-                          type="button"
-                          className="action-button-danger"
-                          onClick={() => handleRequestCancel(danceClass)}
-                        >
-                          Cancelar
-                        </button>
+                            <button
+                              type="button"
+                              className="action-button-danger"
+                              onClick={() => handleRequestCancel(danceClass)}
+                            >
+                              Cancelar
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -282,7 +251,7 @@ function MyClasses() {
         message={
           cancelError ||
           `¿Estás seguro de que deseas cancelar "${
-            classToCancel?.name || ""
+            classToCancel?.tipoBaile || ""
           }"? Esta acción no se puede deshacer.`
         }
         confirmText="Sí, cancelar"

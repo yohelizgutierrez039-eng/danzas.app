@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
-import {
-  buildCheckoutRoute,
-  createEnrollment,
-} from "../../services/enrollments.service";
+import { getClassById } from "../../services/classes.service";
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 import "./ClassDetailStudent.css";
 
 function ClassDetailStudent() {
@@ -15,116 +13,68 @@ function ClassDetailStudent() {
 
   const [danceClass, setDanceClass] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
 
-  const [showConfirm, setShowConfirm] = useState(false);
+  useEffect(() => {
+    let isActive = true;
 
-  const loadClass = async () => {
-    try {
+    const loadClass = async () => {
       setLoading(true);
       setError("");
 
-      /*
-       * Cuando esté disponible el endpoint del backend:
-       *
-       * const data = await getClassById(id);
-       * setDanceClass(data);
-       */
+      try {
+        const result = await getClassById(id);
 
-      // Datos temporales.
-      setDanceClass({
-        id,
-        name: "Salsa Básica",
-        type: "Salsa",
-        modality: "Presencial",
-        city: "Barranquilla",
-        academy: "Academia Ritmo Caribe",
-        instructor: "Carlos Rodríguez",
-        description:
-          "Clase diseñada para aprender los pasos básicos de salsa y desarrollar ritmo y coordinación.",
-        schedule: "Lunes y miércoles",
-        time: "6:00 PM - 7:30 PM",
-        duration: "1 hora y 30 minutos",
-        startDate: "20 de septiembre de 2026",
-        capacity: 20,
-        availableSpots: 8,
-        price: 80000,
-        requirements: "No se requiere experiencia previa. Llevar ropa cómoda.",
-        enrolled: false,
-      });
-    } catch (err) {
-      setError(
-        err.message || "No fue posible cargar la información de la clase.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (isActive) {
+          setDanceClass(result);
+        }
+      } catch (err) {
+        if (isActive) {
+          setError(
+            err.status === 404
+              ? "No se encontró la clase."
+              : err.message ||
+                  "No fue posible cargar la información de la clase.",
+          );
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
     loadClass();
+
+    return () => {
+      isActive = false;
+    };
   }, [id]);
-
-  const handleEnroll = () => {
-    if (danceClass?.enrolled) {
-      return;
-    }
-
-    setShowConfirm(true);
-  };
-
-  const handleConfirmEnrollment = async () => {
-    try {
-      setEnrolling(true);
-      setError("");
-
-      /*
-       * POST /enrollments/:claseId (el estudiante sale del token).
-       *
-       * El backend puede devolver una URL
-       * para continuar con el pago.
-       */
-      const response = await createEnrollment({ claseId: danceClass.id });
-
-      setShowConfirm(false);
-
-      if (response?.paymentUrl) {
-        window.location.href = response.paymentUrl;
-        return;
-      }
-
-      // Cupo reservado: continuar al checkout para confirmar el pago.
-      const checkout = buildCheckoutRoute(response, {
-        basePath: "/estudiante",
-        clase: { nombre: danceClass.name, precio: danceClass.price },
-      });
-
-      if (checkout) {
-        navigate(checkout.path, { state: checkout.state });
-        return;
-      }
-
-      navigate("/estudiante/inscripciones");
-    } catch (err) {
-      setError(err.message || "No fue posible realizar la inscripción.");
-    } finally {
-      setEnrolling(false);
-    }
-  };
 
   if (loading) {
     return <Loading text="Cargando clase..." />;
   }
 
-  if (!danceClass) {
+  if (error || !danceClass) {
     return (
       <div className="class-detail-student">
-        <ErrorMessage message="No se encontró la clase." type="error" />
+        <ErrorMessage
+          message={error || "No se encontró la clase."}
+          type="error"
+        />
       </div>
     );
   }
+
+  const isClassActive = danceClass.estado === "activa";
+  const hasSpots = danceClass.cupoDisponible > 0;
+
+  const getEnrollLabel = () => {
+    if (!isClassActive) return "Clase no disponible";
+    if (!hasSpots) return "Cupos agotados";
+
+    return "Inscribirme";
+  };
 
   return (
     <div className="class-detail-student">
@@ -139,26 +89,16 @@ function ClassDetailStudent() {
 
         <div className="student-class-heading">
           <div>
-            <span className="student-class-type">{danceClass.type}</span>
+            <span className="student-class-type">{danceClass.tipoBaile}</span>
 
-            <h1>{danceClass.name}</h1>
-
-            <p>{danceClass.description}</p>
+            <h1>Clase de {danceClass.tipoBaile}</h1>
           </div>
 
           <span className="student-class-status">
-            {danceClass.enrolled ? "✓ Inscrito" : "Disponible"}
+            {isClassActive ? "Disponible" : "No disponible"}
           </span>
         </div>
       </div>
-
-      {error && (
-        <ErrorMessage
-          message={error}
-          type="error"
-          onClose={() => setError("")}
-        />
-      )}
 
       <div className="class-detail-student-content">
         <div className="class-detail-student-main">
@@ -168,56 +108,45 @@ function ClassDetailStudent() {
             <div className="student-info-grid">
               <div>
                 <span>📅 Horario</span>
-                <strong>{danceClass.schedule}</strong>
-                <p>{danceClass.time}</p>
-              </div>
-
-              <div>
-                <span>⏱ Duración</span>
-                <strong>{danceClass.duration}</strong>
+                {danceClass.horarios.map((horario) => (
+                  <strong key={horario.id}>{formatearHorario(horario)}</strong>
+                ))}
               </div>
 
               <div>
                 <span>📍 Ciudad</span>
-                <strong>{danceClass.city}</strong>
+                <strong>{danceClass.ciudad}</strong>
               </div>
 
               <div>
                 <span>🎭 Modalidad</span>
-                <strong>{danceClass.modality}</strong>
-              </div>
-
-              <div>
-                <span>📆 Fecha de inicio</span>
-                <strong>{danceClass.startDate}</strong>
+                <strong>
+                  {danceClass.modalidad === "virtual" ? "Virtual" : "Presencial"}
+                </strong>
               </div>
 
               <div>
                 <span>👥 Cupos disponibles</span>
-                <strong>{danceClass.availableSpots}</strong>
+                <strong>
+                  {danceClass.cupoDisponible} de {danceClass.cupoMaximo}
+                </strong>
               </div>
             </div>
           </section>
 
           <section className="student-detail-card">
-            <h2>Academia e instructor</h2>
+            <h2>Instructor</h2>
 
-            <div className="student-academy-info">
-              <div className="student-academy-icon">
-                {danceClass.academy.charAt(0)}
+            <div className="student-instructor-info">
+              <div className="student-instructor-icon">
+                {danceClass.instructor.nombre.charAt(0)}
               </div>
 
               <div>
-                <strong>{danceClass.academy}</strong>
-                <span>{danceClass.instructor}</span>
+                <strong>{danceClass.instructor.nombre}</strong>
+                <span>Instructor de danza</span>
               </div>
             </div>
-          </section>
-
-          <section className="student-detail-card">
-            <h2>Requisitos</h2>
-
-            <p className="student-requirements">{danceClass.requirements}</p>
           </section>
         </div>
 
@@ -225,29 +154,25 @@ function ClassDetailStudent() {
           <span>Valor de la clase</span>
 
           <strong className="student-price">
-            ${danceClass.price.toLocaleString("es-CO")}
+            {formatearPrecio(danceClass.precio)}
           </strong>
 
           <span className="student-price-label">por inscripción</span>
 
           <div className="student-spots">
             <span>Cupos disponibles</span>
-            <strong>{danceClass.availableSpots}</strong>
+            <strong>{danceClass.cupoDisponible}</strong>
           </div>
 
           <button
             type="button"
             className="student-enroll-button"
-            onClick={handleEnroll}
-            disabled={
-              danceClass.enrolled || danceClass.availableSpots <= 0 || enrolling
+            onClick={() =>
+              navigate(`/estudiante/clases/${danceClass.id}/inscribir`)
             }
+            disabled={!isClassActive || !hasSpots}
           >
-            {danceClass.enrolled
-              ? "Ya estás inscrito"
-              : danceClass.availableSpots <= 0
-                ? "Cupos agotados"
-                : "Inscribirme"}
+            {getEnrollLabel()}
           </button>
 
           <p className="student-payment-note">
@@ -256,20 +181,6 @@ function ClassDetailStudent() {
           </p>
         </aside>
       </div>
-
-      <ConfirmDialog
-        isOpen={showConfirm}
-        onClose={() => !enrolling && setShowConfirm(false)}
-        onConfirm={handleConfirmEnrollment}
-        title="Confirmar inscripción"
-        message={`¿Deseas inscribirte en "${danceClass.name}" por $${danceClass.price.toLocaleString(
-          "es-CO",
-        )}?`}
-        confirmText="Confirmar inscripción"
-        cancelText="Cancelar"
-        type="success"
-        loading={enrolling}
-      />
     </div>
   );
 }

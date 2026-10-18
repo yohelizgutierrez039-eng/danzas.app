@@ -45,6 +45,19 @@ export const getMyClasses = async () => {
   return await api("/classes/my-classes");
 };
 
+// Alumnos de una clase con su asistencia en una fecha (YYYY-MM-DD)
+export const getAttendance = async (classId, fecha) => {
+  return await api(`/classes/${classId}/attendance?fecha=${fecha}`);
+};
+
+// Registrar la asistencia de una sesión: registros = [{ inscripcionId, asistio }]
+export const registerAttendance = async (classId, { fechaSesion, registros }) => {
+  return await api(`/classes/${classId}/attendance`, {
+    method: "POST",
+    body: JSON.stringify({ fechaSesion, registros }),
+  });
+};
+
 export default {
   searchClasses,
   getClassById,
@@ -52,4 +65,6 @@ export default {
   updateClass,
   deleteClass,
   getMyClasses,
+  getAttendance,
+  registerAttendance,
 };

@@ -23,6 +23,7 @@ import EmptyState from "../../../components/common/EmptyState/EmptyState";
 import StatCard from "../../../components/dashboard/StatCard";
 import ClassCard from "../../../components/classes/ClassCard";
 import ClassStatusBadge from "../../../components/classes/ClassStatusBadge";
+import { horaDesdeISO } from "../../../utils/formatDate";
 
 import "./ClassesAdmin.css";
 
@@ -53,18 +54,18 @@ const MOCK_CLASSES = [
     horarios: [
       {
         diaSemana: 1,
-        horaInicio: "2026-01-05T19:00:00",
-        horaFin: "2026-01-05T20:30:00",
+        horaInicio: "1970-01-01T19:00:00.000Z",
+        horaFin: "1970-01-01T20:30:00.000Z",
       },
       {
         diaSemana: 3,
-        horaInicio: "2026-01-05T19:00:00",
-        horaFin: "2026-01-05T20:30:00",
+        horaInicio: "1970-01-01T19:00:00.000Z",
+        horaFin: "1970-01-01T20:30:00.000Z",
       },
       {
         diaSemana: 5,
-        horaInicio: "2026-01-05T19:00:00",
-        horaFin: "2026-01-05T20:30:00",
+        horaInicio: "1970-01-01T19:00:00.000Z",
+        horaFin: "1970-01-01T20:30:00.000Z",
       },
     ],
   },
@@ -82,13 +83,13 @@ const MOCK_CLASSES = [
     horarios: [
       {
         diaSemana: 2,
-        horaInicio: "2026-01-06T18:00:00",
-        horaFin: "2026-01-06T19:30:00",
+        horaInicio: "1970-01-01T18:00:00.000Z",
+        horaFin: "1970-01-01T19:30:00.000Z",
       },
       {
         diaSemana: 4,
-        horaInicio: "2026-01-06T18:00:00",
-        horaFin: "2026-01-06T19:30:00",
+        horaInicio: "1970-01-01T18:00:00.000Z",
+        horaFin: "1970-01-01T19:30:00.000Z",
       },
     ],
   },
@@ -106,8 +107,8 @@ const MOCK_CLASSES = [
     horarios: [
       {
         diaSemana: 6,
-        horaInicio: "2026-01-10T10:00:00",
-        horaFin: "2026-01-10T12:00:00",
+        horaInicio: "1970-01-01T10:00:00.000Z",
+        horaFin: "1970-01-01T12:00:00.000Z",
       },
     ],
   },
@@ -125,13 +126,13 @@ const MOCK_CLASSES = [
     horarios: [
       {
         diaSemana: 1,
-        horaInicio: "2026-01-05T16:00:00",
-        horaFin: "2026-01-05T17:30:00",
+        horaInicio: "1970-01-01T16:00:00.000Z",
+        horaFin: "1970-01-01T17:30:00.000Z",
       },
       {
         diaSemana: 3,
-        horaInicio: "2026-01-05T16:00:00",
-        horaFin: "2026-01-05T17:30:00",
+        horaInicio: "1970-01-01T16:00:00.000Z",
+        horaFin: "1970-01-01T17:30:00.000Z",
       },
     ],
   },
@@ -149,8 +150,8 @@ const MOCK_CLASSES = [
     horarios: [
       {
         diaSemana: 5,
-        horaInicio: "2026-01-09T19:00:00",
-        horaFin: "2026-01-09T20:30:00",
+        horaInicio: "1970-01-01T19:00:00.000Z",
+        horaFin: "1970-01-01T20:30:00.000Z",
       },
     ],
   },
@@ -163,13 +164,6 @@ const ESTADO_OPTIONS = [
   { value: "finalizada", label: "Finalizada" },
 ];
 
-function formatearHora(iso) {
-  return new Date(iso).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function formatearHorario(horarios) {
   if (!horarios?.length) return "Sin horario";
 
@@ -178,7 +172,7 @@ function formatearHorario(horarios) {
 
   return {
     dias,
-    hora: `${formatearHora(primero.horaInicio)} - ${formatearHora(
+    hora: `${horaDesdeISO(primero.horaInicio)} - ${horaDesdeISO(
       primero.horaFin,
     )}`,
   };

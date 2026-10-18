@@ -1,23 +1,11 @@
 // src/components/classes/ClassSchedule.jsx
 
+import { diaSemanaTexto, horaDesdeISO } from "../../utils/formatDate";
+
 import "./ClassSchedule.css";
 
-const DIAS_SEMANA = [
-  { diaSemana: 1, label: "Lunes" },
-  { diaSemana: 2, label: "Martes" },
-  { diaSemana: 3, label: "Miércoles" },
-  { diaSemana: 4, label: "Jueves" },
-  { diaSemana: 5, label: "Viernes" },
-  { diaSemana: 6, label: "Sábado" },
-  { diaSemana: 0, label: "Domingo" },
-];
-
-function formatearHora(iso) {
-  return new Date(iso).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// Semana de lunes a domingo (diaSemana: 0 = domingo)
+const ORDEN_SEMANA = [1, 2, 3, 4, 5, 6, 0];
 
 /**
  * Vista semanal simple (filas apiladas) de los horarios de una clase.
@@ -28,14 +16,16 @@ function formatearHora(iso) {
 function ClassSchedule({ horarios = [] }) {
   return (
     <div className="class-schedule">
-      {DIAS_SEMANA.map(({ diaSemana, label }) => {
+      {ORDEN_SEMANA.map((diaSemana) => {
         const horariosDelDia = horarios.filter(
           (h) => h.diaSemana === diaSemana
         );
 
         return (
           <div key={diaSemana} className="class-schedule__row">
-            <span className="class-schedule__day">{label}</span>
+            <span className="class-schedule__day">
+              {diaSemanaTexto(diaSemana)}
+            </span>
 
             {horariosDelDia.length === 0 ? (
               <span className="class-schedule__empty">Sin clases</span>
@@ -44,7 +34,7 @@ function ClassSchedule({ horarios = [] }) {
                 {horariosDelDia.map((h, index) => (
                   <span key={index} className="class-schedule__slot">
                     {h.tipoBaile ? `${h.tipoBaile} · ` : ""}
-                    {formatearHora(h.horaInicio)} - {formatearHora(h.horaFin)}
+                    {horaDesdeISO(h.horaInicio)} - {horaDesdeISO(h.horaFin)}
                   </span>
                 ))}
               </div>

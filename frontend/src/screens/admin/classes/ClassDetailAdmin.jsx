@@ -22,6 +22,7 @@ import Button from "../../../components/common/Button/Button";
 import Badge from "../../../components/common/Badge/Badge";
 import StatCard from "../../../components/dashboard/StatCard";
 import ClassStatusBadge from "../../../components/classes/ClassStatusBadge";
+import { horaDesdeISO } from "../../../utils/formatDate";
 
 import "./ClassDetailAdmin.css";
 
@@ -68,18 +69,18 @@ const MOCK_CLASS_DETAIL = {
   horarios: [
     {
       diaSemana: 1,
-      horaInicio: "2026-01-05T19:00:00",
-      horaFin: "2026-01-05T20:30:00",
+      horaInicio: "1970-01-01T19:00:00.000Z",
+      horaFin: "1970-01-01T20:30:00.000Z",
     },
     {
       diaSemana: 3,
-      horaInicio: "2026-01-05T19:00:00",
-      horaFin: "2026-01-05T20:30:00",
+      horaInicio: "1970-01-01T19:00:00.000Z",
+      horaFin: "1970-01-01T20:30:00.000Z",
     },
     {
       diaSemana: 5,
-      horaInicio: "2026-01-05T19:00:00",
-      horaFin: "2026-01-05T20:30:00",
+      horaInicio: "1970-01-01T19:00:00.000Z",
+      horaFin: "1970-01-01T20:30:00.000Z",
     },
   ],
 };
@@ -100,13 +101,6 @@ const MOCK_STUDENTS = [
     estado: "cancelada",
   },
 ];
-
-function formatearHora(iso) {
-  return new Date(iso).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function formatearFechaCorta(iso) {
   return new Date(iso).toLocaleDateString("es-CO", {
@@ -270,8 +264,8 @@ export default function ClassDetailAdmin() {
                   {clase.horarios.map((h) => DIAS_SEMANA[h.diaSemana]).join(", ")}
                 </p>
                 <p className="class-detail-admin__info-secondary">
-                  {formatearHora(primerHorario.horaInicio)} -{" "}
-                  {formatearHora(primerHorario.horaFin)}
+                  {horaDesdeISO(primerHorario.horaInicio)} -{" "}
+                  {horaDesdeISO(primerHorario.horaFin)}
                 </p>
               </div>
 
@@ -459,8 +453,8 @@ export default function ClassDetailAdmin() {
               <div className="class-detail-admin__schedule-time">
                 <FiClock size={16} />
                 <strong>
-                  {formatearHora(primerHorario.horaInicio)} -{" "}
-                  {formatearHora(primerHorario.horaFin)}
+                  {horaDesdeISO(primerHorario.horaInicio)} -{" "}
+                  {horaDesdeISO(primerHorario.horaFin)}
                 </strong>
               </div>
 

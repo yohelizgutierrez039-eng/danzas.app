@@ -2,17 +2,9 @@
 
 import Button from "../common/Button/Button";
 import ClassStatusBadge from "./ClassStatusBadge";
+import { formatearHorario } from "../../utils/formatDate";
 
 import "./ClassCard.css";
-
-const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
-function formatearHora(iso) {
-  return new Date(iso).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function formatearPrecio(precio) {
   return new Intl.NumberFormat("es-CO", {
@@ -59,9 +51,7 @@ function ClassCard({ clase, onViewDetails }) {
 
       {primerHorario && (
         <p className="class-card__schedule">
-          {DIAS_SEMANA[primerHorario.diaSemana]}{" "}
-          {formatearHora(primerHorario.horaInicio)} -{" "}
-          {formatearHora(primerHorario.horaFin)}
+          {formatearHorario(primerHorario)}
         </p>
       )}
 

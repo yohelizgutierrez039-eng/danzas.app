@@ -204,12 +204,6 @@
   font-size: var(--font-size-sm);
 }
 
-.enrollment-details small {
-  color: var(--color-text-muted);
-
-  font-size: var(--font-size-xs);
-}
-
 /* =========================
    PAYMENT INFO
 ========================= */
