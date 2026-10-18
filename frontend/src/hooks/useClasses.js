@@ -121,7 +121,7 @@ function useClasses() {
     }
   }, []);
 
-  // Eliminar una clase
+  // Cancelar una clase (el backend la marca como cancelada, no la borra)
   const remove = useCallback(async (id) => {
     try {
       setLoading(true);
@@ -130,7 +130,11 @@ function useClasses() {
       const result = await deleteClass(id);
 
       // También actualizamos la lista local
-      setClasses((prev) => prev.filter((item) => item.id !== id));
+      setClasses((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, estado: "cancelada" } : item,
+        ),
+      );
 
       return result;
     } catch (err) {

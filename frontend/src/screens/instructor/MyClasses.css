@@ -146,11 +146,6 @@
   display: block;
 }
 
-.schedule-cell span {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-}
-
 .students-cell strong {
   color: var(--color-text-heading);
 }
@@ -161,31 +156,6 @@
 
 .price {
   color: var(--color-primary-dark);
-}
-
-.status-badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  background: var(--color-neutral-bg);
-  color: var(--color-neutral);
-}
-
-.status-published {
-  background: var(--color-success-bg);
-  color: var(--color-success-dark);
-}
-
-.status-draft {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-dark);
-}
-
-.status-inactive {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-dark);
 }
 
 .action-buttons {
