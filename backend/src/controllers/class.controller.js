@@ -2,7 +2,9 @@ const classService = require("../services/class.service");
 
 const searchClasses = async (req, res) => {
   try {
-    const { tipoBaile, ciudad } = req.query;
+    const { ciudad } = req.query;
+    // El frontend envía el filtro como ?tipo=; tipoBaile sigue vigente y tiene prioridad.
+    const tipoBaile = req.query.tipoBaile ?? req.query.tipo;
 
     const classes = await classService.searchClasses({
       tipoBaile,
@@ -16,6 +18,26 @@ const searchClasses = async (req, res) => {
     return res.status(500).json({
       message: "Error al buscar las clases",
     });
+  }
+};
+
+const getClassById = async (req, res, next) => {
+  try {
+    const clase = await classService.obtenerClase(req.params.id);
+
+    return res.status(200).json(clase);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMyClasses = async (req, res, next) => {
+  try {
+    const clases = await classService.listarClasesDelInstructor(req.user.id);
+
+    return res.status(200).json(clases);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -59,6 +81,8 @@ const cancelClass = async (req, res, next) => {
 
 module.exports = {
   searchClasses,
+  getClassById,
+  getMyClasses,
   createClass,
   updateClass,
   cancelClass,

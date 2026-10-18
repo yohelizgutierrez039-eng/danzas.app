@@ -19,6 +19,21 @@ const registerAttendance = async (req, res, next) => {
   }
 };
 
+const getAttendance = async (req, res, next) => {
+  try {
+    const resultado = await attendanceService.obtenerAsistencia(
+      req.params.id,
+      req.user.id,
+      req.query.fecha,
+    );
+
+    return res.status(200).json(resultado);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerAttendance,
+  getAttendance,
 };

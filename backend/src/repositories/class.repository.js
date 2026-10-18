@@ -7,6 +7,11 @@ const searchClasses = async ({ tipoBaile, ciudad }) => {
       ciudad,
       estado: "activa",
     },
+    // Las pantallas de exploración muestran horarios e instructor de cada clase.
+    include: {
+      horarios: true,
+      instructor: { select: { id: true, nombre: true } },
+    },
   });
 };
 
@@ -40,10 +45,22 @@ const create = async (datos) => {
   });
 };
 
-const findById = async (id) => {
-  return await prisma.clase.findUnique({
+const findById = async (id, client = prisma) => {
+  return await client.clase.findUnique({
     where: { id },
     include: { horarios: true },
+  });
+};
+
+// RF-011: detalle público de una clase, con horarios y el nombre de su instructor.
+// No reemplaza a findById, que usan inscripciones, pagos y asistencia.
+const findDetalleById = async (id) => {
+  return await prisma.clase.findUnique({
+    where: { id },
+    include: {
+      horarios: true,
+      instructor: { select: { id: true, nombre: true } },
+    },
   });
 };
 
@@ -57,12 +74,13 @@ const findByInstructor = async (instructorId, { estado } = {}, client = prisma) 
   });
 };
 
-const update = async (id, datos) => {
+const update = async (id, datos, client = prisma) => {
   const {
     tipoBaile,
     ciudad,
     modalidad,
     cupoMaximo,
+    cupoDisponible,
     precio,
     estado,
     diaSemana,
@@ -73,13 +91,15 @@ const update = async (id, datos) => {
   const actualizaHorario =
     diaSemana !== undefined || horaInicio !== undefined || horaFin !== undefined;
 
-  return await prisma.clase.update({
+  return await client.clase.update({
     where: { id },
     data: {
       ...(tipoBaile !== undefined && { tipoBaile }),
       ...(ciudad !== undefined && { ciudad }),
       ...(modalidad !== undefined && { modalidad }),
       ...(cupoMaximo !== undefined && { cupoMaximo }),
+      // Lo calcula el service junto con cupoMaximo; nunca viene del cliente.
+      ...(cupoDisponible !== undefined && { cupoDisponible }),
       ...(precio !== undefined && { precio }),
       ...(estado !== undefined && { estado }),
       ...(actualizaHorario && {
@@ -110,6 +130,7 @@ module.exports = {
   searchClasses,
   create,
   findById,
+  findDetalleById,
   findByInstructor,
   update,
   delete: eliminar,
