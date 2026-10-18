@@ -6,6 +6,9 @@ import {
   buildCheckoutRoute,
   createEnrollment,
 } from "../../services/enrollments.service";
+import { getClassById } from "../../services/classes.service";
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 import "./EnrollmentProcess.css";
 
 function EnrollmentProcess() {
@@ -17,43 +20,39 @@ function EnrollmentProcess() {
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
 
-  const loadClass = async () => {
-    try {
+  useEffect(() => {
+    let isActive = true;
+
+    const loadClass = async () => {
       setLoading(true);
       setError("");
 
-      /*
-       * Cuando esté disponible el endpoint del backend:
-       *
-       * const data = await getClassById(id);
-       * setClassData(data);
-       */
+      try {
+        const result = await getClassById(id);
 
-      // Datos temporales para la interfaz.
-      setClassData({
-        id,
-        name: "Salsa Básica",
-        type: "Salsa",
-        academy: "Academia Ritmo Caribe",
-        instructor: "Carlos Rodríguez",
-        city: "Barranquilla",
-        modality: "Presencial",
-        schedule: "Lunes y miércoles",
-        time: "6:00 PM - 7:30 PM",
-        startDate: "20 de septiembre de 2026",
-        duration: "1 hora y 30 minutos",
-        price: 80000,
-      });
-    } catch (err) {
-      setError(err.message || "No fue posible cargar la información.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (isActive) {
+          setClassData(result);
+        }
+      } catch (err) {
+        if (isActive) {
+          setError(
+            err.status === 404
+              ? "No se encontró la clase."
+              : err.message || "No fue posible cargar la información.",
+          );
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load on mount/id change, not a cascading update
     loadClass();
+
+    return () => {
+      isActive = false;
+    };
   }, [id]);
 
   const handleEnrollment = async () => {
@@ -76,7 +75,7 @@ function EnrollmentProcess() {
       // Cupo reservado: continuar al checkout para confirmar el pago.
       const checkout = buildCheckoutRoute(response, {
         basePath: "/estudiante",
-        clase: { nombre: classData.name, precio: classData.price },
+        clase: { nombre: classData.tipoBaile, precio: classData.precio },
       });
 
       if (checkout) {
@@ -99,7 +98,10 @@ function EnrollmentProcess() {
   if (!classData) {
     return (
       <div className="enrollment-process">
-        <ErrorMessage message="No se encontró la clase." type="error" />
+        <ErrorMessage
+          message={error || "No se encontró la clase."}
+          type="error"
+        />
       </div>
     );
   }
@@ -134,50 +136,35 @@ function EnrollmentProcess() {
             <section className="enrollment-card">
               <div className="enrollment-card-title">
                 <div className="enrollment-class-icon">
-                  {classData.name.charAt(0)}
+                  {classData.tipoBaile.charAt(0)}
                 </div>
 
                 <div>
-                  <h2>{classData.name}</h2>
-                  <span>{classData.type}</span>
+                  <h2>Clase de {classData.tipoBaile}</h2>
+                  <span>
+                    {classData.modalidad === "virtual"
+                      ? "Virtual"
+                      : "Presencial"}
+                  </span>
                 </div>
               </div>
 
               <div className="enrollment-details">
                 <div>
-                  <span>Academia</span>
-                  <strong>{classData.academy}</strong>
-                </div>
-
-                <div>
                   <span>Instructor</span>
-                  <strong>{classData.instructor}</strong>
+                  <strong>{classData.instructor.nombre}</strong>
                 </div>
 
                 <div>
                   <span>Ciudad</span>
-                  <strong>{classData.city}</strong>
-                </div>
-
-                <div>
-                  <span>Modalidad</span>
-                  <strong>{classData.modality}</strong>
+                  <strong>{classData.ciudad}</strong>
                 </div>
 
                 <div>
                   <span>Horario</span>
-                  <strong>{classData.schedule}</strong>
-                  <small>{classData.time}</small>
-                </div>
-
-                <div>
-                  <span>Fecha de inicio</span>
-                  <strong>{classData.startDate}</strong>
-                </div>
-
-                <div>
-                  <span>Duración</span>
-                  <strong>{classData.duration}</strong>
+                  {classData.horarios.map((horario) => (
+                    <strong key={horario.id}>{formatearHorario(horario)}</strong>
+                  ))}
                 </div>
               </div>
             </section>
@@ -208,19 +195,19 @@ function EnrollmentProcess() {
 
             <div className="summary-class">
               <span>Clase</span>
-              <strong>{classData.name}</strong>
+              <strong>Clase de {classData.tipoBaile}</strong>
             </div>
 
             <div className="summary-row">
               <span>Inscripción</span>
-              <strong>${classData.price.toLocaleString("es-CO")}</strong>
+              <strong>{formatearPrecio(classData.precio)}</strong>
             </div>
 
             <div className="summary-divider"></div>
 
             <div className="summary-total">
               <span>Total</span>
-              <strong>${classData.price.toLocaleString("es-CO")}</strong>
+              <strong>{formatearPrecio(classData.precio)}</strong>
             </div>
 
             <button
