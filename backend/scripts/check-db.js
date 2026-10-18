@@ -13,25 +13,10 @@
  *   npm run db:check
  */
 
+const { describirDestino, formatearDestino } = require("./lib/destino");
+
 const TIMEOUT_MS = 30000;
-
-/**
- * Extrae host/puerto/base de DATABASE_URL sin exponer credenciales.
- * Devuelve null si no se puede interpretar (y no incluye la URL en ningún error).
- */
-const describirDestino = (databaseUrl) => {
-  try {
-    const url = new URL(databaseUrl);
-
-    return {
-      host: url.hostname,
-      puerto: url.port || "3306",
-      base: decodeURIComponent(url.pathname.replace(/^\//, "")),
-    };
-  } catch {
-    return null;
-  }
-};
+const DESCONEXION_MAX_MS = 3000;
 
 /**
  * Interpreta la respuesta de SHOW STATUS LIKE 'Ssl_cipher'.
@@ -79,9 +64,10 @@ const pistasParaError = (error) => {
 
   if (codigo === "P1011" || /tls|ssl|certificate|self.signed|handshake/i.test(mensaje)) {
     pistas.push(
-      "Problema de TLS. Prueba en este orden: (1) la Service URI tal cual se copió; " +
-        "(2) si Prisma rechaza un parámetro ssl-mode desconocido, quítalo y agrega ?sslaccept=accept_invalid_certs; " +
-        "(3) para validar el certificado: ?sslaccept=strict&sslcert=<ruta-al-CA>. Detalle en docs/despliegue.md.",
+      "Problema de TLS. Prisma IGNORA el parámetro ssl-mode de la Service URI de Aiven: quítalo. " +
+        "Opción 1: usa ?sslaccept=accept_invalid_certs (cifra sin validar el certificado). " +
+        "Opción 2: ?sslaccept=strict&sslcert=<ruta-al-CA> (valida con el CA de Aiven; sslaccept=strict sin sslcert falla). " +
+        "Detalle en docs/despliegue.md.",
     );
   }
 
@@ -107,7 +93,28 @@ const verificarConexion = async (prisma) => {
   return { ok: true, ssl: interpretarSsl(filas) };
 };
 
-const conTimeout = (promesa) =>
+/**
+ * Cierra la conexión sin colgarse: tras un timeout puede quedar una consulta en
+ * vuelo y `$disconnect()` esperaría indefinidamente. Nunca lanza.
+ */
+const desconectarConLimite = async (prisma, maxMs = DESCONEXION_MAX_MS) => {
+  let temporizador;
+
+  try {
+    await Promise.race([
+      prisma.$disconnect(),
+      new Promise((resolver) => {
+        temporizador = setTimeout(resolver, maxMs);
+      }),
+    ]);
+  } catch {
+    // Si no se pudo desconectar limpiamente igual terminamos: el proceso va a salir.
+  } finally {
+    clearTimeout(temporizador);
+  }
+};
+
+const conTimeout =(promesa) =>
   Promise.race([
     promesa,
     new Promise((_, rechazar) => {
@@ -129,13 +136,14 @@ const main = async () => {
   const destino = describirDestino(process.env.DATABASE_URL);
 
   if (!destino) {
-    console.error("❌ DATABASE_URL no tiene un formato válido (esperado: mysql://usuario:contraseña@host:puerto/base).");
+    // Mensaje genérico a propósito: no se imprime nada de la URL (podría traer la contraseña).
+    console.error("❌ No se pudo interpretar DATABASE_URL (esperado: mysql://usuario:contraseña@host:puerto/base).");
     console.error("   Si la contraseña tiene caracteres especiales (@, :, /, #, ?), codifícalos (por ejemplo @ = %40).");
     process.exitCode = 1;
     return;
   }
 
-  console.log(`Probando conexión a ${destino.host}:${destino.puerto} (base: ${destino.base || "sin nombre"})...`);
+  console.log(`Probando conexión a ${formatearDestino(destino)}...`);
 
   const prisma = require("../src/config/prisma");
 
@@ -147,7 +155,10 @@ const main = async () => {
     if (ssl.cifrada) {
       console.log(`✅ La conexión va cifrada (TLS): ${ssl.cifrado}`);
     } else {
-      console.log("⚠️  La conexión NO va cifrada. Para Aiven esto no es lo esperado: revisa la sección de TLS de docs/despliegue.md.");
+      console.log(
+        "⚠️  La conexión NO va cifrada. Si es una base remota (Aiven) no es lo esperado: Prisma ignora ssl-mode; " +
+          "agrega sslaccept=accept_invalid_certs a la URL (ver sección TLS de docs/despliegue.md).",
+      );
     }
   } catch (error) {
     console.error("❌ No se pudo conectar.");
@@ -157,7 +168,12 @@ const main = async () => {
     pistasParaError(error).forEach((pista) => console.error(`   - ${pista}`));
     process.exitCode = 1;
   } finally {
-    await prisma.$disconnect();
+    await desconectarConLimite(prisma);
+
+    // Tras un fallo puede quedar una consulta en vuelo: se fuerza la salida con el código ya fijado.
+    if (process.exitCode) {
+      process.exit(process.exitCode);
+    }
   }
 };
 
@@ -165,4 +181,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { describirDestino, interpretarSsl, pistasParaError, verificarConexion };
+module.exports = { interpretarSsl, pistasParaError, verificarConexion, desconectarConLimite };

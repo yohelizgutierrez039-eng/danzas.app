@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 // El script solo se ejecuta como CLI cuando es el modulo principal, asi que
 // importarlo aqui no toca la base de datos.
 const require = createRequire(import.meta.url);
-const { validarDatosAdmin, crearAdmin, PASSWORD_MIN_LENGTH } = require("../scripts/create-admin");
+const { validarDatosAdmin, crearAdmin, esDryRun, PASSWORD_MIN_LENGTH } = require("../scripts/create-admin");
 
 const PASSWORD_VALIDA = "una-clave-larga-123";
 
@@ -172,5 +172,20 @@ describe("crearAdmin", () => {
     expect(prismaNuevo.usuario.create).not.toHaveBeenCalled();
     expect(prismaExistente.usuario.update).not.toHaveBeenCalled();
     expect(hash).not.toHaveBeenCalled();
+  });
+});
+
+describe("esDryRun", () => {
+  it("detecta --dry-run en los argumentos", () => {
+    expect(esDryRun(["node", "create-admin.js", "--dry-run"], {})).toBe(true);
+  });
+
+  it("detecta el flag cuando npm se lo traga y lo deja en npm_config_dry_run", () => {
+    expect(esDryRun(["node", "create-admin.js"], { npm_config_dry_run: "true" })).toBe(true);
+  });
+
+  it("sin flag ni variable no es dry-run", () => {
+    expect(esDryRun(["node", "create-admin.js"], {})).toBe(false);
+    expect(esDryRun(["node", "create-admin.js"], { npm_config_dry_run: "false" })).toBe(false);
   });
 });

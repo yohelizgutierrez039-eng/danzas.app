@@ -5,30 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 // El script solo se ejecuta como CLI cuando es el modulo principal, asi que
 // importarlo aqui no toca la base de datos.
 const require = createRequire(import.meta.url);
-const { describirDestino, interpretarSsl, pistasParaError, verificarConexion } = require(
+const { interpretarSsl, pistasParaError, verificarConexion, desconectarConLimite } = require(
   "../scripts/check-db",
 );
-
-describe("describirDestino", () => {
-  it("devuelve host, puerto y base SIN usuario ni contrasena", () => {
-    const destino = describirDestino(
-      "mysql://avnadmin:Sup3rSecreta!@mysql-demo.aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED",
-    );
-
-    expect(destino).toEqual({ host: "mysql-demo.aivencloud.com", puerto: "12345", base: "defaultdb" });
-    expect(JSON.stringify(destino)).not.toContain("avnadmin");
-    expect(JSON.stringify(destino)).not.toContain("Sup3rSecreta");
-  });
-
-  it("usa 3306 cuando la URL no trae puerto", () => {
-    expect(describirDestino("mysql://u:p@localhost/danzas_app").puerto).toBe("3306");
-  });
-
-  it("devuelve null sin lanzar (ni filtrar la URL) si no se puede parsear", () => {
-    expect(describirDestino("esto no es una url")).toBeNull();
-    expect(describirDestino(undefined)).toBeNull();
-  });
-});
 
 describe("interpretarSsl", () => {
   it("reporta cifrado cuando Ssl_cipher trae un valor", () => {
@@ -56,10 +35,19 @@ describe("pistasParaError", () => {
     expect(pistasParaError({ message: "Access denied for user" }).join(" ")).toMatch(/usuario|contraseña/i);
   });
 
-  it("sugiere las opciones de TLS ante errores de certificado o TLS", () => {
+  it("sugiere sslaccept=accept_invalid_certs y la opcion estricta ante errores de TLS", () => {
     const pistas = pistasParaError({ code: "P1011", message: "Error opening a TLS connection" }).join(" ");
 
-    expect(pistas).toMatch(/sslaccept/);
+    expect(pistas).toMatch(/sslaccept=accept_invalid_certs/);
+    expect(pistas).toMatch(/sslaccept=strict/);
+  });
+
+  it("no afirma que accept_invalid_certs sea el valor por defecto ni recomienda ssl-mode", () => {
+    const pistas = pistasParaError({ code: "P1011", message: "TLS" }).join(" ");
+
+    expect(pistas).not.toMatch(/por defecto/i);
+    expect(pistas).toMatch(/ssl-mode/); // solo para avisar que Prisma lo ignora
+    expect(pistas).toMatch(/ignor/i);
   });
 
   it("sugiere aumentar connect_timeout ante un timeout", () => {
@@ -90,5 +78,29 @@ describe("verificarConexion", () => {
     const prisma = { $queryRaw: vi.fn().mockRejectedValue(new Error("boom")) };
 
     await expect(verificarConexion(prisma)).rejects.toThrow("boom");
+  });
+});
+
+describe("desconectarConLimite", () => {
+  it("resuelve en cuanto $disconnect termina", async () => {
+    const prisma = { $disconnect: vi.fn().mockResolvedValue(undefined) };
+
+    await expect(desconectarConLimite(prisma, 1000)).resolves.toBeUndefined();
+    expect(prisma.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it("no se cuelga si $disconnect nunca termina (consulta en vuelo tras un timeout)", async () => {
+    const prisma = { $disconnect: vi.fn(() => new Promise(() => {})) };
+
+    const inicio = Date.now();
+    await desconectarConLimite(prisma, 30);
+
+    expect(Date.now() - inicio).toBeLessThan(1000);
+  });
+
+  it("no lanza si $disconnect falla", async () => {
+    const prisma = { $disconnect: vi.fn().mockRejectedValue(new Error("x")) };
+
+    await expect(desconectarConLimite(prisma, 1000)).resolves.toBeUndefined();
   });
 });

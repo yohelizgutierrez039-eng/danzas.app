@@ -13,14 +13,21 @@
  *   ADMIN_CIUDAD    (opcional)     por defecto "Sin definir"
  *   DATABASE_URL    (obligatoria)  base a la que se conecta (se lee de backend/.env si existe)
  *
+ * Define ADMIN_EMAIL y ADMIN_PASSWORD como variables del shell solo para el
+ * comando, no en un archivo .env (dotenv corta los valores sin comillas en "#").
+ * Antes de escribir, el script imprime host:puerto y base de destino (sin
+ * credenciales): verifícalos, porque si falta la variable del shell se usa backend/.env.
+ *
  * Es idempotente: si el correo ya es de un admin, solo cambia su contraseña y
  * lo desbloquea. Si el correo pertenece a un usuario con OTRO rol, se niega
  * (no convierte cuentas existentes en admin).
  *
  * Uso (desde backend/), ver docs/despliegue.md para PowerShell y Git Bash:
- *   npm run create:admin -- --dry-run   # solo informa, no escribe
+ *   npm run create:admin -- --dry-run   # forma prevista (el "--" es obligatorio); solo informa, no escribe
  *   npm run create:admin                # crea o actualiza
  */
+
+const { describirDestino, formatearDestino } = require("./lib/destino");
 
 const PASSWORD_MIN_LENGTH = 10;
 const NOMBRE_POR_DEFECTO = "Administrador";
@@ -101,12 +108,18 @@ const crearAdmin = async ({
   return { accion, dryRun: false };
 };
 
+/**
+ * `npm run create:admin -- --dry-run` es la forma prevista. Algunas versiones de
+ * npm se "tragan" --dry-run y lo dejan en npm_config_dry_run: también se respeta.
+ */
+const esDryRun = (argv, env) => argv.includes("--dry-run") || env.npm_config_dry_run === "true";
+
 const main = async () => {
   // dotenv y Prisma se cargan acá (y no arriba) para que importar este archivo
   // desde los tests no toque variables de entorno ni la base de datos.
   require("dotenv").config({ quiet: true });
   const prisma = require("../src/config/prisma");
-  const dryRun = process.argv.includes("--dry-run");
+  const dryRun = esDryRun(process.argv, process.env);
 
   try {
     const datos = validarDatosAdmin({
@@ -116,6 +129,18 @@ const main = async () => {
       ciudad: process.env.ADMIN_CIUDAD,
     });
 
+    // Se muestra A QUÉ base se va a escribir (sin credenciales) antes de tocar nada:
+    // si la variable del shell falta, dotenv cae a backend/.env (quizá la base local).
+    const destino = describirDestino(process.env.DATABASE_URL);
+
+    if (!destino) {
+      throw new Error(
+        "DATABASE_URL falta o no se pudo interpretar (esperado: mysql://usuario:contraseña@host:puerto/base).",
+      );
+    }
+
+    console.log(`Base de destino: ${formatearDestino(destino)}`);
+
     const { accion } = await crearAdmin({ prisma, dryRun, ...datos });
 
     if (dryRun) {
@@ -124,8 +149,10 @@ const main = async () => {
       console.log(`✅ Admin ${accion}: ${datos.correo}`);
     }
   } catch (error) {
-    // Solo el mensaje: nunca el objeto completo, para no arrastrar datos sensibles.
-    console.error(`❌ ${error.message}`);
+    // Solo la última línea del mensaje: nunca el objeto completo (los errores de Prisma
+    // traen un volcado de la consulta) para no arrastrar datos sensibles.
+    const detalle = String(error.message).split("\n").map((linea) => linea.trim()).filter(Boolean).pop();
+    console.error(`❌ ${error.code ? `${error.code} - ` : ""}${detalle}`);
     process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
@@ -136,4 +163,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { validarDatosAdmin, crearAdmin, PASSWORD_MIN_LENGTH };
+module.exports = { validarDatosAdmin, crearAdmin, esDryRun, PASSWORD_MIN_LENGTH };
