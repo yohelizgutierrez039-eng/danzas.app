@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 const require = createRequire(import.meta.url);
 const reportService = require("../src/services/report.service");
 const reportController = require("../src/controllers/report.controller");
+const authMiddleware = require("../src/middleware/auth.middleware");
 const router = require("../src/routes/reports.routes");
 const { AppError } = require("../src/middleware/errorHandler");
 
@@ -38,6 +39,7 @@ describe("reports.routes", () => {
     expect(ruta.handler).toBe(reportController[nombreHandler]);
     // authMiddleware primero, luego el guard de rol.
     expect(ruta.middlewares).toHaveLength(2);
+    expect(ruta.middlewares[0]).toBe(authMiddleware);
 
     permitidos.forEach((rol) => expect(permite(ruta, rol), rol).toBe(true));
     denegados.forEach((rol) => expect(permite(ruta, rol), rol).toBe(false));
