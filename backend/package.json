@@ -8,7 +8,9 @@
     "dev": "nodemon src/server.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "backfill:solicitudes": "node scripts/backfill-solicitudes.js"
+    "backfill:solicitudes": "node scripts/backfill-solicitudes.js",
+    "db:check": "node scripts/check-db.js",
+    "create:admin": "node scripts/create-admin.js"
   },
   "keywords": [],
   "type": "commonjs",

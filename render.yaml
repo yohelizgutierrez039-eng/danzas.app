@@ -1,0 +1,53 @@
+# Blueprint de Render para el backend de Danzas.app (Plan A: todo en planes gratuitos).
+# Guía completa: docs/despliegue.md
+# Referencia de campos: https://render.com/docs/blueprint-spec
+#
+# Ningún secreto va en este archivo: los marcados con `sync: false` se piden en el
+# panel de Render la primera vez que se crea el Blueprint (las variables nuevas que se
+# agreguen después hay que cargarlas a mano en Environment).
+
+services:
+  - type: web
+    name: danzas-api
+    runtime: node
+    plan: free
+    # La región no se puede cambiar después de crear el servicio. Elegí la más cercana
+    # a la región del servicio MySQL de Aiven (revisá ambas consolas antes de crear).
+    region: oregon
+    rootDir: backend
+    # `prisma` (la CLI) está en devDependencies. Si Render instala con NODE_ENV=production,
+    # `npm ci` las omitiría y `prisma generate` fallaría: por eso `--include=dev`.
+    buildCommand: npm ci --include=dev && npx prisma generate
+    startCommand: npm start
+    autoDeployTrigger: commit
+    # Sin healthCheckPath a propósito: el único endpoint de salud (/api/prueba-db) consulta
+    # la base. Si Aiven está apagado o despertando, Render daría el servicio por caído y lo
+    # reiniciaría en bucle. Sin health check, Render solo verifica que el puerto responda.
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Versión de Node. Por confirmar en la documentación de Render que NODE_VERSION sea
+      # la forma vigente de fijarla (el CI del repo usa Node 20; el backend corre en 20+).
+      - key: NODE_VERSION
+        value: "22"
+      # PORT lo inyecta Render: no se define acá.
+      # Render genera un valor aleatorio. Cambiarlo invalida todas las sesiones activas.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1h
+      # Service URI de Aiven CON ssl-mode=REQUIRED reemplazado por sslaccept: Prisma ignora
+      # ssl-mode y la conexión quedaría sin cifrar. Forma:
+      #   mysql://avnadmin:<clave>@<host>:<puerto>/defaultdb?sslaccept=accept_invalid_certs&connection_limit=5
+      # (ver docs/despliegue.md, sección TLS; que Aiven la acepte está por confirmar: usar db:check).
+      - key: DATABASE_URL
+        sync: false
+      # URL pública del frontend en Vercel, sin "/" final. Se usa en el enlace del correo
+      # de recuperación de contraseña.
+      - key: FRONTEND_URL
+        sync: false
+      # Sin ambas variables el backend no envía correos: solo registra "[correo simulado]".
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
