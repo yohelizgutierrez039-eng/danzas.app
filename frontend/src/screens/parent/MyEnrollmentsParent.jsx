@@ -8,6 +8,7 @@ import {
   cancelEnrollment,
   getEnrollmentHistory,
 } from "../../services/enrollments.service";
+import Select from "../../components/common/Select/Select";
 import { getDependents } from "../../services/users.service";
 import { formatearHorario } from "../../utils/formatDate";
 import "./MyEnrollmentsParent.css";
@@ -65,7 +66,8 @@ function MyEnrollmentsParent() {
 
   const [chosenId, setChosenId] = useState("");
   const [enrollments, setEnrollments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Hijo cuyas inscripciones ya terminaron de cargar (con exito o error).
+  const [loadedMenorId, setLoadedMenorId] = useState("");
   const [error, setError] = useState("");
 
   // RF-018: cancelacion con aviso de reembolso.
@@ -78,6 +80,7 @@ function MyEnrollmentsParent() {
   const selectedMenor = dependents.find(
     (menor) => menor.id === selectedMenorId,
   );
+  const loading = loadedMenorId !== selectedMenorId;
 
   useEffect(() => {
     const loadDependents = async () => {
@@ -105,9 +108,6 @@ function MyEnrollmentsParent() {
 
     const loadEnrollments = async () => {
       try {
-        setLoading(true);
-        setError("");
-
         const data = await getEnrollmentHistory(selectedMenorId);
 
         if (!cancelled) {
@@ -120,7 +120,7 @@ function MyEnrollmentsParent() {
         }
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          setLoadedMenorId(selectedMenorId);
         }
       }
     };
@@ -131,6 +131,12 @@ function MyEnrollmentsParent() {
       cancelled = true;
     };
   }, [selectedMenorId]);
+
+  const handleSelectMenor = (event) => {
+    setChosenId(event.target.value);
+    setError("");
+    setCancelNotice("");
+  };
 
   // DELETE /enrollments/:id -> { cancelada, reembolsado }
   const handleConfirmCancel = async () => {
@@ -305,16 +311,18 @@ function MyEnrollmentsParent() {
             <p>Selecciona de quién quieres consultar el historial.</p>
           </div>
 
-          <select
+          <Select
+            label="Hijo/a"
+            name="menorId"
             value={selectedMenorId}
-            onChange={(event) => setChosenId(event.target.value)}
-          >
-            {dependents.map((menor) => (
-              <option key={menor.id} value={menor.id}>
-                {menor.nombre}
-              </option>
-            ))}
-          </select>
+            onChange={handleSelectMenor}
+            placeholder=""
+            options={dependents.map((menor) => ({
+              value: menor.id,
+              label: menor.nombre,
+            }))}
+            fullWidth={false}
+          />
         </section>
 
         {error && (
