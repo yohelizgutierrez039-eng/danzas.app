@@ -1,7 +1,17 @@
 const dependentRepository = require("../repositories/dependent.repository");
 const { AppError } = require("../middleware/errorHandler");
 
-// Fecha real en formato YYYY-MM-DD (rechaza dias inexistentes como 2018-02-31) y no futura.
+// Edad maxima aceptada para un menor a cargo (margen generoso sobre los 18 años).
+const EDAD_MAXIMA_MENOR = 21;
+
+// "Hoy" como dia de calendario en Colombia (UTC-5): con la hora UTC, de noche
+// un padre podria registrar el dia siguiente.
+const hoyEnColombia = () =>
+  new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" });
+
+// Fecha real en formato YYYY-MM-DD (rechaza dias inexistentes como 2018-02-31),
+// que no sea futura y que no tenga mas de EDAD_MAXIMA_MENOR años. Se comparan
+// los dias como texto ISO, que ordena igual que las fechas.
 const esFechaNacimientoValida = (valor) => {
   if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
     return false;
@@ -9,7 +19,14 @@ const esFechaNacimientoValida = (valor) => {
 
   const fecha = new Date(valor);
 
-  return !Number.isNaN(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor && fecha <= new Date();
+  if (Number.isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== valor) {
+    return false;
+  }
+
+  const hoy = hoyEnColombia();
+  const masAntigua = `${Number(hoy.slice(0, 4)) - EDAD_MAXIMA_MENOR}${hoy.slice(4)}`;
+
+  return valor <= hoy && valor >= masAntigua;
 };
 
 const registrarMenor = async (
@@ -28,7 +45,7 @@ const registrarMenor = async (
 
   if (!esFechaNacimientoValida(fechaNacimiento)) {
     throw new AppError(
-      "La fecha de nacimiento debe ser una fecha válida (AAAA-MM-DD) que no sea futura.",
+      `La fecha de nacimiento debe ser válida (AAAA-MM-DD), no futura y de una persona de hasta ${EDAD_MAXIMA_MENOR} años.`,
       400,
       "INVALID_BIRTHDATE",
     );

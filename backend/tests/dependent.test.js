@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const require = createRequire(import.meta.url);
 const dependentRepository = require("../src/repositories/dependent.repository");
@@ -55,16 +55,31 @@ describe("obtenerMenorPorId (RF-004, RNF-007: un menor solo lo ve su padre o un 
   });
 });
 
-describe("registrarMenor (RF-004: la fecha de nacimiento debe ser una fecha pasada)", () => {
+describe("registrarMenor (RF-004: la fecha de nacimiento debe ser una fecha real, pasada y de un menor)", () => {
   const padre = { padreId: "padre-1", rol: "padre" };
+  const registrar = (fechaNacimiento) =>
+    dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento });
 
-  it("registra al menor con una fecha valida", async () => {
+  // 2026-10-20T03:00Z son las 22:00 del 19 de octubre en Colombia (UTC-5): para
+  // un padre colombiano "hoy" es el 19, aunque en UTC ya sea el 20.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-20T03:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    ["una fecha reciente", "2016-05-20"],
+    ["hoy en Colombia", "2026-10-19"],
+    ["exactamente 21 años atrás", "2005-10-19"],
+  ])("registra al menor con %s", async (_caso, fechaNacimiento) => {
     const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
 
-    await expect(
-      dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento: "2018-05-10" }),
-    ).resolves.toBe(menor);
-    expect(crear).toHaveBeenCalledWith({ padreId: "padre-1", nombre: "Mateo", fechaNacimiento: "2018-05-10" });
+    await expect(registrar(fechaNacimiento)).resolves.toBe(menor);
+    expect(crear).toHaveBeenCalledWith({ padreId: "padre-1", nombre: "Mateo", fechaNacimiento });
   });
 
   it.each([
@@ -74,18 +89,19 @@ describe("registrarMenor (RF-004: la fecha de nacimiento debe ser una fecha pasa
     ["fecha inexistente", "2018-02-31"],
     ["no es string", 20180510],
     ["fecha futura", "2999-01-01"],
+    ["mañana en Colombia (aunque en UTC ya sea hoy)", "2026-10-20"],
+    ["un dia mas de 21 años atrás", "2005-10-18"],
+    ["un año absurdo", "1900-01-01"],
   ])("rechaza %s con 400 INVALID_BIRTHDATE", async (_caso, fechaNacimiento) => {
     const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
 
-    await expect(
-      dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento }),
-    ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_BIRTHDATE" });
+    await expect(registrar(fechaNacimiento)).rejects.toMatchObject({ statusCode: 400, code: "INVALID_BIRTHDATE" });
     expect(crear).not.toHaveBeenCalled();
   });
 
   it("un rol distinto de padre sigue recibiendo 403", async () => {
     await expect(
-      dependentService.registrarMenor("u-1", "estudiante", { nombre: "Mateo", fechaNacimiento: "2018-05-10" }),
+      dependentService.registrarMenor("u-1", "estudiante", { nombre: "Mateo", fechaNacimiento: "2016-05-20" }),
     ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN_NOT_PARENT" });
   });
 });
