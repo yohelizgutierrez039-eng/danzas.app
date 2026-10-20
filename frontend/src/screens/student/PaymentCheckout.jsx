@@ -53,11 +53,12 @@ function PaymentCheckout() {
   const enrollmentsPath = `${basePath}/inscripciones`;
 
   // Al llegar desde la inscripcion la informacion viaja en el state del router;
-  // si se recarga la pagina se recupera desde el historial (solo estudiante).
+  // si se recarga la pagina (o se llega desde "Completar pago") se recupera
+  // desde el historial de la cuenta, que incluye las inscripciones de los menores.
   const stateEnrollment = location.state?.enrollment
     ? unwrapEnrollment(location.state.enrollment)
     : null;
-  const canRecover = !stateEnrollment && user?.rol !== "padre" && user?.id;
+  const canRecover = !stateEnrollment && user?.id;
 
   const [enrollment, setEnrollment] = useState(stateEnrollment);
   const [loadingEnrollment, setLoadingEnrollment] = useState(
@@ -200,7 +201,11 @@ function PaymentCheckout() {
             lo que puedes volver a realizar la inscripción desde cero.
           </p>
 
-          <Button onClick={() => navigate("/clases")}>
+          <Button
+            onClick={() =>
+              navigate(user?.rol === "padre" ? "/padre/clases" : "/clases")
+            }
+          >
             Volver a intentar la inscripción
           </Button>
         </div>
