@@ -3,7 +3,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   FiArrowLeft,
-  FiEdit2,
   FiCalendar,
   FiClock,
   FiMapPin,
@@ -201,16 +200,6 @@ export default function ClassDetailAdmin() {
               Información general y administración de la clase.
             </p>
           </div>
-
-          <div className="class-detail-admin__actions">
-            <Button
-              variant="outline"
-              icon={<FiEdit2 size={16} />}
-              onClick={() => navigate(`/admin/classes/${clase.id}/edit`)}
-            >
-              Editar
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -331,13 +320,6 @@ export default function ClassDetailAdmin() {
                 <h2>Estudiantes inscritos</h2>
                 <span>{MOCK_STUDENTS.length} estudiantes registrados</span>
               </div>
-
-              <Link
-                to={`/admin/classes/${clase.id}/students`}
-                className="class-detail-admin__see-all"
-              >
-                Ver todos
-              </Link>
             </div>
 
             <div className="class-detail-admin__table-wrapper">
@@ -427,13 +409,6 @@ export default function ClassDetailAdmin() {
                 <span>{clase.instructor.telefono}</span>
               </div>
             </div>
-
-            <Link
-              to={`/admin/instructors/${encodeURIComponent(clase.instructor.nombre)}`}
-              className="class-detail-admin__profile-link"
-            >
-              Ver perfil del instructor
-            </Link>
           </section>
 
           {/* Schedule */}
