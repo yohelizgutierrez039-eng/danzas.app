@@ -1,6 +1,17 @@
 const dependentRepository = require("../repositories/dependent.repository");
 const { AppError } = require("../middleware/errorHandler");
 
+// Fecha real en formato YYYY-MM-DD (rechaza dias inexistentes como 2018-02-31) y no futura.
+const esFechaNacimientoValida = (valor) => {
+  if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+    return false;
+  }
+
+  const fecha = new Date(valor);
+
+  return !Number.isNaN(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor && fecha <= new Date();
+};
+
 const registrarMenor = async (
   padreId,
   rolSolicitante,
@@ -12,6 +23,14 @@ const registrarMenor = async (
       "Solo los usuarios con rol padre pueden registrar menores.",
       403,
       "FORBIDDEN_NOT_PARENT",
+    );
+  }
+
+  if (!esFechaNacimientoValida(fechaNacimiento)) {
+    throw new AppError(
+      "La fecha de nacimiento debe ser una fecha válida (AAAA-MM-DD) que no sea futura.",
+      400,
+      "INVALID_BIRTHDATE",
     );
   }
 

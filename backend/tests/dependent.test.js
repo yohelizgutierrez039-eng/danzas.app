@@ -55,6 +55,41 @@ describe("obtenerMenorPorId (RF-004, RNF-007: un menor solo lo ve su padre o un 
   });
 });
 
+describe("registrarMenor (RF-004: la fecha de nacimiento debe ser una fecha pasada)", () => {
+  const padre = { padreId: "padre-1", rol: "padre" };
+
+  it("registra al menor con una fecha valida", async () => {
+    const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
+
+    await expect(
+      dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento: "2018-05-10" }),
+    ).resolves.toBe(menor);
+    expect(crear).toHaveBeenCalledWith({ padreId: "padre-1", nombre: "Mateo", fechaNacimiento: "2018-05-10" });
+  });
+
+  it.each([
+    ["sin fecha", undefined],
+    ["fecha vacia", ""],
+    ["texto que no es fecha", "ayer"],
+    ["fecha inexistente", "2018-02-31"],
+    ["no es string", 20180510],
+    ["fecha futura", "2999-01-01"],
+  ])("rechaza %s con 400 INVALID_BIRTHDATE", async (_caso, fechaNacimiento) => {
+    const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
+
+    await expect(
+      dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento }),
+    ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_BIRTHDATE" });
+    expect(crear).not.toHaveBeenCalled();
+  });
+
+  it("un rol distinto de padre sigue recibiendo 403", async () => {
+    await expect(
+      dependentService.registrarMenor("u-1", "estudiante", { nombre: "Mateo", fechaNacimiento: "2018-05-10" }),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN_NOT_PARENT" });
+  });
+});
+
 describe("dependent.controller#getDependentById", () => {
   const crearRes = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn() });
 
