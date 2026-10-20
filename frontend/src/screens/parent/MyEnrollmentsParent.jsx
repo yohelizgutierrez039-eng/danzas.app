@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../components/common/Loading/Loading";
 import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
-import useAuth from "../../hooks/useAuth";
-import { getEnrollmentHistory } from "../../services/enrollments.service";
+import ConfirmDialog from "../../components/common/ConfirmDialog/ConfirmDialog";
+import {
+  cancelEnrollment,
+  getEnrollmentHistory,
+} from "../../services/enrollments.service";
+import { getDependents } from "../../services/users.service";
+import { formatearHorario } from "../../utils/formatDate";
 import "./MyEnrollmentsParent.css";
 
 const STATUS_LABELS = {
@@ -19,23 +24,84 @@ const PAYMENT_LABELS = {
   rechazado: "Rechazado",
 };
 
+const getClassName = (enrollment) =>
+  enrollment.clase?.tipoBaile || "Clase de danza";
+
+const getDate = (enrollment) =>
+  new Date(enrollment.creadoEn).toLocaleDateString("es-CO", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const getPaymentLabel = (enrollment) => {
+  if (enrollment.pago?.reembolsado) {
+    return "Reembolsado";
+  }
+
+  const paymentStatus = enrollment.pago?.estado;
+
+  return PAYMENT_LABELS[paymentStatus] || paymentStatus || "Sin información";
+};
+
+const getAttendanceLabel = (enrollment) => {
+  const attendances = enrollment.asistencias;
+
+  if (!Array.isArray(attendances) || attendances.length === 0) {
+    return "Sin registros de asistencia";
+  }
+
+  const attended = attendances.filter((item) => item.asistio).length;
+
+  return `${attended} de ${attendances.length} sesiones`;
+};
+
 function MyEnrollmentsParent() {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  const menores = useMemo(() => user?.menores || [], [user]);
+  const [dependents, setDependents] = useState([]);
+  const [dependentsLoading, setDependentsLoading] = useState(true);
+  const [dependentsError, setDependentsError] = useState("");
 
-  const [selectedMenorId, setSelectedMenorId] = useState(
-    () => menores[0]?.id || "",
-  );
+  const [chosenId, setChosenId] = useState("");
   const [enrollments, setEnrollments] = useState([]);
-  const [loading, setLoading] = useState(Boolean(selectedMenorId));
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // RF-018: cancelacion con aviso de reembolso.
+  const [enrollmentToCancel, setEnrollmentToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelNotice, setCancelNotice] = useState("");
+
+  // Mientras el padre no elige, se consulta el primer hijo.
+  const selectedMenorId = chosenId || dependents[0]?.id;
+  const selectedMenor = dependents.find(
+    (menor) => menor.id === selectedMenorId,
+  );
+
+  useEffect(() => {
+    const loadDependents = async () => {
+      try {
+        const data = await getDependents();
+
+        setDependents(data.dependents ?? []);
+      } catch (err) {
+        setDependentsError(err.message || "No se pudieron cargar los menores.");
+      } finally {
+        setDependentsLoading(false);
+      }
+    };
+
+    loadDependents();
+  }, []);
+
+  // GET /users/:menorId/enrollments
   useEffect(() => {
     if (!selectedMenorId) {
       return;
     }
+
+    let cancelled = false;
 
     const loadEnrollments = async () => {
       try {
@@ -44,90 +110,234 @@ function MyEnrollmentsParent() {
 
         const data = await getEnrollmentHistory(selectedMenorId);
 
-        setEnrollments(Array.isArray(data) ? data : data?.enrollments || []);
+        if (!cancelled) {
+          setEnrollments(Array.isArray(data) ? data : data?.enrollments || []);
+        }
       } catch (err) {
-        setError(err.message || "No fue posible cargar las inscripciones.");
+        if (!cancelled) {
+          setEnrollments([]);
+          setError(err.message || "No fue posible cargar las inscripciones.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadEnrollments();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedMenorId]);
 
-  const getClassName = (enrollment) =>
-    enrollment.clase?.tipoBaile ||
-    enrollment.class_name ||
-    enrollment.nombre_clase ||
-    "Clase de danza";
-
-  const getDate = (enrollment) => {
-    const rawDate =
-      enrollment.creadoEn || enrollment.created_at || enrollment.date;
-
-    if (!rawDate) {
-      return "Sin fecha disponible";
+  // DELETE /enrollments/:id -> { cancelada, reembolsado }
+  const handleConfirmCancel = async () => {
+    if (!enrollmentToCancel) {
+      return;
     }
+
+    const enrollmentId = enrollmentToCancel.id;
 
     try {
-      return new Date(rawDate).toLocaleDateString("es-CO", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return "Sin fecha disponible";
+      setCancelling(true);
+      setError("");
+      setCancelNotice("");
+
+      const result = await cancelEnrollment(enrollmentId);
+
+      setEnrollments((current) =>
+        current.map((item) =>
+          item.id === enrollmentId
+            ? {
+                ...item,
+                estado: "cancelada",
+                pago: item.pago && {
+                  ...item.pago,
+                  reembolsado: Boolean(result?.reembolsado),
+                },
+              }
+            : item,
+        ),
+      );
+
+      setCancelNotice(
+        result?.reembolsado
+          ? `La inscripción de ${selectedMenor.nombre} fue cancelada y el pago será reembolsado.`
+          : `La inscripción de ${selectedMenor.nombre} fue cancelada. No aplica reembolso porque faltaban menos de 2 horas para la clase.`,
+      );
+      setEnrollmentToCancel(null);
+    } catch (err) {
+      setError(err.message || "No fue posible cancelar la inscripción.");
+      setEnrollmentToCancel(null);
+    } finally {
+      setCancelling(false);
     }
   };
 
-  const getStatusLabel = (enrollment) => {
-    const status = enrollment.estado || enrollment.status;
-    return STATUS_LABELS[status] || status || "Sin estado";
-  };
-
-  const getPaymentLabel = (enrollment) => {
-    const paymentStatus = enrollment.pago?.estado || enrollment.payment_status;
-    return PAYMENT_LABELS[paymentStatus] || paymentStatus || "Sin información";
-  };
-
-  const getAttendanceLabel = (enrollment) => {
-    const attendances = enrollment.asistencias || enrollment.attendances;
-
-    if (!Array.isArray(attendances) || attendances.length === 0) {
-      return "Sin registros de asistencia";
-    }
-
-    const attended = attendances.filter(
-      (item) => item.asistio ?? item.attended,
-    ).length;
-
-    return `${attended} de ${attendances.length} sesiones`;
-  };
-
-  const selectedMenor = menores.find((menor) => menor.id === selectedMenorId);
-
-  if (menores.length === 0) {
+  if (dependentsLoading) {
     return (
-      <div className="my-enrollments-parent">
-        <header className="my-enrollments-parent-header">
-          <div>
-            <span className="parent-enrollments-eyebrow">
-              PADRE DE FAMILIA
-            </span>
+      <div className="my-enrollments-parent-loading">
+        <Loading text="Cargando menores..." />
+      </div>
+    );
+  }
 
-            <h1>Inscripciones de mis hijos</h1>
-          </div>
-        </header>
+  const renderEnrollments = () => {
+    if (loading) {
+      return (
+        <div className="my-enrollments-parent-loading">
+          <Loading text="Cargando inscripciones..." />
+        </div>
+      );
+    }
 
+    if (enrollments.length === 0) {
+      return (
+        <EmptyState
+          title="No hay inscripciones"
+          description={`${selectedMenor.nombre} todavía no tiene inscripciones registradas.`}
+          actionText="Explorar clases"
+          onAction={() => navigate("/padre/clases")}
+        />
+      );
+    }
+
+    return (
+      <section className="parent-enrollments-list">
+        {enrollments.map((enrollment) => (
+          <article className="parent-enrollment-card" key={enrollment.id}>
+            <div className="parent-enrollment-header">
+              <h2>{getClassName(enrollment)}</h2>
+
+              <span
+                className={`parent-enrollment-status status-${enrollment.estado}`}
+              >
+                {STATUS_LABELS[enrollment.estado] || enrollment.estado}
+              </span>
+            </div>
+
+            <div className="parent-class-details">
+              <div>
+                <span>Horario</span>
+
+                {enrollment.clase.horarios.map((horario) => (
+                  <strong key={horario.id}>{formatearHorario(horario)}</strong>
+                ))}
+              </div>
+
+              <div>
+                <span>Fecha de inscripción</span>
+                <strong>{getDate(enrollment)}</strong>
+              </div>
+
+              <div>
+                <span>Estado del pago</span>
+                <strong>{getPaymentLabel(enrollment)}</strong>
+              </div>
+
+              <div>
+                <span>Asistencia</span>
+                <strong>{getAttendanceLabel(enrollment)}</strong>
+              </div>
+            </div>
+
+            {enrollment.estado === "pendiente_pago" && (
+              <div className="parent-enrollment-actions">
+                <button
+                  type="button"
+                  className="parent-enrollment-pay-button"
+                  onClick={() =>
+                    navigate(`/padre/inscripciones/${enrollment.id}/pago`, {
+                      state: { enrollment },
+                    })
+                  }
+                >
+                  Completar pago
+                </button>
+              </div>
+            )}
+
+            {enrollment.estado === "confirmada" && (
+              <div className="parent-enrollment-actions">
+                <button
+                  type="button"
+                  className="parent-enrollment-cancel-button"
+                  onClick={() => setEnrollmentToCancel(enrollment)}
+                >
+                  Cancelar inscripción
+                </button>
+              </div>
+            )}
+          </article>
+        ))}
+      </section>
+    );
+  };
+
+  const renderContent = () => {
+    if (dependentsError) {
+      return (
+        <ErrorMessage
+          title="No se pudieron cargar los menores"
+          message={dependentsError}
+        />
+      );
+    }
+
+    if (dependents.length === 0) {
+      return (
         <EmptyState
           title="No tienes menores registrados"
           description="Registra a tus hijos para poder inscribirlos en clases y ver su historial."
           actionText="Registrar menor"
-          onAction={() => navigate("/padre/dependientes")}
+          onAction={() => navigate("/padre/menores/nuevo")}
         />
-      </div>
+      );
+    }
+
+    return (
+      <>
+        <section className="parent-enrollments-filter">
+          <div>
+            <h2>Filtrar por hijo/a</h2>
+            <p>Selecciona de quién quieres consultar el historial.</p>
+          </div>
+
+          <select
+            value={selectedMenorId}
+            onChange={(event) => setChosenId(event.target.value)}
+          >
+            {dependents.map((menor) => (
+              <option key={menor.id} value={menor.id}>
+                {menor.nombre}
+              </option>
+            ))}
+          </select>
+        </section>
+
+        {error && (
+          <ErrorMessage
+            title="No se pudo completar la operación"
+            message={error}
+            onClose={() => setError("")}
+          />
+        )}
+
+        {cancelNotice && (
+          <ErrorMessage
+            title="Inscripción cancelada"
+            message={cancelNotice}
+            type="success"
+            onClose={() => setCancelNotice("")}
+          />
+        )}
+
+        {renderEnrollments()}
+      </>
     );
-  }
+  };
 
   return (
     <div className="my-enrollments-parent">
@@ -152,84 +362,23 @@ function MyEnrollmentsParent() {
         </button>
       </header>
 
-      <section className="parent-enrollments-filter">
-        <div>
-          <h2>Filtrar por hijo/a</h2>
-          <p>Selecciona de quién quieres consultar el historial.</p>
-        </div>
+      {renderContent()}
 
-        <select
-          value={selectedMenorId}
-          onChange={(event) => setSelectedMenorId(event.target.value)}
-        >
-          {menores.map((menor) => (
-            <option key={menor.id} value={menor.id}>
-              {menor.nombre}
-            </option>
-          ))}
-        </select>
-      </section>
-
-      {error && (
-        <ErrorMessage
-          title="Error al cargar las inscripciones"
-          message={error}
-          onClose={() => setError("")}
-        />
-      )}
-
-      {loading ? (
-        <div className="my-enrollments-parent-loading">
-          <Loading text="Cargando inscripciones..." />
-        </div>
-      ) : enrollments.length === 0 ? (
-        <EmptyState
-          title="No hay inscripciones"
-          description={`${
-            selectedMenor?.nombre || "Este hijo/a"
-          } todavía no tiene inscripciones registradas.`}
-          actionText="Explorar clases"
-          onAction={() => navigate("/padre/clases")}
-        />
-      ) : (
-        <section className="parent-enrollments-list">
-          {enrollments.map((enrollment) => (
-            <article
-              className="parent-enrollment-card"
-              key={enrollment.id || enrollment.enrollment_id}
-            >
-              <div className="parent-enrollment-header">
-                <h2>{getClassName(enrollment)}</h2>
-
-                <span
-                  className={`parent-enrollment-status status-${
-                    enrollment.estado || enrollment.status || "pendiente"
-                  }`}
-                >
-                  {getStatusLabel(enrollment)}
-                </span>
-              </div>
-
-              <div className="parent-class-details">
-                <div>
-                  <span>Fecha de inscripción</span>
-                  <strong>{getDate(enrollment)}</strong>
-                </div>
-
-                <div>
-                  <span>Estado del pago</span>
-                  <strong>{getPaymentLabel(enrollment)}</strong>
-                </div>
-
-                <div>
-                  <span>Asistencia</span>
-                  <strong>{getAttendanceLabel(enrollment)}</strong>
-                </div>
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+      <ConfirmDialog
+        isOpen={Boolean(enrollmentToCancel)}
+        title="Cancelar inscripción"
+        message={`¿Seguro que quieres cancelar la inscripción de ${
+          selectedMenor?.nombre
+        } en "${
+          enrollmentToCancel ? getClassName(enrollmentToCancel) : ""
+        }"? Si faltan 2 horas o más para la próxima sesión, el pago será reembolsado. Si falta menos tiempo, no se realizará el reembolso.`}
+        confirmText="Sí, cancelar"
+        cancelText="Mantener inscripción"
+        variant="danger"
+        loading={cancelling}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => !cancelling && setEnrollmentToCancel(null)}
+      />
     </div>
   );
 }

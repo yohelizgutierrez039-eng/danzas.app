@@ -241,3 +241,52 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
 }
+
+/* =========================
+   ACCIONES (pago / cancelacion)
+========================= */
+
+.parent-enrollment-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+
+  border-top: 1px solid var(--color-border-lighter);
+}
+
+.parent-enrollment-pay-button,
+.parent-enrollment-cancel-button {
+  border-radius: var(--radius-md);
+
+  padding: var(--space-2) var(--space-5);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.parent-enrollment-pay-button {
+  border: none;
+
+  background: var(--gradient-primary-diagonal);
+  color: var(--color-text-inverse);
+}
+
+.parent-enrollment-pay-button:hover {
+  background: var(--gradient-primary-diagonal-hover);
+}
+
+.parent-enrollment-cancel-button {
+  border: 1px solid var(--color-danger-border);
+
+  background: var(--color-bg);
+  color: var(--color-danger-dark);
+}
+
+.parent-enrollment-cancel-button:hover {
+  background: var(--color-danger-bg);
+}
