@@ -28,6 +28,8 @@ function EnrollmentProcess() {
   const [loading, setLoading] = useState(true);
   const [dependents, setDependents] = useState([]);
   const [dependentsLoading, setDependentsLoading] = useState(isParent);
+  const [dependentsError, setDependentsError] = useState("");
+  const [dependentsAttempt, setDependentsAttempt] = useState(0);
   const [chosenChildId, setChosenChildId] = useState("");
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
@@ -83,7 +85,9 @@ function EnrollmentProcess() {
         }
       } catch (err) {
         if (isActive) {
-          setError(err.message || "No fue posible cargar tus menores.");
+          setDependentsError(
+            err.message || "No fue posible cargar tus menores.",
+          );
         }
       } finally {
         if (isActive) {
@@ -97,7 +101,13 @@ function EnrollmentProcess() {
     return () => {
       isActive = false;
     };
-  }, [isParent]);
+  }, [isParent, dependentsAttempt]);
+
+  const handleRetryDependents = () => {
+    setDependentsError("");
+    setDependentsLoading(true);
+    setDependentsAttempt((attempt) => attempt + 1);
+  };
 
   // Con un solo menor registrado no hace falta elegir.
   const childId =
@@ -157,7 +167,21 @@ function EnrollmentProcess() {
     );
   }
 
-  if (isParent && dependents.length === 0 && !error) {
+  if (isParent && dependentsError) {
+    return (
+      <div className="enrollment-process">
+        <EmptyState
+          icon="⚠"
+          title="No pudimos cargar tus menores"
+          description={dependentsError}
+          actionText="Reintentar"
+          onAction={handleRetryDependents}
+        />
+      </div>
+    );
+  }
+
+  if (isParent && dependents.length === 0) {
     return (
       <div className="enrollment-process">
         <EmptyState
