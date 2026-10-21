@@ -192,6 +192,10 @@ function AppRouter() {
           <Route element={<ParentLayout />}>
             <Route path="/padre" element={<DashboardParent />} />
             <Route path="/padre/clases" element={<ExploreClassesParent />} />
+            <Route
+              path="/padre/clases/:id/inscribir"
+              element={<EnrollmentProcess />}
+            />
             <Route path="/padre/menores" element={<Dependents />} />
             <Route path="/padre/menores/nuevo" element={<DependentForm />} />
             <Route

@@ -4,6 +4,7 @@ const router = express.Router();
 const dependentController = require("../controllers/dependent.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
 const authMiddleware = require("../middleware/auth.middleware");
+const requireRole = require("../middleware/roleGuard.middleware");
 
 router.post("/dependents", authMiddleware, dependentController.createDependent);
 
@@ -12,6 +13,7 @@ router.get("/dependents", authMiddleware, dependentController.getDependents);
 router.get(
   "/dependents/:id",
   authMiddleware,
+  requireRole("padre", "admin"),
   dependentController.getDependentById,
 );
 

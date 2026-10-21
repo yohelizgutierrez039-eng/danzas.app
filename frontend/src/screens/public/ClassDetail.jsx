@@ -12,7 +12,7 @@ import "./ClassDetail.css";
 // Flujo de inscripción según el rol con sesión iniciada.
 const ENROLLMENT_ROUTES = {
   estudiante: (classId) => `/estudiante/clases/${classId}/inscribir`,
-  padre: () => "/padre/clases",
+  padre: (classId) => `/padre/clases/${classId}/inscribir`,
 };
 
 function ClassDetail() {

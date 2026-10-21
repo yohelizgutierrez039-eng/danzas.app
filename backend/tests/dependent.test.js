@@ -1,0 +1,165 @@
+import { createRequire } from "node:module";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const require = createRequire(import.meta.url);
+const dependentRepository = require("../src/repositories/dependent.repository");
+const dependentService = require("../src/services/dependent.service");
+const dependentController = require("../src/controllers/dependent.controller");
+const authMiddleware = require("../src/middleware/auth.middleware");
+const router = require("../src/routes/users.routes");
+const { AppError } = require("../src/middleware/errorHandler");
+
+const menor = { id: "m-1", padreId: "padre-1", nombre: "Mateo", fechaNacimiento: new Date("2018-05-10") };
+
+describe("obtenerMenorPorId (RF-004, RNF-007: un menor solo lo ve su padre o un admin)", () => {
+  const buscar = (encontrado = menor) => vi.spyOn(dependentRepository, "findById").mockResolvedValue(encontrado);
+
+  it("el padre dueño obtiene al menor", async () => {
+    buscar();
+
+    await expect(dependentService.obtenerMenorPorId("m-1", { id: "padre-1", rol: "padre" })).resolves.toBe(menor);
+  });
+
+  it("el admin obtiene a cualquier menor", async () => {
+    buscar();
+
+    await expect(dependentService.obtenerMenorPorId("m-1", { id: "admin-1", rol: "admin" })).resolves.toBe(menor);
+  });
+
+  it("otro padre recibe 403 FORBIDDEN", async () => {
+    buscar();
+
+    await expect(dependentService.obtenerMenorPorId("m-1", { id: "padre-2", rol: "padre" })).rejects.toMatchObject({
+      statusCode: 403,
+      code: "FORBIDDEN",
+      message: "No tenés permiso para ver este menor.",
+    });
+  });
+
+  it.each(["estudiante", "instructor"])("un %s recibe 403 aunque su id coincida con el padreId", async (rol) => {
+    buscar();
+
+    await expect(dependentService.obtenerMenorPorId("m-1", { id: "padre-1", rol })).rejects.toMatchObject({
+      statusCode: 403,
+      code: "FORBIDDEN",
+    });
+  });
+
+  it("un menor inexistente da 404 DEPENDENT_NOT_FOUND", async () => {
+    buscar(null);
+
+    await expect(dependentService.obtenerMenorPorId("nada", { id: "padre-1", rol: "padre" })).rejects.toMatchObject({
+      statusCode: 404,
+      code: "DEPENDENT_NOT_FOUND",
+    });
+  });
+});
+
+describe("registrarMenor (RF-004: la fecha de nacimiento debe ser una fecha real, pasada y de un menor)", () => {
+  const padre = { padreId: "padre-1", rol: "padre" };
+  const registrar = (fechaNacimiento) =>
+    dependentService.registrarMenor(padre.padreId, padre.rol, { nombre: "Mateo", fechaNacimiento });
+
+  // 2026-10-20T03:00Z son las 22:00 del 19 de octubre en Colombia (UTC-5): para
+  // un padre colombiano "hoy" es el 19, aunque en UTC ya sea el 20.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-20T03:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    ["una fecha reciente", "2016-05-20"],
+    ["hoy en Colombia", "2026-10-19"],
+    ["exactamente 21 años atrás", "2005-10-19"],
+  ])("registra al menor con %s", async (_caso, fechaNacimiento) => {
+    const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
+
+    await expect(registrar(fechaNacimiento)).resolves.toBe(menor);
+    expect(crear).toHaveBeenCalledWith({ padreId: "padre-1", nombre: "Mateo", fechaNacimiento });
+  });
+
+  it.each([
+    ["sin fecha", undefined],
+    ["fecha vacia", ""],
+    ["texto que no es fecha", "ayer"],
+    ["fecha inexistente", "2018-02-31"],
+    ["no es string", 20180510],
+    ["fecha futura", "2999-01-01"],
+    ["mañana en Colombia (aunque en UTC ya sea hoy)", "2026-10-20"],
+    ["un dia mas de 21 años atrás", "2005-10-18"],
+    ["un año absurdo", "1900-01-01"],
+  ])("rechaza %s con 400 INVALID_BIRTHDATE", async (_caso, fechaNacimiento) => {
+    const crear = vi.spyOn(dependentRepository, "create").mockResolvedValue(menor);
+
+    await expect(registrar(fechaNacimiento)).rejects.toMatchObject({ statusCode: 400, code: "INVALID_BIRTHDATE" });
+    expect(crear).not.toHaveBeenCalled();
+  });
+
+  it("un rol distinto de padre sigue recibiendo 403", async () => {
+    await expect(
+      dependentService.registrarMenor("u-1", "estudiante", { nombre: "Mateo", fechaNacimiento: "2016-05-20" }),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN_NOT_PARENT" });
+  });
+});
+
+describe("dependent.controller#getDependentById", () => {
+  const crearRes = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn() });
+
+  it("pasa al solicitante autenticado al servicio y responde 200", async () => {
+    const obtener = vi.spyOn(dependentService, "obtenerMenorPorId").mockResolvedValue(menor);
+    const user = { id: "padre-1", rol: "padre" };
+    const res = crearRes();
+
+    await dependentController.getDependentById({ user, params: { id: "m-1" } }, res, vi.fn());
+
+    expect(obtener).toHaveBeenCalledWith("m-1", user);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ dependent: menor });
+  });
+
+  it("manda el error del servicio a next sin responder", async () => {
+    const error = new AppError("x", 403, "FORBIDDEN");
+    vi.spyOn(dependentService, "obtenerMenorPorId").mockRejectedValue(error);
+    const res = crearRes();
+    const next = vi.fn();
+
+    await dependentController.getDependentById({ user: { id: "p", rol: "padre" }, params: { id: "m-1" } }, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe("users.routes GET /dependents/:id", () => {
+  const ruta = router.stack.find((capa) => capa.route && capa.route.path === "/dependents/:id" && capa.route.methods.get).route;
+  const middlewares = ruta.stack.slice(0, -1).map((c) => c.handle);
+
+  const permite = (rol) => {
+    const next = vi.fn();
+    middlewares[middlewares.length - 1]({ user: { id: "u-1", rol } }, {}, next);
+
+    return next.mock.calls[0][0] === undefined;
+  };
+
+  it("exige autenticacion y luego un guard de rol", () => {
+    expect(middlewares).toHaveLength(2);
+    expect(middlewares[0]).toBe(authMiddleware);
+  });
+
+  it("apunta a dependentController.getDependentById", () => {
+    expect(ruta.stack[ruta.stack.length - 1].handle).toBe(dependentController.getDependentById);
+  });
+
+  it.each([
+    ["padre", true],
+    ["admin", true],
+    ["estudiante", false],
+    ["instructor", false],
+  ])("rol %s, acceso permitido: %s", (rol, permitido) => {
+    expect(permite(rol)).toBe(permitido);
+  });
+});

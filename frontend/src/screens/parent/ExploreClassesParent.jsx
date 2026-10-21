@@ -1,170 +1,203 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Select from "../../components/common/Select/Select";
+import Loading from "../../components/common/Loading/Loading";
 import EmptyState from "../../components/common/EmptyState/EmptyState";
-import ErrorMessage from "../../components/common/ErrorMessage/ErrorMessage";
-import {
-  buildCheckoutRoute,
-  createEnrollment,
-} from "../../services/enrollments.service";
-import { getDependents } from "../../services/users.service";
+import { searchClasses } from "../../services/classes.service";
+import { formatearHorario } from "../../utils/formatDate";
+import { formatearPrecio } from "../../utils/formatCurrency";
 import "./ExploreClassesParent.css";
 
-const demoClasses = [
-  {
-    id: 101,
-    name: "Salsa Infantil",
-    danceType: "Salsa",
-    modality: "Presencial",
-    city: "Guamal",
-    academy: "Academia Ritmo Caribe",
-    instructor: "Carlos Martínez",
-    schedule: "Lunes y miércoles - 4:00 PM",
-    duration: "1 hora",
-    availableSpots: 8,
-    price: 45000,
-    ageRange: "8 - 12 años",
-  },
-  {
-    id: 102,
-    name: "Danza Urbana Kids",
-    danceType: "Danza urbana",
-    modality: "Presencial",
-    city: "Guamal",
-    academy: "Academia Ritmo Caribe",
-    instructor: "Laura Pérez",
-    schedule: "Martes y jueves - 3:30 PM",
-    duration: "1 hora",
-    availableSpots: 5,
-    price: 50000,
-    ageRange: "7 - 12 años",
-  },
-  {
-    id: 103,
-    name: "Ballet Infantil",
-    danceType: "Ballet",
-    modality: "Virtual",
-    city: "Guamal",
-    academy: "Danzas del Caribe",
-    instructor: "María Rodríguez",
-    schedule: "Sábados - 10:00 AM",
-    duration: "1 hora",
-    availableSpots: 10,
-    price: 40000,
-    ageRange: "6 - 12 años",
-  },
+const danceTypeOptions = [
+  { value: "Salsa", label: "Salsa" },
+  { value: "Bachata", label: "Bachata" },
+  { value: "Danza urbana", label: "Danza urbana" },
+  { value: "Contemporánea", label: "Contemporánea" },
+  { value: "Folclor", label: "Folclor" },
+];
+
+const cityOptions = [
+  { value: "Barranquilla", label: "Barranquilla" },
+  { value: "Bogotá", label: "Bogotá" },
+  { value: "Cali", label: "Cali" },
+  { value: "Cartagena", label: "Cartagena" },
+  { value: "Medellín", label: "Medellín" },
+  { value: "Santa Marta", label: "Santa Marta" },
+];
+
+const modalityOptions = [
+  { value: "presencial", label: "Presencial" },
+  { value: "virtual", label: "Virtual" },
 ];
 
 function ExploreClassesParent() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [selectedChild, setSelectedChild] = useState("");
-  const [danceType, setDanceType] = useState("");
-  const [modality, setModality] = useState("");
-  const [city, setCity] = useState("");
   const [search, setSearch] = useState("");
+  const [danceType, setDanceType] = useState(searchParams.get("tipo") || "");
+  const [city, setCity] = useState(searchParams.get("ciudad") || "");
+  const [modality, setModality] = useState("");
+
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [dependents, setDependents] = useState([]);
-  const [enrollingClassId, setEnrollingClassId] = useState(null);
-  const [enrollmentSuccess, setEnrollmentSuccess] = useState("");
 
-  // Menores a cargo del padre autenticado (GET /users/dependents).
+  // GET /classes/search?tipo=&ciudad=
   useEffect(() => {
-    const loadDependents = async () => {
-      try {
-        const data = await getDependents();
+    let isActive = true;
 
-        setDependents(
-          Array.isArray(data) ? data : data?.dependents || data?.data || [],
-        );
-      } catch (err) {
-        setError(err.message || "No se pudieron cargar los menores.");
+    const fetchClasses = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const result = await searchClasses({
+          tipo: danceType || undefined,
+          ciudad: city || undefined,
+        });
+
+        if (isActive) {
+          setClasses(Array.isArray(result) ? result : []);
+        }
+      } catch (fetchError) {
+        if (isActive) {
+          setError(fetchError?.message || "No se pudieron cargar las clases.");
+          setClasses([]);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
-    loadDependents();
-  }, []);
+    fetchClasses();
 
-  const childOptions = dependents.map((child) => ({
-    value: String(child.id),
-    label: child.nombre,
-  }));
+    return () => {
+      isActive = false;
+    };
+  }, [danceType, city]);
 
-  const danceTypeOptions = [
-    { value: "Salsa", label: "Salsa" },
-    { value: "Danza urbana", label: "Danza urbana" },
-    { value: "Ballet", label: "Ballet" },
-  ];
-
-  const modalityOptions = [
-    { value: "Presencial", label: "Presencial" },
-    { value: "Virtual", label: "Virtual" },
-  ];
-
-  const cityOptions = [{ value: "Guamal", label: "Guamal" }];
-
+  // El backend filtra por tipo y ciudad; el texto y la modalidad se refinan
+  // acá. Solo se muestran las clases activas.
   const filteredClasses = useMemo(() => {
-    return demoClasses.filter((danceClass) => {
+    const searchValue = search.toLowerCase().trim();
+
+    return classes.filter((danceClass) => {
       const matchesSearch =
-        !search ||
-        danceClass.name.toLowerCase().includes(search.toLowerCase()) ||
-        danceClass.academy.toLowerCase().includes(search.toLowerCase()) ||
-        danceClass.danceType.toLowerCase().includes(search.toLowerCase());
+        !searchValue ||
+        danceClass.tipoBaile?.toLowerCase().includes(searchValue) ||
+        danceClass.ciudad?.toLowerCase().includes(searchValue) ||
+        danceClass.instructor?.nombre?.toLowerCase().includes(searchValue);
 
-      const matchesDanceType = !danceType || danceClass.danceType === danceType;
+      const matchesModality = !modality || danceClass.modalidad === modality;
 
-      const matchesModality = !modality || danceClass.modality === modality;
-
-      const matchesCity = !city || danceClass.city === city;
-
-      return (
-        matchesSearch && matchesDanceType && matchesModality && matchesCity
-      );
+      return danceClass.estado === "activa" && matchesSearch && matchesModality;
     });
-  }, [search, danceType, modality, city]);
-
-  // POST /enrollments/:claseId con { menorId } en el cuerpo.
-  const handleEnroll = async (danceClass) => {
-    if (!selectedChild) {
-      setError("Primero debes seleccionar cuál hijo/a quieres inscribir.");
-      setEnrollmentSuccess("");
-      return;
-    }
-
-    try {
-      setEnrollingClassId(danceClass.id);
-      setError("");
-      setEnrollmentSuccess("");
-
-      const response = await createEnrollment({
-        claseId: danceClass.id,
-        menorId: selectedChild,
-      });
-
-      // Cupo reservado: continuar al checkout para confirmar el pago.
-      const checkout = buildCheckoutRoute(response, {
-        basePath: "/padre",
-        clase: { nombre: danceClass.name, precio: danceClass.price },
-      });
-
-      if (checkout) {
-        navigate(checkout.path, { state: checkout.state });
-        return;
-      }
-
-      setEnrollmentSuccess("¡Inscripción realizada correctamente!");
-    } catch (err) {
-      setError(err.message || "No se pudo realizar la inscripción.");
-    } finally {
-      setEnrollingClassId(null);
-    }
-  };
+  }, [classes, search, modality]);
 
   const clearFilters = () => {
     setSearch("");
     setDanceType("");
     setModality("");
     setCity("");
+  };
+
+  const renderClasses = () => {
+    if (loading) {
+      return <Loading text="Cargando clases..." />;
+    }
+
+    if (error) {
+      return (
+        <EmptyState
+          icon="⚠"
+          title="No pudimos cargar las clases"
+          description={error}
+        />
+      );
+    }
+
+    if (filteredClasses.length === 0) {
+      return (
+        <EmptyState
+          title="No encontramos clases"
+          description="Intenta cambiar los filtros o realizar otra búsqueda."
+        />
+      );
+    }
+
+    return (
+      <>
+        <div className="classes-parent-toolbar">
+          <div>
+            <strong>{filteredClasses.length}</strong> clases encontradas
+          </div>
+        </div>
+
+        <div className="parent-classes-grid">
+          {filteredClasses.map((danceClass) => (
+            <article className="parent-class-card" key={danceClass.id}>
+              <div className="parent-class-card-top">
+                <span className="dance-type-badge">{danceClass.tipoBaile}</span>
+
+                <span className="modality-badge">
+                  {danceClass.modalidad === "virtual" ? "Virtual" : "Presencial"}
+                </span>
+              </div>
+
+              <div className="parent-class-card-body">
+                <h2>Clase de {danceClass.tipoBaile}</h2>
+
+                <div className="parent-class-info">
+                  <span>📍 {danceClass.ciudad}</span>
+                  <span>👤 {danceClass.instructor.nombre}</span>
+
+                  {danceClass.horarios.map((horario) => (
+                    <span key={horario.id}>🕐 {formatearHorario(horario)}</span>
+                  ))}
+                </div>
+
+                <div className="parent-class-footer">
+                  <div>
+                    <span className="price-label">Precio</span>
+                    <strong>{formatearPrecio(danceClass.precio)}</strong>
+                  </div>
+
+                  <span className="available-spots">
+                    {danceClass.cupoDisponible} cupos disponibles
+                  </span>
+                </div>
+              </div>
+
+              <div className="parent-class-actions">
+                <button
+                  type="button"
+                  className="details-button"
+                  onClick={() => navigate(`/clases/${danceClass.id}`)}
+                >
+                  Ver detalles
+                </button>
+
+                <button
+                  type="button"
+                  className="enroll-child-button"
+                  onClick={() =>
+                    navigate(`/padre/clases/${danceClass.id}/inscribir`)
+                  }
+                  disabled={danceClass.cupoDisponible <= 0}
+                >
+                  {danceClass.cupoDisponible > 0
+                    ? "Inscribir hijo/a"
+                    : "Sin cupos"}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </>
+    );
   };
 
   return (
@@ -176,53 +209,11 @@ function ExploreClassesParent() {
           <h1>Explorar clases</h1>
 
           <p>
-            Encuentra una clase de danza y selecciona el hijo o hija que deseas
-            inscribir.
+            Encuentra una clase de danza e inscribe a tu hijo o hija. Podrás
+            elegir a quién inscribir en el siguiente paso.
           </p>
         </div>
       </div>
-
-      <section className="child-selector-card">
-        <div className="child-selector-icon">👨‍👩‍👧</div>
-
-        <div className="child-selector-content">
-          <h2>¿Para quién quieres buscar una clase?</h2>
-
-          <p>
-            Selecciona uno de tus hijos antes de continuar con la inscripción.
-          </p>
-
-          <Select
-            label="Seleccionar hijo/a"
-            name="selectedChild"
-            value={selectedChild}
-            onChange={(event) => {
-              setSelectedChild(event.target.value);
-              setError("");
-            }}
-            options={childOptions}
-            placeholder="Selecciona un hijo/a"
-            helperText={
-              dependents.length === 0
-                ? "Aún no tienes menores registrados. Regístralos en Mis menores."
-                : ""
-            }
-            required
-            fullWidth
-          />
-        </div>
-      </section>
-
-      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
-
-      {enrollmentSuccess && (
-        <ErrorMessage
-          title="Inscripción registrada"
-          message={enrollmentSuccess}
-          type="success"
-          onClose={() => setEnrollmentSuccess("")}
-        />
-      )}
 
       <section className="parent-filters">
         <div className="parent-search">
@@ -234,7 +225,7 @@ function ExploreClassesParent() {
             <input
               id="class-search"
               type="text"
-              placeholder="Nombre de clase, academia o danza..."
+              placeholder="Tipo de baile, ciudad o instructor..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
@@ -277,89 +268,7 @@ function ExploreClassesParent() {
         </button>
       </section>
 
-      <div className="classes-parent-toolbar">
-        <div>
-          <strong>{filteredClasses.length}</strong> clases encontradas
-        </div>
-
-        {selectedChild && (
-          <div className="selected-child-badge">
-            Inscripción para:{" "}
-            <strong>
-              {
-                dependents.find(
-                  (child) => String(child.id) === String(selectedChild),
-                )?.nombre
-              }
-            </strong>
-          </div>
-        )}
-      </div>
-
-      {filteredClasses.length === 0 ? (
-        <EmptyState
-          title="No encontramos clases"
-          message="Intenta cambiar los filtros o realizar otra búsqueda."
-        />
-      ) : (
-        <div className="parent-classes-grid">
-          {filteredClasses.map((danceClass) => (
-            <article className="parent-class-card" key={danceClass.id}>
-              <div className="parent-class-card-top">
-                <span className="dance-type-badge">{danceClass.danceType}</span>
-
-                <span className="modality-badge">{danceClass.modality}</span>
-              </div>
-
-              <div className="parent-class-card-body">
-                <h2>{danceClass.name}</h2>
-
-                <p className="parent-academy">🏫 {danceClass.academy}</p>
-
-                <div className="parent-class-info">
-                  <span>📍 {danceClass.city}</span>
-                  <span>👤 {danceClass.instructor}</span>
-                  <span>🕐 {danceClass.schedule}</span>
-                  <span>⏱️ {danceClass.duration}</span>
-                  <span>👧 {danceClass.ageRange}</span>
-                </div>
-
-                <div className="parent-class-footer">
-                  <div>
-                    <span className="price-label">Mensualidad</span>
-                    <strong>${danceClass.price.toLocaleString("es-CO")}</strong>
-                  </div>
-
-                  <span className="available-spots">
-                    {danceClass.availableSpots} cupos disponibles
-                  </span>
-                </div>
-              </div>
-
-              <div className="parent-class-actions">
-                <button
-                  type="button"
-                  className="details-button"
-                  onClick={() => navigate(`/clases/${danceClass.id}`)}
-                >
-                  Ver detalles
-                </button>
-
-                <button
-                  type="button"
-                  className="enroll-child-button"
-                  onClick={() => handleEnroll(danceClass)}
-                  disabled={enrollingClassId === danceClass.id}
-                >
-                  {enrollingClassId === danceClass.id
-                    ? "Inscribiendo..."
-                    : "Inscribir hijo/a"}
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+      {renderClasses()}
 
       <section className="parent-info-box">
         <span className="parent-info-icon">ℹ️</span>
@@ -368,9 +277,9 @@ function ExploreClassesParent() {
           <h3>Importante</h3>
 
           <p>
-            Como padre de familia, puedes seleccionar cualquiera de tus hijos
-            registrados para realizar su inscripción a una clase. Antes de
-            pagar, podrás revisar nuevamente los datos de la inscripción.
+            Como padre de familia, puedes inscribir a cualquiera de tus hijos
+            registrados en una clase. Antes de pagar, podrás revisar
+            nuevamente los datos de la inscripción.
           </p>
         </div>
       </section>

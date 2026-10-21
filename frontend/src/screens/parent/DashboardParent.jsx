@@ -89,13 +89,13 @@ function DashboardParent() {
       title: "Mis hijos",
       description: "Consulta y administra los dependientes registrados.",
       icon: "👨‍👩‍👧",
-      path: "/padre/hijos",
+      path: "/padre/menores",
     },
     {
       title: "Explorar clases",
       description: "Encuentra clases para tus hijos.",
       icon: "🔎",
-      path: "/padre/explorar-clases",
+      path: "/padre/clases",
     },
     {
       title: "Inscripciones",
@@ -214,7 +214,7 @@ function DashboardParent() {
             <button
               type="button"
               className="section-link-button"
-              onClick={() => navigate("/padre/hijos")}
+              onClick={() => navigate("/padre/menores")}
             >
               Ver todos →
             </button>
@@ -230,7 +230,7 @@ function DashboardParent() {
                 Agrega un dependiente para poder gestionar sus inscripciones.
               </p>
 
-              <button type="button" onClick={() => navigate("/padre/hijos")}>
+              <button type="button" onClick={() => navigate("/padre/menores")}>
                 Gestionar hijos
               </button>
             </div>

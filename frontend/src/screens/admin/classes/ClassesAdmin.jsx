@@ -3,20 +3,17 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  FiPlus,
   FiCalendar,
   FiClock,
   FiUsers,
   FiCheckCircle,
   FiEye,
-  FiEdit2,
   FiTrash2,
   FiMoreVertical,
   FiMapPin,
   FiMonitor,
 } from "react-icons/fi";
 
-import Button from "../../../components/common/Button/Button";
 import SearchBar from "../../../components/common/SearchBar/SearchBar";
 import Select from "../../../components/common/Select/Select";
 import EmptyState from "../../../components/common/EmptyState/EmptyState";
@@ -242,13 +239,6 @@ export default function ClassesAdmin() {
             Administra las clases, horarios, instructores y estados.
           </p>
         </div>
-
-        <Button
-          icon={<FiPlus size={18} />}
-          onClick={() => navigate("/admin/classes/create")}
-        >
-          Nueva clase
-        </Button>
       </div>
 
       {/* Summary cards */}
@@ -405,15 +395,6 @@ export default function ClassesAdmin() {
                               >
                                 <FiEye size={15} />
                                 Ver detalle
-                              </Link>
-
-                              <Link
-                                to={`/admin/classes/${clase.id}/edit`}
-                                onClick={() => setOpenMenu(null)}
-                                className="classes-admin__menu-item"
-                              >
-                                <FiEdit2 size={15} />
-                                Editar clase
                               </Link>
 
                               <button

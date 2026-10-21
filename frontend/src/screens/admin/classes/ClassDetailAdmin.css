@@ -87,11 +87,6 @@
   color: var(--color-text-secondary);
 }
 
-.class-detail-admin__actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
 /* Stat cards */
 
 .class-detail-admin__stats {
@@ -172,17 +167,6 @@
 
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-}
-
-.class-detail-admin__see-all {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  white-space: nowrap;
-}
-
-.class-detail-admin__see-all:hover {
-  color: var(--color-primary-dark);
 }
 
 /* Class info grid */
@@ -421,28 +405,6 @@
 
 .class-detail-admin__contact-item svg {
   color: var(--color-primary);
-}
-
-.class-detail-admin__profile-link {
-  display: block;
-
-  margin-top: var(--space-5);
-  padding: var(--space-3);
-
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  text-align: center;
-
-  border: 1px solid var(--color-primary-border);
-  border-radius: var(--radius-md);
-
-  transition: background-color var(--transition-fast);
-}
-
-.class-detail-admin__profile-link:hover {
-  color: var(--color-primary-dark);
-  background-color: var(--color-primary-bg);
 }
 
 /* Schedule card */
