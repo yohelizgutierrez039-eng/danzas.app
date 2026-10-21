@@ -1,6 +1,6 @@
 # Guía de la demostración
 
-Guía para presentar el avance de **Danzas.app** (RF-001 a RF-018 implementados). Dura entre 12 y 15 minutos y usa los datos de `backend/prisma/seed-demo.js`.
+Guía para presentar el avance de **Danzas.app**. Muestra el núcleo funcional de la plataforma: registro e inicio de sesión, publicación y búsqueda de clases, inscripción, pago simulado, cancelación con reembolso, asistencia, reportes y gestión de usuarios y academias. **No todos los requisitos del ERS están completos todavía** (por ejemplo, falta la verificación de correo al registrarse y el consentimiento de datos); la [sección 5](#5-advertencias-honestas-qué-evitar-o-presentar-como-maqueta) lista lo que conviene presentar como pendiente. Dura entre 12 y 15 minutos y usa los datos de `backend/prisma/seed-demo.js`.
 
 > **Todas las cuentas usan la contraseña `Prueba1234`.** Son cuentas de prueba: antes de abrir la plataforma a usuarios reales hay que retirarlas (ver `docs/despliegue.md`, paso 8).
 
@@ -275,6 +275,7 @@ Trampas concretas:
 
 - **Correos:** no se envía ninguno. Con `RESEND_API_KEY` o `EMAIL_FROM` sin configurar, el backend los imprime en su consola como `[correo simulado] Para: ... | Asunto: ...`. Se emiten al pagar, al cancelar una inscripción, al cancelar una clase y al aprobar o rechazar una academia. No hay bandeja de entrada en la app.
 - **Pagos:** son simulados (`esSimulado`): siempre se aprueban, no hay tarjeta ni pasarela, y el comprobante es una referencia `SIM-XXXXXXXXXX`. La integración real queda para v2.0.
+- **Sin consentimiento de datos personales (Ley 1581):** el registro y el alta de menores todavía no tienen casilla de términos ni páginas de privacidad. Está planificado como pendiente del ERS.
 - **Sin verificación de correo:** quien se registra queda "Pendiente" y puede iniciar sesión sin confirmar el correo. Que un instructor tenga estado "Pendiente" no le impide crear clases: lo que cuenta es su solicitud de academia aprobada.
 - **Modalidad virtual:** no está permitida en v1.0 (todas las clases son presenciales); el filtro del explorador sí lista "Virtual" pero no devolverá clases.
 
