@@ -10,7 +10,8 @@
     "test:coverage": "vitest run --coverage",
     "backfill:solicitudes": "node scripts/backfill-solicitudes.js",
     "db:check": "node scripts/check-db.js",
-    "create:admin": "node scripts/create-admin.js"
+    "create:admin": "node scripts/create-admin.js",
+    "seed:demo": "node prisma/seed-demo.js"
   },
   "keywords": [],
   "type": "commonjs",
